@@ -1,0 +1,12 @@
+[Default Applications]
+text/css=code.desktop
+application/typescript=code.desktop
+text/plain=code.desktop
+inode/directory=thunar.desktop
+application/vnd.openxmlformats-officedocument.wordprocessingml.document=brave-browser.desktop
+
+[Added Associations]
+text/css=code.desktop;
+application/typescript=code.desktop;
+text/plain=code.desktop;
+application/vnd.openxmlformats-officedocument.wordprocessingml.document=brave-browser.desktop;

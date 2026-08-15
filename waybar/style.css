@@ -1,0 +1,126 @@
+* {
+    border: none;
+    border-radius: 0;
+    font-family: JetBrainsMono Nerd Font, Roboto, sans-serif;
+    font-size: 12px;
+    min-height: 0;
+}
+
+/* Nền tổng của thanh bar */
+window#waybar {
+    background: none;
+    background-color: transparent;
+    color: #c0caf5;
+}
+
+/* Style riêng cho dấu phân cách custom/separator */
+#custom-separator {
+    color: lightblue;
+    padding: 0 0px;
+    font-weight: bold;
+}
+
+#custom-playerctl,
+#mode,
+#scratchpad,
+#window,
+#mpd,
+#idle_inhibitor,
+#pulseaudio,
+#network,
+#custom-power-profile,
+#cpu,
+#memory,
+#temperature,
+#backlight,
+#keyboard-state,
+#language,
+#battery,
+#clock,
+#tray {
+    background-color: rgba(0, 0, 0, 0.2);
+    border-radius: 15px;
+    padding: 0px 12px;
+    margin: 0;
+    color: #c0caf5;
+}
+
+#power-profiles-daemon,
+#custom-power-profile,
+#idle_inhibitor {
+    min-width: 22px;
+    padding: 0 8px;
+}
+
+/* Style riêng cho Workspaces */
+#workspaces {
+    background:none;
+    background-color: rgba(0, 0, 0, 0.2);
+    border-radius: 15px;
+    padding: 0px 5px;
+    margin: 0;
+}
+
+#workspaces button {
+    padding: 0 8px;
+    color: #c0caf5;
+    background-color: transparent;
+    border-radius: 15px;
+}
+
+#workspaces button:hover {
+    background: none;
+    background-color: rgba(42, 42, 181, 0.305);
+    color: #7aa2f7;
+}
+
+#workspaces button.focused{
+    background: none;
+}
+
+#workspaces button.active {
+    color: #7aa2f7;
+    font-weight: bold;
+    background-color: rgba(42, 42, 181, 0.538);
+
+}
+
+#workspaces button.urgent {
+    color: #f7768e;
+}
+
+/* Khoảng cách nhãn Caps / Num Lock */
+#keyboard-state label {
+    padding: 0 4px;
+}
+
+/* Nút nguồn ở cuối: Bỏ vạch '|' bên phải */
+#custom-power {
+    background-color: transparent;
+    color: #f7768e;
+    padding: 0 10px;
+    margin: 0;
+    font-size: 14px;
+    border-right: none;
+}
+
+/* Cảnh báo pin */
+#battery.warning {
+    color: #e0af68;
+}
+
+#battery.critical:not(.charging) {
+    color: #f7768e;
+}
+
+#tray > .passive,
+#tray > .active,
+#tray > .needs-attention {
+    padding: 0 4px;
+}
+
+#custom-playerctl {
+    color: #c0caf5;
+    padding: 0 6px;
+    margin: 0;
+}
