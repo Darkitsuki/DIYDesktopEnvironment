@@ -7,7 +7,7 @@ Code/
 dconf/
 ibus/
 pulse/
-session
+session/
 systemd/
 protonfixes/
 pupgui/
