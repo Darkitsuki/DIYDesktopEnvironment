@@ -12,6 +12,7 @@ systemd/
 protonfixes/
 pupgui/
 Kingsoft/
+go/
 
 # Trash info
 trashrc
