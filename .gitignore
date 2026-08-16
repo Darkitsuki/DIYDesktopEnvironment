@@ -1,2 +1,18 @@
+# Dữ liệu bảo mật & trình duyệt
 BraveSoftware/
+
+# VS Code Runtime & Cache
 Code/
+
+# System Runtime, Cache & Sessions
+dconf/
+ibus/
+pulse/
+session
+systemd/
+protonfixes/
+pupgui/
+Kingsoft/
+
+# Trash info
+trashrc
