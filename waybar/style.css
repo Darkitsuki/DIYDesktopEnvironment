@@ -6,14 +6,12 @@
     min-height: 0;
 }
 
-/* Nền tổng của thanh bar */
 window#waybar {
     background: none;
     background-color: transparent;
     color: #c0caf5;
 }
 
-/* Style riêng cho dấu phân cách custom/separator */
 #custom-separator {
     color: lightblue;
     padding: 0 0px;
@@ -52,19 +50,18 @@ window#waybar {
     padding: 0 8px;
 }
 
-/* Style riêng cho Workspaces */
 #workspaces {
     background:none;
     background-color: rgba(0, 0, 0, 0.2);
-    border-radius: 15px;
+    border-radius: 13px;
     margin: 0;
 }
 
 #workspaces button {
-    padding: 0 8px;
+    padding: 0 6px;
     color: #c0caf5;
     background-color: transparent;
-    border-radius: 15px;
+    border-radius: 13px;
 
     border:none;
     box-shadow: none;
@@ -94,12 +91,10 @@ window#waybar {
     color: #f7768e;
 }
 
-/* Khoảng cách nhãn Caps / Num Lock */
 #keyboard-state label {
     padding: 0 4px;
 }
 
-/* Nút nguồn ở cuối: Bỏ vạch '|' bên phải */
 #custom-power {
     background-color: transparent;
     color: #f7768e;
@@ -128,4 +123,29 @@ window#waybar {
     color: #c0caf5;
     padding: 0 6px;
     margin: 0;
+}
+
+/* Khung chứa Menu Pop-up */
+menu {
+    background-color: #1e1e2e;
+    border: 1px solid #45475a;
+    border-radius: 12px;
+    padding: 6px;
+}
+
+/* Các nút chọn trong Menu */
+menuitem {
+    color: #cdd6f4;
+    padding-top: 6px;
+    padding-bottom: 6px;
+    padding-left: 0px;
+    padding-right: 0px;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+}
+
+/* Hiệu ứng khi rê chuột qua mục chọn */
+menuitem:hover {
+    background-color: #313244;
+    color: #89b4fa;
 }

@@ -54,7 +54,7 @@ hl.monitor({
 
 -- Set programs that you use
 local terminal    = "kitty"
-local fileManager = "thunar"
+local fileManager = "nautilus"
 local menu        = "hyprlauncher"
 
 
@@ -420,13 +420,13 @@ hl.window_rule({
     center = true,        -- Căn giữa cửa sổ ra giữa màn hình sau khi đặt size
 })
 
--- Mở Thunar dưới dạng Float với kích thước mặc định và căn giữa
+-- Mở Trình quản lý tệp dưới dạng Float với kích thước mặc định và căn giữa
 hl.window_rule({
-    name = "thunar-float-size",
-    match = { class = "thunar" },
-    float = true,           -- Ép ứng dụng chuyển sang float
-    size = { 960, 540 },   -- Đặt kích thước 1280x720
-    center = true,          -- Căn giữa màn hình
+    name = "filemanager-float-size",
+    match = { class = "nautilus" },
+    float = true,
+    size = { 960, 540 },
+    center = true,
 })
 
 hl.cursor = {
