@@ -19,15 +19,17 @@
 
     "modules-left": [
         "clock",
-        "hyprland/workspaces",
-        "custom/media"
+        "hyprland/workspaces"
+        // "custom/media"
     ],
+
     "modules-center": [
         // "hyprland/window",
         // "hyprland/media",
         "custom/playerctl"
     ],
     "modules-right": [
+
         "custom/separator",
         "pulseaudio",
         "network",
@@ -46,8 +48,8 @@
         "disable-scroll": false,
         "warp-on-scroll": false,
         "all-outputs": true,
-        "on-scroll-up": "hyprctl dispatch 'hl.dsp.focus({ workspace = \"e+1\" })'",
-        "on-scroll-down": "hyprctl dispatch 'hl.dsp.focus({ workspace = \"e-1\" })'",
+        "on-scroll-up": "hyprctl dispatch 'hl.dsp.focus({ workspace = \"e-1\" })'",
+        "on-scroll-down": "hyprctl dispatch 'hl.dsp.focus({ workspace = \"e+1\" })'",
         "format": "{name}",
         "persistent-workspaces":{
             "*": [1,2,3,4,5]
@@ -88,7 +90,7 @@
         "interval": 2,
         "format": "{}",
         //  
-        "max-length": 35,
+        "max-length": 50,
         "tooltip": true,
         "on-click": "playerctl play-pause",
         "on-scroll-up": "playerctl next",
@@ -172,12 +174,12 @@
     },
     "pulseaudio": {
         "scroll-step": 5, // %, can be a float
-        "format": "{volume}% {icon} {format_source}",
-        "format-bluetooth": "{volume}% {icon} {format_source}",
-        "format-bluetooth-muted": "󰅶 {icon} {format_source}",
-        "format-muted": "󰅶 {format_source}",
-        "format-source": "{volume}% ",
-        "format-source-muted": "",
+        "format": "{format_source} {icon} {volume}%",
+        "format-bluetooth": "{format_source} {volume}% {icon}",
+        "format-bluetooth-muted": "{format_source}  {icon}",
+        "format-muted": "{format_source}  ",
+        "format-source": "",
+        "format-source-muted": " ",
         "format-icons": {
             "headphone": "",
             "hands-free": "󰂑",

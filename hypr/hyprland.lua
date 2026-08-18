@@ -57,7 +57,6 @@ local terminal    = "kitty"
 local fileManager = "nautilus"
 local menu        = "hyprlauncher"
 
-
 -------------------
 ---- AUTOSTART ----
 -------------------
@@ -74,7 +73,6 @@ hl.on("hyprland.start", function ()
   hl.exec_cmd("steam -silent")
   hl.exec_cmd("systemctl --user start hyprpolkitagent")
 
--- Tự động chạy Fcitx5 ở chế độ ngầm khi đăng nhập
   hl.exec_cmd("fcitx5 -d")
 end)
 
@@ -137,7 +135,7 @@ hl.config({
         rounding_power = 2,
 
         -- Change transparency of focused and unfocused windows
-        active_opacity   = 0.8,
+        active_opacity   = 1,
         inactive_opacity = 0.7,
 
         shadow = {
@@ -234,7 +232,7 @@ hl.config({
 hl.config({
     misc = {
         force_default_wallpaper = 0,    -- Set to 0 or 1 to disable the anime mascot wallpapers
-        disable_hyprland_logo   = false, -- If true disables the random hyprland logo / anime girl background. :(
+        disable_hyprland_logo   = true, -- If true disables the random hyprland logo / anime girl background. :(
     },
 })
 
@@ -275,7 +273,6 @@ hl.device({
     name        = "epic-mouse-v1",
     sensitivity = 1,
 })
-
 
 ---------------------
 ---- KEYBINDINGS ----
@@ -370,7 +367,7 @@ local suppressMaximizeRule = hl.window_rule({
 
     suppress_event = "maximize",
 })
--- suppressMaximizeRule:set_enabled(false)
+suppressMaximizeRule:set_enabled(true)
 
 hl.window_rule({
     -- Fix some dragging issues with XWayland
@@ -404,28 +401,26 @@ hl.window_rule({
     float = true,
 })
 
-
 -- ==========================================
--- CẤU HÌNH BỘ GÕ TIẾNG VIỆT (FCITX5)
+-- (FCITX5)
 -- ==========================================
 hl.env("XMODIFIERS", "@im=fcitx")
 hl.env("QT_IM_MODULE", "fcitx")
 hl.env("GTK_IM_MODULE", "fcitx")
 
--- Cấu hình kích thước mặc định cho TẤT CẢ cửa sổ khi ở chế độ float
-hl.window_rule({
-    name = "default-float-size",
-    match = { float = true },
-    size = { 1280, 720 }, -- Kích thước cố định tính theo pixel: {chiều_rộng, chiều_cao}
-    center = true,        -- Căn giữa cửa sổ ra giữa màn hình sau khi đặt size
-})
-
--- Mở Trình quản lý tệp dưới dạng Float với kích thước mặc định và căn giữa
 hl.window_rule({
     name = "filemanager-float-size",
-    match = { class = "nautilus" },
+    match = { class = "org.gnome.Nautilus"},
     float = true,
     size = { 960, 540 },
+    center = true,
+})
+
+hl.window_rule({
+    name = "steam-float-size",
+    match = { class = "steam"},
+    float = true,
+    size = { 1280, 720 },
     center = true,
 })
 
