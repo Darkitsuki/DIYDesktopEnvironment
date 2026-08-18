@@ -255,7 +255,7 @@ hl.config({
 
         touchpad = {
             natural_scroll = false,
-           -- tap-to-click = true,
+            --tap-to-click = true,
             --disable_while_typing = true,
         },
     },
@@ -423,8 +423,3 @@ hl.window_rule({
     size = { 1280, 720 },
     center = true,
 })
-
-hl.cursor = {
-    no_warps = true,
-    warp_on_change_workspace = 0,
-}
