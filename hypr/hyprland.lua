@@ -251,7 +251,7 @@ hl.config({
 
         follow_mouse = 1,
 
-        sensitivity = -0.7, -- -1.0 - 1.0, 0 means no modification
+        sensitivity = -0.6, -- -1.0 - 1.0, 0 means no modification
 
         touchpad = {
             natural_scroll = false,
@@ -422,4 +422,20 @@ hl.window_rule({
     float = true,
     size = { 1280, 720 },
     center = true,
+})
+
+hl.window_rule({
+    name = "pavucontrol-float-size",
+    match = { class = "org.pulseaudio.pavucontrol"},
+    float = true,
+    size = { 960, 540 },
+    move = {960, 50},
+})
+
+hl.window_rule({
+    name = "nmtui-float-size",
+    match = { class = "kitty", title = "nmtui"},
+    float = true,
+    size = { 960, 540 },
+    move = {960, 50},
 })
