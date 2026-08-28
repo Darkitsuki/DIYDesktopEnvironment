@@ -2,7 +2,7 @@
 text/css=code.desktop
 application/typescript=code.desktop
 text/plain=code.desktop
-inode/directory=thunar.desktop
+inode/directory=org.gnome.Nautilus.desktop
 application/vnd.openxmlformats-officedocument.wordprocessingml.document=brave-browser.desktop
 
 [Added Associations]
