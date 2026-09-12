@@ -28,6 +28,7 @@ hl.env("__GLX_VENDOR_LIBRARY_NAME", "nvidia")
 
 hl.env("ELECTRON_OZONE_PLATFORM_HINT", "auto")
 
+
 ------------------
 ---- MONITORS ----
 ------------------
@@ -103,6 +104,7 @@ hl.env("HYPRCURSOR_SIZE", "24")
 -- hl.permission("/usr/(lib|libexec|lib64)/xdg-desktop-portal-hyprland", "screencopy", "allow")
 -- hl.permission("/usr/(bin|local/bin)/hyprpm", "plugin", "allow")
 
+require("hyprland-gui")
 
 -----------------------
 ---- LOOK AND FEEL ----
@@ -318,7 +320,7 @@ hl.bind(mainMod .. " + mouse_up",   hl.dsp.focus({ workspace = "e-1" }))
 
 -- Move/resize windows with mainMod + LMB/RMB and dragging
 hl.bind(mainMod .. " + mouse:272", hl.dsp.window.drag(),   { mouse = true })
-hl.bind("mouse:274", hl.dsp.window.drag())
+--hl.bind("mouse:274", hl.dsp.window.drag())
 hl.bind(mainMod .. " + mouse:273", hl.dsp.window.resize(), { mouse = true })
 
 
@@ -431,3 +433,6 @@ hl.window_rule({
     size = { 960, 540 },
     move = {960, 50},
 })
+
+-- HyprMod managed settings
+require("hyprland-gui")
