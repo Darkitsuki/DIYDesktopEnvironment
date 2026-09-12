@@ -31,10 +31,12 @@ window#waybar {
 #memory,
 #temperature,
 #backlight,
+#custom-external-brightness,
 #keyboard-state,
 #language,
 #battery,
 #clock,
+#custom-quick-settings,
 #tray {
     background-color: rgba(0, 0, 0, 0.2);
     border-radius: 15px;
