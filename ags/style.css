@@ -1,0 +1,39 @@
+/* Khung nền chính của bảng điều khiển */
+.quicksettings-panel {
+    background-color: rgba(30, 30, 46, 0.9); /* Màu tối mờ */
+    border: 2px solid rgba(137, 180, 250, 0.3);
+    border-radius: 15px;
+    padding: 20px;
+    min-width: 300px;
+}
+
+/* Tiêu đề */
+.header {
+    font-size: 18px;
+    font-weight: bold;
+    color: #cdd6f4;
+    margin-bottom: 15px;
+}
+
+/* Khu vực chứa thanh trượt */
+.slider-box {
+    margin-top: 10px;
+}
+
+.slider-icon {
+    font-size: 20px;
+    color: #f9e2af;
+    margin-right: 10px;
+}
+
+/* Tùy chỉnh thanh trượt (Slider/Scale) của GTK */
+scale trough {
+    background-color: #313244;
+    border-radius: 10px;
+    min-height: 12px;
+}
+
+scale highlight {
+    background-color: #89b4fa;
+    border-radius: 10px;
+}

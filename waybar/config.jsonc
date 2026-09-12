@@ -38,8 +38,10 @@
         "memory",
         "temperature",
         "backlight",
+        "custom/external-brightness",
         "battery",
         "tray",
+        "custom/quick-settings",
         "custom/power"
     ],
 
@@ -138,6 +140,21 @@
         "format-icons": ["", "", "", "", "", "", "", "", ""],
         "min-brightness": 1
     },
+
+    "custom/external-brightness": {
+        "exec": "ddcutil --display 1 getvcp 10 --terse | awk '{print $4}'",   
+        "interval": 2, 
+        "format": "{}% 󰃠",
+        // "scroll-step": 5,
+        // "format": "{percent}% {icon}",
+        // "format-icons": ["", "", "", "", "", "", "", "", ""],
+        "min-brightness": 1,
+
+        "on-scroll-up": "ddcutil --display 1 setvcp 10 + 5",
+        "on-scroll-down": "ddcutil --display 1 setvcp 10 - 5",
+        "tooltip": false
+    },
+    
     "battery": {
         "states": {
             // "good": 95,
@@ -215,5 +232,11 @@
 			"suspend": "systemctl suspend",
 			"hibernate": "systemctl hibernate"
 		}
+    },
+
+    "custom/quick-settings": {
+        "format": "⚙️",
+        "on-click": "ags toggle quicksettings",
+        "tooltip": false
     }
 }
