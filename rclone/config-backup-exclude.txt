@@ -1,0 +1,34 @@
+BraveSoftware/**
+Antigravity/**
+Code/Cache/**
+Code/CachedData/**
+Code/CachedExtensionVSIXs/**
+Code/Code Cache/**
+Code/GPUCache/**
+Code/Dawn*Cache/**
+Code/logs/**
+Code/Service Worker/**
+Code/WebStorage/**
+Code/Crashpad/**
+Code/agent-host/**
+Code/User/workspaceStorage/**
+.git/**
+go/telemetry/**
+pulse/**
+ibus/**
+fcitx/dbus/**
+
+# VS Code volatile Electron/Chromium state & local history
+Code/User/History/**
+Code/Backups/**
+Code/Local Storage/**
+Code/Session Storage/**
+Code/Shared Dictionary/**
+Code/blob_storage/**
+Code/*lock
+Code/DIPS*
+Code/Network Persistent State
+Code/TransportSecurity
+Code/Trust Tokens*
+Code/SharedStorage*
+Code/.org.chromium.Chromium.*

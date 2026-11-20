@@ -1,6 +1,6 @@
 import Widget from 'resource:///com/github/Aylur/ags/widget.js';
 
-// 1. Tạo widget Thanh trượt độ sáng
+// 1. Brightness Slider
 const BrightnessSlider = Widget.Box({
     className: 'slider-box',
     children: [
@@ -15,7 +15,7 @@ const BrightnessSlider = Widget.Box({
     ],
 });
 
-// 2. Tạo khung chứa Quick Settings
+// 2. Quick Settings Panel
 const QuickSettingsPanel = Widget.Box({
     className: 'quicksettings-panel',
     vertical: true,
@@ -25,7 +25,7 @@ const QuickSettingsPanel = Widget.Box({
     ],
 });
 
-// 3. Khai báo Cửa sổ (Window)
+// 3. Window for Quick Settings
 const QuickSettingsWindow = Widget.Window({
     name: 'quicksettings',
     anchor: ['top', 'right'],
@@ -35,7 +35,7 @@ const QuickSettingsWindow = Widget.Window({
     child: QuickSettingsPanel,
 });
 
-// 4. Khởi chạy AGS App
+// 4. Start the App
 App.start({
     style: App.configDir + '/style.css',
     windows: [QuickSettingsWindow],

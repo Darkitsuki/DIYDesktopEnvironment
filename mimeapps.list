@@ -4,9 +4,14 @@ application/typescript=code.desktop
 text/plain=code.desktop
 inode/directory=org.gnome.Nautilus.desktop
 application/vnd.openxmlformats-officedocument.wordprocessingml.document=brave-browser.desktop
+x-scheme-handler/antigravity=antigravity.desktop
+x-scheme-handler/curseforge=curseforge.desktop
+x-scheme-handler/cfauth=curseforge.desktop
 
 [Added Associations]
 text/css=code.desktop;
 application/typescript=code.desktop;
 text/plain=code.desktop;
 application/vnd.openxmlformats-officedocument.wordprocessingml.document=brave-browser.desktop;
+x-scheme-handler/antigravity=antigravity.desktop;
+x-scheme-handler/cfauth=curseforge.desktop;

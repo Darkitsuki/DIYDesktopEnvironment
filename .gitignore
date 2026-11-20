@@ -18,3 +18,5 @@ menus/
 
 # Trash info
 trashrc
+# Sensitive credentials
+rclone/rclone.conf

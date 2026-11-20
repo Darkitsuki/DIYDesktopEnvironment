@@ -17,7 +17,7 @@
 -- Create your files separately and then require them like this:
 -- require("myColors")
 
-hl.env("AQ_DRM_DEVICES", "/dev/dri/card2:/dev/dri/card1")
+-- hl.env("AQ_DRM_DEVICES", "/dev/dri/card2:/dev/dri/card1")
 
 hl.env("XDG_SESSION_TYPE", "wayland")
 hl.env("XDG_CURRENT_DESKTOP", "Hyprland")
@@ -43,9 +43,17 @@ hl.monitor({
 
 --See https://wiki.hypr.land/Configuring/Basics/Monitors/
 hl.monitor({
-  output   = "",
+  output   = "HDMI-A-2",
   mode     = "1920x1080@180",
-  position = "1921x0",
+  position = "1920x0",
+  scale    = 1
+})
+
+--See https://wiki.hypr.land/Configuring/Basics/Monitors/
+hl.monitor({
+  output   = "",
+  mode     = "preferred",
+  position = "auto",
   scale    = 1
 })
 
@@ -104,8 +112,6 @@ hl.env("HYPRCURSOR_SIZE", "24")
 -- hl.permission("/usr/(lib|libexec|lib64)/xdg-desktop-portal-hyprland", "screencopy", "allow")
 -- hl.permission("/usr/(bin|local/bin)/hyprpm", "plugin", "allow")
 
-require("hyprland-gui")
-
 -----------------------
 ---- LOOK AND FEEL ----
 -----------------------
@@ -128,9 +134,13 @@ hl.config({
         resize_on_border = true,
 
         -- Please see https://wiki.hypr.land/Configuring/Advanced-and-Cool/Tearing/ before you turn this on
-        allow_tearing = false,
+        allow_tearing = true,
 
         layout = "dwindle",
+    },
+
+    render = {
+        direct_scanout = 2,
     },
 
     decoration = {
@@ -218,6 +228,7 @@ hl.config({
     misc = {
         force_default_wallpaper = 0,    -- Set to 0 or 1 to disable the anime mascot wallpapers
         disable_hyprland_logo   = true, -- If true disables the random hyprland logo / anime girl background. :(
+        vrr                     = 2,
     },
 })
 
@@ -263,7 +274,7 @@ hl.gesture({
 -- See https://wiki.hypr.land/Configuring/Advanced-and-Cool/Devices/ for more
 hl.device({
     name = "razer-razer-deathadder-v2-x-hyperspeed-mouse",
-    sensitivity = -0.5,
+    sensitivity = -1,
 })
 
 ---------------------
@@ -403,8 +414,16 @@ hl.env("QT_IM_MODULE", "fcitx")
 hl.env("GTK_IM_MODULE", "fcitx")
 
 hl.window_rule({
-    name = "filemanager-float-size",
+    name = "Nautilus-float-size",
     match = { class = "org.gnome.Nautilus"},
+    float = true,
+    size = { 960, 540 },
+    center = true,
+})
+
+hl.window_rule({
+    name = "Thunar-float-size",
+    match = { class = "xdg-desktop-portal-gtk"},
     float = true,
     size = { 960, 540 },
     center = true,
@@ -432,6 +451,12 @@ hl.window_rule({
     float = true,
     size = { 960, 540 },
     move = {960, 50},
+})
+
+hl.window_rule({
+    name = "steam-games-immediate-tearing",
+    match = { class = "^steam_app_.*$" },
+    immediate = true,
 })
 
 -- HyprMod managed settings
