@@ -77,10 +77,11 @@ local menu        = "hyprlauncher"
 --
 hl.on("hyprland.start", function () 
 --hl.exec_cmd("nm-applet")
---hl.exec_cmd("waybar")
+--   hl.exec_cmd("waybar")
   hl.exec_cmd("hyprpaper")
-  hl.exec_cmd("steam -silent")
+--   hl.exec_cmd("steam -silent")
   hl.exec_cmd("systemctl --user start hyprpolkitagent")
+  hl.exec_cmd("xsettingsd")
 
   hl.exec_cmd("fcitx5 -d")
 end)
@@ -414,14 +415,6 @@ hl.env("QT_IM_MODULE", "fcitx")
 hl.env("GTK_IM_MODULE", "fcitx")
 
 hl.window_rule({
-    name = "Nautilus-float-size",
-    match = { class = "org.gnome.Nautilus"},
-    float = true,
-    size = { 960, 540 },
-    center = true,
-})
-
-hl.window_rule({
     name = "Thunar-float-size",
     match = { class = "xdg-desktop-portal-gtk"},
     float = true,
@@ -457,6 +450,32 @@ hl.window_rule({
     name = "steam-games-immediate-tearing",
     match = { class = "^steam_app_.*$" },
     immediate = true,
+})
+
+hl.window_rule({
+  name = "nautilus-default-float",
+  match = { class = "^(org\\.gnome\\.Nautilus)$" },
+  float = true,
+  center = true,
+  size = { 960, 540 },
+  opacity = "0.95 0.85",
+})
+
+hl.window_rule({
+  name = "nautilus-dialogs-float",
+  match = {
+    class = "^(org\\.gnome\\.Nautilus)$",
+    title = "^(Properties|File Operations|Compress|Extract|Rename|Open Files|Save File).*$",
+  },
+  float = true,
+  center = true,
+})
+
+hl.window_rule({
+  name = "sushi-quicklook-float",
+  match = { class = "^(org\\.gnome\\.NautilusPreviewer)$" },
+  float = true,
+  center = true,
 })
 
 -- HyprMod managed settings

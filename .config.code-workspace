@@ -2,10 +2,6 @@
 	"folders": [
 		{
 			"path": "."
-		},
-		{
-			"name": "Basic Wifi",
-			"path": "../Documents/PlatformIO/Projects/Basic Wifi"
 		}
 	],
 	"settings": {}
