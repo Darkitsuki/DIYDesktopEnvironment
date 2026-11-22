@@ -423,8 +423,8 @@ hl.window_rule({
   match = { class = "^(xdg-desktop-portal-gtk)$" },
   float = true,
   center = true,
-  size = { 960, 540 },
-  opacity = "1.0 0.95",
+  size = { 860, 500 },
+  opacity = "0.95 0.85",
 })
 
 hl.window_rule({

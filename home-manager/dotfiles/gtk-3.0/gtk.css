@@ -1,6 +1,6 @@
-/* Catppuccin Mocha + Electric Blue Theme for GTK3 & File Chooser Portal */
+/* Catppuccin Mocha + Electric Blue Compact Theme for GTK3 File Chooser */
 
-/* Standard GTK3 Theme Color Variables (Prevents ANY #ffffff Adwaita Fallback) */
+/* Standard GTK3 Theme Color Variables */
 @define-color theme_fg_color #cdd6f4;
 @define-color theme_text_color #cdd6f4;
 @define-color theme_bg_color #1e1e2e;
@@ -24,7 +24,7 @@
 @define-color content_view_bg #1e1e2e;
 @define-color text_view_bg #1e1e2e;
 
-/* Libadwaita-compatible aliases */
+/* Libadwaita Aliases */
 @define-color accent_color #89b4fa;
 @define-color accent_bg_color #288cff;
 @define-color accent_fg_color #11111b;
@@ -42,7 +42,7 @@
 @define-color dialog_bg_color #1e1e2e;
 @define-color dialog_fg_color #cdd6f4;
 
-/* Top-Level Windows & FileChooser Structural Containers */
+/* Top-Level Containers */
 window,
 window.background,
 window:backdrop,
@@ -60,15 +60,14 @@ filechooser revealer,
   background-color: #1e1e2e;
   background-image: none;
   color: #cdd6f4;
+  font-size: 13px;
 }
 
-/* Remove Default GTK3 Dotted/Square Focus Outlines */
 *:focus {
   outline: none;
-  -gtk-outline-radius: 8px;
+  -gtk-outline-radius: 6px;
 }
 
-/* Remove White Frames & Dividers */
 scrolledwindow,
 scrolledwindow.frame,
 scrolledwindow > border,
@@ -77,18 +76,18 @@ frame > border,
 viewport,
 viewport.frame {
   background-color: #1e1e2e;
-  border-color: #313244;
+  border: none;
 }
 
 paned > separator,
 separator {
-  background-color: #313244;
+  background-color: rgba(49, 50, 68, 0.7);
   background-image: none;
   min-width: 1px;
   min-height: 1px;
 }
 
-/* Headerbar & Primary Action Buttons */
+/* Compact Headerbar */
 headerbar,
 headerbar:backdrop,
 .titlebar,
@@ -96,8 +95,10 @@ headerbar:backdrop,
   background-color: #181825;
   background-image: none;
   color: #cdd6f4;
-  border-bottom: 1px solid #313244;
+  border-bottom: none;
   box-shadow: none;
+  min-height: 32px;
+  padding: 2px 6px;
 }
 
 button,
@@ -110,11 +111,13 @@ headerbar button.toggle,
 headerbar togglebutton,
 .titlebar button,
 .titlebar button.toggle {
-  background-color: #313244;
+  background-color: rgba(49, 50, 68, 0.75);
   background-image: none;
   color: #cdd6f4;
-  border: 1px solid #45475a;
-  border-radius: 8px;
+  border: 1px solid rgba(69, 71, 90, 0.6);
+  border-radius: 6px;
+  min-height: 24px;
+  padding: 2px 8px;
   box-shadow: none;
   text-shadow: none;
   -gtk-icon-shadow: none;
@@ -137,10 +140,10 @@ button.toggle:checked,
 togglebutton:checked,
 headerbar button.toggle:checked,
 headerbar togglebutton:checked {
-  background-color: rgba(137, 180, 250, 0.25);
+  background-color: rgba(137, 180, 250, 0.22);
   background-image: none;
   color: #89b4fa;
-  border-color: #89b4fa;
+  border-color: rgba(137, 180, 250, 0.55);
 }
 
 button.flat,
@@ -176,23 +179,23 @@ headerbar button.suggested-action:hover {
 button.suggested-action:disabled,
 headerbar button.suggested-action:disabled,
 button:disabled {
-  background-color: #252536;
+  background-color: rgba(49, 50, 68, 0.35);
   background-image: none;
   color: #6c7086;
-  border-color: #313244;
+  border-color: transparent;
 }
 
-/* Pathbar / Breadcrumb Strip & Active Directory ToggleButton */
+/* Compact Pathbar */
 pathbar,
 .path-bar,
 filechooser pathbar,
 filechooser .path-bar,
 toolbar {
-  background-color: #181825;
+  background-color: #1e1e2e;
   background-image: none;
   color: #cdd6f4;
-  border-bottom: 1px solid #313244;
-  padding: 4px 6px;
+  border-bottom: none;
+  padding: 3px 6px 2px 6px;
 }
 
 pathbar button,
@@ -203,12 +206,14 @@ filechooser pathbar button,
 filechooser pathbar togglebutton,
 filechooser .path-bar button,
 filechooser .path-bar togglebutton {
-  background-color: #313244;
+  background-color: rgba(49, 50, 68, 0.65);
   background-image: none;
-  color: #cdd6f4;
-  border: 1px solid #45475a;
-  border-radius: 8px;
+  color: #a6adc8;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  min-height: 22px;
   margin: 0 2px;
+  padding: 1px 7px;
   box-shadow: none;
 }
 
@@ -216,18 +221,20 @@ pathbar button.slider-button,
 .path-bar button.slider-button {
   background-color: transparent;
   border-color: transparent;
+  padding: 1px 4px;
 }
 
 pathbar button.slider-button:hover,
 .path-bar button.slider-button:hover {
   background-color: rgba(49, 50, 68, 0.75);
+  color: #cdd6f4;
 }
 
 pathbar button:hover,
 pathbar togglebutton:hover,
 .path-bar button:hover,
 .path-bar togglebutton:hover {
-  background-color: #45475a;
+  background-color: #313244;
   background-image: none;
   color: #cdd6f4;
 }
@@ -243,11 +250,11 @@ filechooser .path-bar togglebutton:checked {
   background-color: rgba(137, 180, 250, 0.22);
   background-image: none;
   color: #89b4fa;
-  border-color: rgba(137, 180, 250, 0.55);
+  border-color: rgba(137, 180, 250, 0.45);
   font-weight: 600;
 }
 
-/* Places Sidebar (Clean Rows Without Inner Rectangles) */
+/* Compact Places Sidebar (Fits All Drives Without Clipping) */
 placessidebar,
 placessidebar:backdrop,
 placessidebar list,
@@ -255,19 +262,19 @@ placessidebar viewport {
   background-color: #181825;
   background-image: none;
   color: #cdd6f4;
-  border-right: 1px solid #313244;
+  border-right: none;
   -gtk-icon-style: regular;
 }
 
 placessidebar row {
   background-color: transparent;
-  border-radius: 8px;
-  margin: 2px 6px;
-  padding: 4px 8px;
+  border-radius: 6px;
+  min-height: 22px;
+  margin: 1px 6px;
+  padding: 2px 6px;
   color: #cdd6f4;
 }
 
-/* Keep Inner Boxes Inside Buttons & Sidebar Rows Transparent */
 button box,
 button > box,
 togglebutton box,
@@ -286,8 +293,10 @@ placessidebar row button.sidebar-button {
   background-image: none;
   border: none;
   box-shadow: none;
-  border-radius: 6px;
-  padding: 2px 4px;
+  border-radius: 5px;
+  min-height: 18px;
+  min-width: 18px;
+  padding: 1px 3px;
   color: #a6adc8;
 }
 
@@ -297,7 +306,7 @@ placessidebar row button:hover {
 }
 
 placessidebar row:hover:not(:selected) {
-  background-color: rgba(49, 50, 68, 0.75);
+  background-color: rgba(49, 50, 68, 0.7);
 }
 
 placessidebar row:selected,
@@ -308,12 +317,13 @@ placessidebar row:selected:backdrop {
   font-weight: 600;
 }
 
-/* File List & Column Headers */
+/* Compact File List & Column Headers */
 treeview.view,
 treeview.view:backdrop {
   background-color: #1e1e2e;
   background-image: none;
   color: #cdd6f4;
+  padding: 2px 4px;
   -gtk-icon-style: regular;
 }
 
@@ -324,7 +334,7 @@ treeview.view:hover {
 treeview.view:selected,
 treeview.view:selected:focus,
 treeview.view:selected:backdrop {
-  background-color: rgba(40, 140, 255, 0.28);
+  background-color: rgba(40, 140, 255, 0.26);
   color: #cdd6f4;
 }
 
@@ -333,31 +343,35 @@ treeview.view header button:backdrop,
 treeview header button,
 treeview header button:backdrop,
 column-header button {
-  background-color: #181825;
+  background-color: #1e1e2e;
   background-image: none;
   color: #a6adc8;
   border: none;
-  border-bottom: 1px solid #313244;
-  border-right: 1px solid #313244;
-  border-radius: 0;
+  border-bottom: none;
+  border-right: none;
+  border-radius: 5px;
+  min-height: 22px;
+  padding: 2px 6px;
   box-shadow: none;
+  font-weight: 600;
 }
 
 treeview.view header button:hover,
 treeview header button:hover {
-  background-color: #313244;
+  background-color: rgba(49, 50, 68, 0.65);
   background-image: none;
   color: #cdd6f4;
 }
 
-/* Bottom Actionbar, Dropdowns & Entries */
+/* Compact Bottom Actionbar & Inputs */
 actionbar,
 actionbar:backdrop,
 actionbar > revealer > box {
   background-color: #181825;
   background-image: none;
   color: #cdd6f4;
-  border-top: 1px solid #313244;
+  border-top: none;
+  padding: 2px 6px;
 }
 
 entry,
@@ -369,6 +383,8 @@ searchbar > revealer > box {
   color: #cdd6f4;
   border: 1px solid #45475a;
   border-radius: 8px;
+  min-height: 24px;
+  padding: 2px 8px;
 }
 
 entry:focus {
@@ -381,13 +397,17 @@ combobox box {
   background-image: none;
   color: #cdd6f4;
   border-color: #45475a;
+  min-height: 22px;
+  padding: 1px 6px;
 }
 
 checkbutton check {
   background-color: #313244;
   background-image: none;
   border: 1px solid #585b70;
-  border-radius: 5px;
+  border-radius: 4px;
+  min-width: 14px;
+  min-height: 14px;
 }
 
 checkbutton check:checked {
@@ -397,23 +417,95 @@ checkbutton check:checked {
   border-color: #89b4fa;
 }
 
-popover,
+/* Compact GTK3 Context & Options Menus */
 menu,
+.menu,
+.context-menu,
+popover,
+popover.background,
 .popover {
   background-color: #181825;
   background-image: none;
   color: #cdd6f4;
   border: 1px solid #45475a;
+  border-radius: 8px;
+  padding: 3px;
+  box-shadow: 0 6px 18px rgba(17, 17, 27, 0.65);
+}
+
+menuitem,
+menu menuitem,
+.menu menuitem,
+.context-menu menuitem,
+popover modelbutton {
+  background-color: transparent;
+  background-image: none;
+  color: #cdd6f4;
+  border-radius: 6px;
+  min-height: 22px;
+  padding: 3px 8px;
+  margin: 1px 1px;
+  text-shadow: none;
+  -gtk-icon-shadow: none;
+}
+
+menuitem:hover,
+menuitem:selected,
+menu menuitem:hover,
+menu menuitem:selected,
+.menu menuitem:hover,
+.context-menu menuitem:hover,
+popover modelbutton:hover,
+popover modelbutton:selected {
+  background-color: rgba(137, 180, 250, 0.22);
+  background-image: none;
+  color: #89b4fa;
+}
+
+menuitem:disabled,
+menu menuitem:disabled,
+popover modelbutton:disabled {
+  color: #6c7086;
+  background-color: transparent;
+}
+
+menuitem accelerator,
+menu menuitem accelerator {
+  color: #a6adc8;
+}
+
+menuitem check,
+menuitem radio {
+  background-color: #313244;
+  background-image: none;
+  border: 1px solid #585b70;
+  border-radius: 4px;
+  color: #11111b;
+}
+
+menuitem check:checked,
+menuitem radio:checked {
+  background-color: #288cff;
+  background-image: none;
+  border-color: #89b4fa;
+  color: #11111b;
+}
+
+menu separator,
+menuitem separator {
+  background-color: #313244;
+  min-height: 1px;
+  margin: 3px 4px;
 }
 
 scrollbar,
 scrollbar trough {
-  background-color: #181825;
+  background-color: transparent;
   border: none;
 }
 
 scrollbar slider {
-  background-color: #45475a;
+  background-color: rgba(69, 71, 90, 0.8);
   border-radius: 999px;
 }
 
