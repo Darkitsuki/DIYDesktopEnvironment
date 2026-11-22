@@ -1,4 +1,4 @@
-/* Catppuccin Mocha + Electric Blue Theme for GTK4 / Libadwaita (Nautilus) */
+/* Catppuccin Mocha + Electric Blue Compact Theme for GTK4 / Libadwaita (Nautilus) */
 @define-color accent_color #89b4fa;
 @define-color accent_bg_color #288cff;
 @define-color accent_fg_color #11111b;
@@ -26,54 +26,92 @@
 @define-color dialog_bg_color #1e1e2e;
 @define-color dialog_fg_color #cdd6f4;
 
-/* Nautilus Sidebar & Pathbar Polish */
-.navigation-sidebar row {
-  border-radius: 8px;
-  margin: 2px 6px;
-  padding: 4px 8px;
+/* Compact Nautilus Headerbar & Pathbar */
+.nautilus-window headerbar {
+  min-height: 34px;
+  padding: 2px 6px;
 }
 
-.navigation-sidebar row:selected {
+.nautilus-window headerbar button,
+.nautilus-window headerbar togglebutton,
+.nautilus-window headerbar menubutton > button {
+  min-height: 26px;
+  min-width: 26px;
+  padding: 2px 6px;
+  border-radius: 7px;
+}
+
+.nautilus-window #NautilusPathBar {
+  background-color: #313244;
+  border-radius: 8px;
+  border: 1px solid #45475a;
+  min-height: 26px;
+  padding: 1px 6px;
+}
+
+/* Compact Navigation Sidebar (Fits Google Drive & Volumes Cleanly) */
+.nautilus-window .navigation-sidebar {
+  padding: 2px 0;
+}
+
+.nautilus-window .navigation-sidebar row {
+  min-height: 24px;
+  border-radius: 7px;
+  margin: 1px 6px;
+  padding: 2px 8px;
+}
+
+.nautilus-window .navigation-sidebar row:selected {
   background-color: alpha(#89b4fa, 0.22);
   color: #89b4fa;
   font-weight: 600;
 }
 
-.navigation-sidebar row:hover:not(:selected) {
+.nautilus-window .navigation-sidebar row:hover:not(:selected) {
   background-color: alpha(#313244, 0.7);
 }
 
-/* Pathbar & Search Entry */
-#NautilusPathBar {
-  background-color: #313244;
-  border-radius: 10px;
-  border: 1px solid #45475a;
+/* Compact Column Headers & File List / Grid Rows */
+.nautilus-window columnview header button {
+  min-height: 24px;
   padding: 2px 6px;
 }
 
-/* File Grid / List Selection & Hover */
-.nautilus-window flowboxchild,
+.nautilus-window columnview listview row,
 .nautilus-window listview row {
-  border-radius: 10px;
+  min-height: 24px;
+  padding: 1px 6px;
+  margin: 0 4px;
+  border-radius: 7px;
+  transition: background-color 150ms ease;
+}
+
+.nautilus-window flowboxchild {
+  padding: 4px;
+  margin: 2px;
+  border-radius: 8px;
   transition: background-color 150ms ease;
 }
 
 .nautilus-window flowboxchild:hover,
+.nautilus-window columnview listview row:hover,
 .nautilus-window listview row:hover {
   background-color: alpha(#313244, 0.65);
 }
 
 .nautilus-window flowboxchild:selected,
+.nautilus-window columnview listview row:selected,
 .nautilus-window listview row:selected {
   background-color: alpha(#288cff, 0.26);
   outline: 1px solid alpha(#89b4fa, 0.55);
 }
 
-/* Floating Status / Selection Bar */
-.floating-bar {
+/* Compact Floating Status / Selection Bar */
+.nautilus-window .floating-bar {
   background-color: #181825;
   color: #cdd6f4;
   border: 1px solid #45475a;
-  border-radius: 10px;
-  padding: 4px 10px;
+  border-radius: 8px;
+  padding: 2px 8px;
+  font-size: 12px;
 }
