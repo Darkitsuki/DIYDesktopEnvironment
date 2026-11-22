@@ -1,1 +1,2 @@
 export AQ_DRM_DEVICES=/dev/dri/dgpu:/dev/dri/igpu
+export XDG_DATA_DIRS="$HOME/.nix-profile/share:${XDG_DATA_DIRS:-/usr/local/share:/usr/share}"

@@ -1,11 +1,10 @@
-/* Catppuccin Mocha + Electric Blue Theme for GTK3 */
+/* Catppuccin Mocha + Electric Blue Theme for GTK3 & File Chooser Portal */
 @define-color accent_color #89b4fa;
 @define-color accent_bg_color #288cff;
 @define-color accent_fg_color #11111b;
 
 @define-color window_bg_color #1e1e2e;
 @define-color window_fg_color #cdd6f4;
-
 @define-color view_bg_color #1e1e2e;
 @define-color view_fg_color #cdd6f4;
 
@@ -16,55 +15,360 @@
 
 @define-color sidebar_bg_color #181825;
 @define-color sidebar_fg_color #cdd6f4;
-@define-color sidebar_backdrop_color #11111b;
-@define-color sidebar_shade_color rgba(17, 17, 27, 0.35);
-
-@define-color card_bg_color #313244;
-@define-color card_fg_color #cdd6f4;
 @define-color popover_bg_color #181825;
 @define-color popover_fg_color #cdd6f4;
 @define-color dialog_bg_color #1e1e2e;
 @define-color dialog_fg_color #cdd6f4;
 
-/* GTK3 Base overrides */
-window.background {
+/* Base Containers & Backdrop Overrides */
+window,
+window.background,
+window:backdrop,
+dialog,
+dialog:backdrop,
+messagedialog,
+filechooser,
+filechooser:backdrop,
+filechooser box,
+filechooser stack,
+filechooser revealer,
+filechooser paned,
+.background,
+.background:backdrop {
   background-color: #1e1e2e;
+  background-image: none;
   color: #cdd6f4;
 }
 
-headerbar {
+/* Remove Default GTK3 Dotted/Square Focus Outlines */
+*:focus {
+  outline: none;
+  -gtk-outline-radius: 8px;
+}
+
+/* Remove White Frames & Dividers */
+scrolledwindow,
+scrolledwindow.frame,
+scrolledwindow > border,
+frame,
+frame > border,
+viewport,
+viewport.frame {
+  background-color: #1e1e2e;
+  border-color: #313244;
+}
+
+paned > separator,
+separator {
+  background-color: #313244;
+  background-image: none;
+  min-width: 1px;
+  min-height: 1px;
+}
+
+/* Headerbar & Primary Action Buttons */
+headerbar,
+headerbar:backdrop,
+.titlebar,
+.titlebar:backdrop {
   background-color: #181825;
+  background-image: none;
   color: #cdd6f4;
   border-bottom: 1px solid #313244;
+  box-shadow: none;
 }
 
-popover, menu, .popover {
-  background-color: #181825;
-  color: #cdd6f4;
-}
-
-button {
+button,
+button:backdrop,
+button.toggle,
+togglebutton,
+headerbar button,
+headerbar button:backdrop,
+headerbar button.toggle,
+headerbar togglebutton,
+.titlebar button,
+.titlebar button.toggle {
   background-color: #313244;
+  background-image: none;
   color: #cdd6f4;
-  border-radius: 6px;
+  border: 1px solid #45475a;
+  border-radius: 8px;
+  box-shadow: none;
+  text-shadow: none;
+  -gtk-icon-shadow: none;
 }
 
-button:hover {
+button:hover,
+button.toggle:hover,
+togglebutton:hover,
+headerbar button:hover,
+headerbar button.toggle:hover,
+headerbar togglebutton:hover {
   background-color: #45475a;
+  background-image: none;
+  color: #cdd6f4;
 }
 
-button:active, button:checked {
+button:active,
+button:checked,
+button.toggle:checked,
+togglebutton:checked,
+headerbar button.toggle:checked,
+headerbar togglebutton:checked {
+  background-color: rgba(137, 180, 250, 0.25);
+  background-image: none;
+  color: #89b4fa;
+  border-color: #89b4fa;
+}
+
+button.flat,
+button.flat:backdrop {
+  background-color: transparent;
+  background-image: none;
+  border-color: transparent;
+}
+
+button.flat:hover {
+  background-color: rgba(49, 50, 68, 0.75);
+  border-color: transparent;
+}
+
+button.suggested-action,
+button.suggested-action:backdrop,
+headerbar button.suggested-action,
+headerbar button.suggested-action:backdrop {
   background-color: #288cff;
+  background-image: none;
+  color: #11111b;
+  border-color: #89b4fa;
+  font-weight: 600;
+}
+
+button.suggested-action:hover,
+headerbar button.suggested-action:hover {
+  background-color: #54a3ff;
+  background-image: none;
   color: #11111b;
 }
 
-entry {
+button.suggested-action:disabled,
+headerbar button.suggested-action:disabled,
+button:disabled {
+  background-color: #252536;
+  background-image: none;
+  color: #6c7086;
+  border-color: #313244;
+}
+
+/* Pathbar / Breadcrumb Bar (< Home | Documents >) */
+pathbar,
+.path-bar,
+filechooser .path-bar,
+filechooser pathbar,
+toolbar {
+  background-color: #181825;
+  background-image: none;
+  color: #cdd6f4;
+  border-bottom: 1px solid #313244;
+  padding: 4px 6px;
+}
+
+pathbar button,
+.path-bar button,
+filechooser .path-bar button,
+filechooser pathbar button {
   background-color: #313244;
+  background-image: none;
   color: #cdd6f4;
   border: 1px solid #45475a;
+  border-radius: 8px;
+  margin: 0 2px;
+}
+
+pathbar button.slider-button,
+.path-bar button.slider-button {
+  background-color: transparent;
+  border-color: transparent;
+}
+
+pathbar button.slider-button:hover,
+.path-bar button.slider-button:hover {
+  background-color: rgba(49, 50, 68, 0.75);
+}
+
+pathbar button:hover,
+.path-bar button:hover,
+filechooser .path-bar button:hover {
+  background-color: #45475a;
+  background-image: none;
+  color: #cdd6f4;
+}
+
+pathbar button:checked,
+.path-bar button:checked,
+filechooser .path-bar button:checked {
+  background-color: rgba(137, 180, 250, 0.22);
+  background-image: none;
+  color: #89b4fa;
+  border-color: rgba(137, 180, 250, 0.55);
+  font-weight: 600;
+}
+
+/* Places Sidebar (Clean Inline Eject Icons Without Box Borders) */
+placessidebar,
+placessidebar:backdrop,
+placessidebar list,
+placessidebar viewport {
+  background-color: #181825;
+  background-image: none;
+  color: #cdd6f4;
+  border-right: 1px solid #313244;
+}
+
+placessidebar row {
+  border-radius: 8px;
+  margin: 2px 6px;
+  padding: 4px 8px;
+  color: #cdd6f4;
+}
+
+placessidebar row button,
+placessidebar row button.image-button,
+placessidebar row button.sidebar-button {
+  background-color: transparent;
+  background-image: none;
+  border: none;
+  box-shadow: none;
   border-radius: 6px;
+  padding: 2px 4px;
+  color: #a6adc8;
+}
+
+placessidebar row button:hover {
+  background-color: rgba(69, 71, 90, 0.75);
+  color: #cdd6f4;
+}
+
+placessidebar row:hover:not(:selected) {
+  background-color: rgba(49, 50, 68, 0.75);
+}
+
+placessidebar row:selected,
+placessidebar row:selected:hover,
+placessidebar row:selected:backdrop {
+  background-color: rgba(137, 180, 250, 0.22);
+  color: #89b4fa;
+  font-weight: 600;
+}
+
+/* File List & Column Headers */
+treeview.view,
+treeview.view:backdrop {
+  background-color: #1e1e2e;
+  background-image: none;
+  color: #cdd6f4;
+}
+
+treeview.view:hover {
+  background-color: rgba(49, 50, 68, 0.65);
+}
+
+treeview.view:selected,
+treeview.view:selected:focus,
+treeview.view:selected:backdrop {
+  background-color: rgba(40, 140, 255, 0.28);
+  color: #cdd6f4;
+}
+
+treeview.view header button,
+treeview.view header button:backdrop,
+treeview header button,
+treeview header button:backdrop,
+column-header button {
+  background-color: #181825;
+  background-image: none;
+  color: #a6adc8;
+  border: none;
+  border-bottom: 1px solid #313244;
+  border-right: 1px solid #313244;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+treeview.view header button:hover,
+treeview header button:hover {
+  background-color: #313244;
+  background-image: none;
+  color: #cdd6f4;
+}
+
+/* Bottom Actionbar, Dropdowns & Entries */
+actionbar,
+actionbar:backdrop,
+actionbar > revealer > box {
+  background-color: #181825;
+  background-image: none;
+  color: #cdd6f4;
+  border-top: 1px solid #313244;
+}
+
+entry,
+entry:backdrop,
+searchbar,
+searchbar > revealer > box {
+  background-color: #313244;
+  background-image: none;
+  color: #cdd6f4;
+  border: 1px solid #45475a;
+  border-radius: 8px;
 }
 
 entry:focus {
   border-color: #89b4fa;
+}
+
+combobox button,
+combobox box {
+  background-color: #313244;
+  background-image: none;
+  color: #cdd6f4;
+  border-color: #45475a;
+}
+
+checkbutton check {
+  background-color: #313244;
+  background-image: none;
+  border: 1px solid #585b70;
+  border-radius: 5px;
+}
+
+checkbutton check:checked {
+  background-color: #288cff;
+  background-image: none;
+  color: #11111b;
+  border-color: #89b4fa;
+}
+
+popover,
+menu,
+.popover {
+  background-color: #181825;
+  background-image: none;
+  color: #cdd6f4;
+  border: 1px solid #45475a;
+}
+
+scrollbar,
+scrollbar trough {
+  background-color: #181825;
+  border: none;
+}
+
+scrollbar slider {
+  background-color: #45475a;
+  border-radius: 999px;
+}
+
+scrollbar slider:hover {
+  background-color: #89b4fa;
 }

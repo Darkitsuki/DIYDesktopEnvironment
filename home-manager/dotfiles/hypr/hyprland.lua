@@ -419,11 +419,12 @@ hl.env("QT_IM_MODULE", "fcitx")
 hl.env("GTK_IM_MODULE", "fcitx")
 
 hl.window_rule({
-    name = "Thunar-float-size",
-    match = { class = "xdg-desktop-portal-gtk"},
-    float = true,
-    size = { 960, 540 },
-    center = true,
+  name = "portal-filechooser-float",
+  match = { class = "^(xdg-desktop-portal-gtk)$" },
+  float = true,
+  center = true,
+  size = { 960, 540 },
+  opacity = "1.0 0.95",
 })
 
 hl.window_rule({
