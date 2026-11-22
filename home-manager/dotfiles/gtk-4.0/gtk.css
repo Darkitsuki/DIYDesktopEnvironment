@@ -1,4 +1,4 @@
-/* Catppuccin Mocha + Electric Blue Compact Theme for GTK4 / Libadwaita (Nautilus) */
+/* Catppuccin Mocha + Electric Blue Compact Theme for GTK4 / Libadwaita (Nautilus & FileChooser) */
 @define-color accent_color #89b4fa;
 @define-color accent_bg_color #288cff;
 @define-color accent_fg_color #11111b;
@@ -26,22 +26,28 @@
 @define-color dialog_bg_color #1e1e2e;
 @define-color dialog_fg_color #cdd6f4;
 
-/* Compact Nautilus Headerbar & Pathbar */
-.nautilus-window headerbar {
+/* Compact Nautilus & FileChooser Headerbar & Pathbar */
+.nautilus-window headerbar,
+filechooser headerbar {
   min-height: 34px;
   padding: 2px 6px;
 }
 
 .nautilus-window headerbar button,
 .nautilus-window headerbar togglebutton,
-.nautilus-window headerbar menubutton > button {
+.nautilus-window headerbar menubutton > button,
+filechooser headerbar button,
+filechooser headerbar togglebutton,
+filechooser headerbar menubutton > button {
   min-height: 26px;
   min-width: 26px;
   padding: 2px 6px;
   border-radius: 7px;
 }
 
-.nautilus-window #NautilusPathBar {
+.nautilus-window #NautilusPathBar,
+filechooser #NautilusPathBar,
+filechooser pathbar {
   background-color: #313244;
   border-radius: 8px;
   border: 1px solid #45475a;
@@ -50,35 +56,42 @@
 }
 
 /* Compact Navigation Sidebar (Fits Google Drive & Volumes Cleanly) */
-.nautilus-window .navigation-sidebar {
+.nautilus-window .navigation-sidebar,
+filechooser .navigation-sidebar {
   padding: 2px 0;
 }
 
-.nautilus-window .navigation-sidebar row {
+.nautilus-window .navigation-sidebar row,
+filechooser .navigation-sidebar row {
   min-height: 24px;
   border-radius: 7px;
   margin: 1px 6px;
   padding: 2px 8px;
 }
 
-.nautilus-window .navigation-sidebar row:selected {
+.nautilus-window .navigation-sidebar row:selected,
+filechooser .navigation-sidebar row:selected {
   background-color: alpha(#89b4fa, 0.22);
   color: #89b4fa;
   font-weight: 600;
 }
 
-.nautilus-window .navigation-sidebar row:hover:not(:selected) {
+.nautilus-window .navigation-sidebar row:hover:not(:selected),
+filechooser .navigation-sidebar row:hover:not(:selected) {
   background-color: alpha(#313244, 0.7);
 }
 
 /* Compact Column Headers & File List / Grid Rows */
-.nautilus-window columnview header button {
+.nautilus-window columnview header button,
+filechooser columnview header button {
   min-height: 24px;
   padding: 2px 6px;
 }
 
 .nautilus-window columnview listview row,
-.nautilus-window listview row {
+.nautilus-window listview row,
+filechooser columnview listview row,
+filechooser listview row {
   min-height: 24px;
   padding: 1px 6px;
   margin: 0 4px;
@@ -86,7 +99,8 @@
   transition: background-color 150ms ease;
 }
 
-.nautilus-window flowboxchild {
+.nautilus-window flowboxchild,
+filechooser flowboxchild {
   padding: 4px;
   margin: 2px;
   border-radius: 8px;
@@ -95,19 +109,26 @@
 
 .nautilus-window flowboxchild:hover,
 .nautilus-window columnview listview row:hover,
-.nautilus-window listview row:hover {
+.nautilus-window listview row:hover,
+filechooser flowboxchild:hover,
+filechooser columnview listview row:hover,
+filechooser listview row:hover {
   background-color: alpha(#313244, 0.65);
 }
 
 .nautilus-window flowboxchild:selected,
 .nautilus-window columnview listview row:selected,
-.nautilus-window listview row:selected {
+.nautilus-window listview row:selected,
+filechooser flowboxchild:selected,
+filechooser columnview listview row:selected,
+filechooser listview row:selected {
   background-color: alpha(#288cff, 0.26);
   outline: 1px solid alpha(#89b4fa, 0.55);
 }
 
 /* Compact Floating Status / Selection Bar */
-.nautilus-window .floating-bar {
+.nautilus-window .floating-bar,
+filechooser .floating-bar {
   background-color: #181825;
   color: #cdd6f4;
   border: 1px solid #45475a;

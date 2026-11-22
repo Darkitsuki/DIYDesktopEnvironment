@@ -50,7 +50,7 @@ hl.monitor({
   bitdepth      = 10,
   cm            = "hdr",
   sdrbrightness = 1.2, -- Tăng/giảm (1.0 - 1.5) nếu cửa sổ SDR bị tối hoặc chói
-  sdrsaturation = 1.05, -- Tăng nhẹ (1.0 - 1.15) để màu desktop không bị nhạt
+  sdrsaturation = 1.15, -- Tăng nhẹ (1.0 - 1.15) để màu desktop không bị nhạt
 })
 
 --See https://wiki.hypr.land/Configuring/Basics/Monitors/
@@ -154,7 +154,7 @@ hl.config({
 
         -- Change transparency of focused and unfocused windows
         active_opacity   = 1,
-        inactive_opacity = 0.7,
+        inactive_opacity = 0.90,
 
         shadow = {
             enabled      = false,
@@ -467,6 +467,18 @@ hl.window_rule({
 })
 
 hl.window_rule({
+  name = "nautilus-filechooser-float",
+  match = {
+    class = "^(org\\.gnome\\.Nautilus|xdg-desktop-portal-gnome)$",
+    title = "^(Open|Save|Select|Choose|Upload).*$",
+  },
+  float = true,
+  center = true,
+  size = { 860, 500 },
+  opacity = "0.95 0.85",
+})
+
+hl.window_rule({
   name = "nautilus-dialogs-float",
   match = {
     class = "^(org\\.gnome\\.Nautilus)$",
@@ -479,6 +491,27 @@ hl.window_rule({
 hl.window_rule({
   name = "sushi-quicklook-float",
   match = { class = "^(org\\.gnome\\.NautilusPreviewer)$" },
+  float = true,
+  center = true,
+})
+
+hl.window_rule({
+  name = "minecraft-fullscreen-smooth",
+  match = { class = "^(Minecraft.*|com\\.mojang\\.minecraft.*)$" },
+  immediate = true,
+})
+
+hl.window_rule({
+  name = "curseforge-launcher-float",
+  match = { class = "^(CurseForge|curseforge)$" },
+  float = true,
+  center = true,
+  size = { 1180, 740 },
+})
+
+hl.window_rule({
+  name = "minecraft-launcher-float",
+  match = { class = "^(minecraft-launcher)$" },
   float = true,
   center = true,
 })
