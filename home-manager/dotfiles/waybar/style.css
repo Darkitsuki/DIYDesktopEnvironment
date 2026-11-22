@@ -30,6 +30,7 @@ window#waybar {
 #cpu,
 #memory,
 #temperature,
+#custom-gpu-temp,
 #backlight,
 #custom-external-brightness,
 #custom-hdr,
@@ -169,3 +170,20 @@ menuitem:hover {
   margin: 0;
   background-color: transparent;
 }
+
+/* NVIDIA GPU Temperature Module */
+#custom-gpu-temp.warning {
+  color: #e0af68;
+  background-color: rgba(224, 175, 104, 0.2);
+}
+
+#custom-gpu-temp.critical {
+  color: #f7768e;
+  background-color: rgba(247, 118, 142, 0.25);
+  font-weight: bold;
+}
+
+#custom-gpu-temp.suspended {
+  color: #6c7086;
+}
+

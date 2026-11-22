@@ -37,6 +37,7 @@
         "cpu",
         "memory",
         "temperature",
+        "custom/gpu-temp",
         "backlight",
         "custom/external-brightness",
         "custom/hdr",
@@ -133,6 +134,12 @@
         // "format-critical": "{temperatureC}°C {icon}",
         "format": "{temperatureC}°C {icon}",
         "format-icons": ["󰉬", "", "󰉪"]
+    },
+    "custom/gpu-temp": {
+        "exec": "/home/your-username/.local/bin/waybar-gpu-temp",
+        "return-type": "json",
+        "interval": 3,
+        "tooltip": true
     },
     "backlight": {
         // "device": "acpi_video1",
