@@ -1,5 +1,35 @@
 BraveSoftware/**
 Antigravity/**
+
+# Antigravity IDE volatile Electron/Chromium state & logs
+Antigravity IDE/Cache/**
+Antigravity IDE/CachedData/**
+Antigravity IDE/CachedProfilesData/**
+Antigravity IDE/CachedConfigurations/**
+Antigravity IDE/CachedExtensionVSIXs/**
+Antigravity IDE/Code Cache/**
+Antigravity IDE/GPUCache/**
+Antigravity IDE/Dawn*Cache/**
+Antigravity IDE/logs/**
+Antigravity IDE/Service Worker/**
+Antigravity IDE/WebStorage/**
+Antigravity IDE/Crashpad/**
+Antigravity IDE/agent-host/**
+Antigravity IDE/User/workspaceStorage/**
+Antigravity IDE/User/History/**
+Antigravity IDE/Backups/**
+Antigravity IDE/Local Storage/**
+Antigravity IDE/Session Storage/**
+Antigravity IDE/Shared Dictionary/**
+Antigravity IDE/blob_storage/**
+Antigravity IDE/*lock
+Antigravity IDE/DIPS*
+Antigravity IDE/Network Persistent State
+Antigravity IDE/TransportSecurity
+Antigravity IDE/Trust Tokens*
+Antigravity IDE/SharedStorage*
+Antigravity IDE/.org.chromium.Chromium.*
+
 Code/Cache/**
 Code/CachedData/**
 Code/CachedExtensionVSIXs/**
