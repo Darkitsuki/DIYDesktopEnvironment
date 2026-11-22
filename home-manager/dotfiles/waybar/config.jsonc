@@ -39,6 +39,7 @@
         "temperature",
         "backlight",
         "custom/external-brightness",
+        "custom/hdr",
         "battery",
         "tray",
         "custom/quick-settings",
@@ -153,6 +154,16 @@
         "on-scroll-up": "ddcutil --display 1 setvcp 10 + 5",
         "on-scroll-down": "ddcutil --display 1 setvcp 10 - 5",
         "tooltip": false
+    },
+
+    "custom/hdr": {
+        "exec": "/home/your-username/.local/bin/hypr-hdr-toggle --status",
+        "return-type": "json",
+        "interval": 5,
+        "signal": 11,
+        "on-click": "/home/your-username/.local/bin/hypr-hdr-toggle --toggle",
+        "on-click-right": "/home/your-username/.local/bin/hypr-hdr-toggle --cycle-preset",
+        "tooltip": true
     },
     
     "battery": {

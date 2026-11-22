@@ -46,11 +46,7 @@ hl.monitor({
   output        = "HDMI-A-2",
   mode          = "1920x1080@180", -- Đổi thành "1920x1080@144" nếu cáp bị chớp ở 10-bit 180Hz
   position      = "1920x0",
-  scale         = 1,
-  bitdepth      = 10,
-  cm            = "hdr",
-  sdrbrightness = 1.2, -- Tăng/giảm (1.0 - 1.5) nếu cửa sổ SDR bị tối hoặc chói
-  sdrsaturation = 1.15, -- Tăng nhẹ (1.0 - 1.15) để màu desktop không bị nhạt
+  scale         = 1
 })
 
 --See https://wiki.hypr.land/Configuring/Basics/Monitors/
@@ -515,6 +511,9 @@ hl.window_rule({
   float = true,
   center = true,
 })
+
+-- Game Mode performance toggle (zero-overhead compositor effects & performance profile)
+hl.bind(mainMod .. " + F1", hl.dsp.exec_cmd("/home/your-username/.local/bin/hypr-gamemode"), { description = "hypr-gamemode" })
 
 -- HyprMod managed settings
 require("hyprland-gui")

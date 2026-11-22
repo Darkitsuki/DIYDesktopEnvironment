@@ -32,6 +32,7 @@ window#waybar {
 #temperature,
 #backlight,
 #custom-external-brightness,
+#custom-hdr,
 #keyboard-state,
 #language,
 #battery,
@@ -150,4 +151,21 @@ menuitem {
 menuitem:hover {
     background-color: #313244;
     color: #89b4fa;
+}
+
+/* HDR Toggle Module */
+#custom-hdr.on {
+  color: #e0af68;
+  background-color: rgba(224, 175, 104, 0.2);
+  font-weight: bold;
+}
+
+#custom-hdr.off {
+  color: #c0caf5;
+}
+
+#custom-hdr.disconnected {
+  padding: 0;
+  margin: 0;
+  background-color: transparent;
 }
