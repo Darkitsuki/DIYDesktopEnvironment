@@ -46,7 +46,11 @@ hl.monitor({
   output        = "HDMI-A-2",
   mode          = "1920x1080@180", -- Đổi thành "1920x1080@144" nếu cáp bị chớp ở 10-bit 180Hz
   position      = "1920x0",
-  scale         = 1
+  scale         = 1,
+  bitdepth      = 10,
+  cm            = "hdr",
+  sdrbrightness = 1.2, -- Tăng/giảm (1.0 - 1.5) nếu cửa sổ SDR bị tối hoặc chói
+  sdrsaturation = 1.05, -- Tăng nhẹ (1.0 - 1.15) để màu desktop không bị nhạt
 })
 
 --See https://wiki.hypr.land/Configuring/Basics/Monitors/
