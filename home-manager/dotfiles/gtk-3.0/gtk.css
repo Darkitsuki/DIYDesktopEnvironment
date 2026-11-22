@@ -1,18 +1,40 @@
 /* Catppuccin Mocha + Electric Blue Theme for GTK3 & File Chooser Portal */
+
+/* Standard GTK3 Theme Color Variables (Prevents ANY #ffffff Adwaita Fallback) */
+@define-color theme_fg_color #cdd6f4;
+@define-color theme_text_color #cdd6f4;
+@define-color theme_bg_color #1e1e2e;
+@define-color theme_base_color #1e1e2e;
+@define-color theme_selected_bg_color #288cff;
+@define-color theme_selected_fg_color #11111b;
+
+@define-color insensitive_bg_color #181825;
+@define-color insensitive_fg_color #6c7086;
+@define-color insensitive_base_color #181825;
+
+@define-color theme_unfocused_fg_color #a6adc8;
+@define-color theme_unfocused_text_color #a6adc8;
+@define-color theme_unfocused_bg_color #1e1e2e;
+@define-color theme_unfocused_base_color #1e1e2e;
+@define-color theme_unfocused_selected_bg_color rgba(40, 140, 255, 0.25);
+@define-color theme_unfocused_selected_fg_color #cdd6f4;
+
+@define-color borders #313244;
+@define-color unfocused_borders #313244;
+@define-color content_view_bg #1e1e2e;
+@define-color text_view_bg #1e1e2e;
+
+/* Libadwaita-compatible aliases */
 @define-color accent_color #89b4fa;
 @define-color accent_bg_color #288cff;
 @define-color accent_fg_color #11111b;
-
 @define-color window_bg_color #1e1e2e;
 @define-color window_fg_color #cdd6f4;
 @define-color view_bg_color #1e1e2e;
 @define-color view_fg_color #cdd6f4;
-
 @define-color headerbar_bg_color #181825;
 @define-color headerbar_fg_color #cdd6f4;
 @define-color headerbar_border_color #313244;
-@define-color headerbar_backdrop_color #11111b;
-
 @define-color sidebar_bg_color #181825;
 @define-color sidebar_fg_color #cdd6f4;
 @define-color popover_bg_color #181825;
@@ -20,7 +42,7 @@
 @define-color dialog_bg_color #1e1e2e;
 @define-color dialog_fg_color #cdd6f4;
 
-/* Base Containers & Backdrop Overrides */
+/* Top-Level Windows & FileChooser Structural Containers */
 window,
 window.background,
 window:backdrop,
@@ -29,10 +51,10 @@ dialog:backdrop,
 messagedialog,
 filechooser,
 filechooser:backdrop,
-filechooser box,
+filechooser > box,
+filechooser paned > box,
 filechooser stack,
 filechooser revealer,
-filechooser paned,
 .background,
 .background:backdrop {
   background-color: #1e1e2e;
@@ -160,11 +182,11 @@ button:disabled {
   border-color: #313244;
 }
 
-/* Pathbar / Breadcrumb Bar (< Home | Documents >) */
+/* Pathbar / Breadcrumb Strip & Active Directory ToggleButton */
 pathbar,
 .path-bar,
-filechooser .path-bar,
 filechooser pathbar,
+filechooser .path-bar,
 toolbar {
   background-color: #181825;
   background-image: none;
@@ -174,15 +196,20 @@ toolbar {
 }
 
 pathbar button,
+pathbar togglebutton,
 .path-bar button,
+.path-bar togglebutton,
+filechooser pathbar button,
+filechooser pathbar togglebutton,
 filechooser .path-bar button,
-filechooser pathbar button {
+filechooser .path-bar togglebutton {
   background-color: #313244;
   background-image: none;
   color: #cdd6f4;
   border: 1px solid #45475a;
   border-radius: 8px;
   margin: 0 2px;
+  box-shadow: none;
 }
 
 pathbar button.slider-button,
@@ -197,16 +224,22 @@ pathbar button.slider-button:hover,
 }
 
 pathbar button:hover,
+pathbar togglebutton:hover,
 .path-bar button:hover,
-filechooser .path-bar button:hover {
+.path-bar togglebutton:hover {
   background-color: #45475a;
   background-image: none;
   color: #cdd6f4;
 }
 
 pathbar button:checked,
+pathbar togglebutton:checked,
 .path-bar button:checked,
-filechooser .path-bar button:checked {
+.path-bar togglebutton:checked,
+filechooser pathbar button:checked,
+filechooser pathbar togglebutton:checked,
+filechooser .path-bar button:checked,
+filechooser .path-bar togglebutton:checked {
   background-color: rgba(137, 180, 250, 0.22);
   background-image: none;
   color: #89b4fa;
@@ -214,7 +247,7 @@ filechooser .path-bar button:checked {
   font-weight: 600;
 }
 
-/* Places Sidebar (Clean Inline Eject Icons Without Box Borders) */
+/* Places Sidebar (Clean Rows Without Inner Rectangles) */
 placessidebar,
 placessidebar:backdrop,
 placessidebar list,
@@ -223,13 +256,27 @@ placessidebar viewport {
   background-image: none;
   color: #cdd6f4;
   border-right: 1px solid #313244;
+  -gtk-icon-style: regular;
 }
 
 placessidebar row {
+  background-color: transparent;
   border-radius: 8px;
   margin: 2px 6px;
   padding: 4px 8px;
   color: #cdd6f4;
+}
+
+/* Keep Inner Boxes Inside Buttons & Sidebar Rows Transparent */
+button box,
+button > box,
+togglebutton box,
+togglebutton > box,
+placessidebar row box,
+placessidebar row > box,
+placessidebar row revealer {
+  background-color: transparent;
+  background-image: none;
 }
 
 placessidebar row button,
@@ -267,6 +314,7 @@ treeview.view:backdrop {
   background-color: #1e1e2e;
   background-image: none;
   color: #cdd6f4;
+  -gtk-icon-style: regular;
 }
 
 treeview.view:hover {
