@@ -20,3 +20,51 @@ menus/
 trashrc
 # Sensitive credentials
 rclone/rclone.conf
+# === Credentials & Secrets (NEVER PUSH TO GITHUB) ===
+antigravity/plugin-secrets.json
+antigravity/credential-user-scope
+gh/hosts.yml
+**/*secret*
+**/*token*
+**/*credential*
+*.pem
+*.key
+# === Browser, IDE & Gaming Caches / Bloat ===
+Antigravity/
+Antigravity IDE/
+CurseForge/
+Code/Cache/
+Code/CachedData/
+Code/CachedExtensionVSIXs/
+Code/Code Cache/
+Code/GPUCache/
+Code/Dawn*Cache/
+Code/logs/
+Code/Service Worker/
+Code/WebStorage/
+Code/Local Storage/
+Code/Session Storage/
+Code/Shared Dictionary/
+Code/blob_storage/
+Code/Crashpad/
+Code/agent-host/
+Code/User/workspaceStorage/
+Code/User/History/
+Code/User/globalStorage/
+Code/Backups/
+Code/*lock
+Code/DIPS*
+Code/Network Persistent State
+Code/TransportSecurity
+Code/Trust Tokens*
+Code/SharedStorage*
+Code/.org.chromium.Chromium.*
+# === Runtime State, Binary Databases & Temp Files ===
+fcitx/dbus/
+dconf/user
+go/telemetry/
+*.log
+*.tmp
+*.bak
+*.vscdb*
+*.sqlite*
