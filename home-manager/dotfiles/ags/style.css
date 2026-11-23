@@ -131,6 +131,66 @@ window.quick-settings-window,
 }
 
 /* ========================================= */
+/* Hardware Telemetry Strip (SystemStats)    */
+/* ========================================= */
+.system-stats-strip {
+  margin-top: 2px;
+  margin-bottom: 2px;
+}
+
+.stat-card {
+  background-color: #181825;
+  border: 1px solid #313244;
+  border-radius: 12px;
+  padding: 8px 6px;
+  transition: all 180ms ease-in-out;
+}
+
+.stat-card:hover {
+  background-color: #313244;
+  border-color: rgba(137, 180, 250, 0.4);
+}
+
+.stat-icon {
+  font-size: 14px;
+  color: #89b4fa;
+}
+
+.stat-value {
+  font-size: 11px;
+  font-weight: 700;
+  color: #cdd6f4;
+}
+
+/* Suspended state (e.g. GPU D3cold sleep) */
+.stat-card.suspended .stat-icon,
+.stat-card.suspended .stat-value {
+  color: #6c7086;
+}
+
+/* Warning state (>= 75°C, high load) */
+.stat-card.warning {
+  border-color: rgba(250, 179, 135, 0.5);
+  background-color: rgba(250, 179, 135, 0.08);
+}
+
+.stat-card.warning .stat-icon,
+.stat-card.warning .stat-value {
+  color: #fab387;
+}
+
+/* Critical state (>= 88°C, critical load) */
+.stat-card.critical {
+  border-color: rgba(243, 139, 168, 0.6);
+  background-color: rgba(243, 139, 168, 0.12);
+}
+
+.stat-card.critical .stat-icon,
+.stat-card.critical .stat-value {
+  color: #f38ba8;
+}
+
+/* ========================================= */
 /* 2x3 Quick Toggles Grid                    */
 /* ========================================= */
 .quick-toggles-grid {

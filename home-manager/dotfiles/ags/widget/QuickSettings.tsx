@@ -1,6 +1,7 @@
 import app from "ags/gtk4/app"
 import { Astal, Gtk, Gdk } from "ags/gtk4"
 import Header from "./Header"
+import SystemStats from "./SystemStats"
 import QuickToggles from "./QuickToggles"
 import Sliders from "./Sliders"
 import MediaCard from "./MediaCard"
@@ -28,6 +29,9 @@ export default function QuickSettings() {
       >
         {/* Header Bar */}
         <Header />
+
+        {/* Hardware Telemetry Strip */}
+        <SystemStats />
 
         {/* 2x3 Quick Toggles Grid */}
         <QuickToggles />

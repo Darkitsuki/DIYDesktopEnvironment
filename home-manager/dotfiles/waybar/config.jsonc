@@ -29,22 +29,12 @@
         "custom/playerctl"
     ],
     "modules-right": [
-
         "custom/separator",
         "pulseaudio",
         "network",
-        "custom/power-profile",
-        "cpu",
-        "memory",
-        "temperature",
-        "custom/gpu-temp",
-        "backlight",
-        "custom/external-brightness",
-        "custom/hdr",
         "battery",
         "tray",
-        "custom/quick-settings",
-        "custom/power"
+        "custom/quick-settings"
     ],
 
     // Modules configuration
