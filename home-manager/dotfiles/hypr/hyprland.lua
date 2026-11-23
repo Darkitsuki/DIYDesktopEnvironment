@@ -59,6 +59,17 @@ hl.monitor({
   scale    = 1
 })
 
+--------------------
+---- WORKSPACES ----
+--------------------
+
+hl.workspace_rule({
+  workspace  = "1",
+  monitor    = "eDP-1",
+  default    = true,
+  persistent = true,
+})
+
 ---------------------
 ---- MY PROGRAMS ----
 ---------------------

@@ -1,10 +1,10 @@
 import { Gtk } from "ags/gtk4"
 import { createState } from "gnim"
+import { execAsync } from "ags/process"
 import {
   getBatteryInfo,
   getUptime,
   takeScreenshot,
-  reloadAgs,
   openPowerMenu,
 } from "../services/system"
 
@@ -59,7 +59,9 @@ export default function Header() {
         <button
           cssClasses={["action-btn", "reload-btn"]}
           tooltipText="Reload AGS"
-          onClicked={reloadAgs}
+          onClicked={() => {
+            execAsync(["bash", "-c", "nohup systemctl --user restart ags.service >/dev/null 2>&1 &"])
+          }}
         >
           <label label="󰑐" cssClasses={["action-btn-icon"]} />
         </button>
