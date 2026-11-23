@@ -1,0 +1,334 @@
+/* Catppuccin Mocha Palette with Electric Blue Accents */
+@define-color base #1e1e2e;
+@define-color mantle #181825;
+@define-color crust #11111b;
+@define-color surface0 #313244;
+@define-color surface1 #45475a;
+@define-color surface2 #585b70;
+@define-color text #cdd6f4;
+@define-color subtext0 #a6adc8;
+@define-color subtext1 #bac2de;
+@define-color blue #89b4fa;
+@define-color electric_blue #288cff;
+@define-color sapphire #74c7ec;
+@define-color sky #89dceb;
+@define-color green #a6e3a1;
+@define-color yellow #f9e2af;
+@define-color red #f38ba8;
+
+* {
+  font-family: "JetBrainsMono Nerd Font", "Roboto", sans-serif;
+}
+
+/* ========================================= */
+/* Backdrop Click Catcher                    */
+/* ========================================= */
+window.backdrop-window,
+.backdrop-window {
+  background: transparent;
+  background-color: transparent;
+  border: none;
+  box-shadow: none;
+}
+
+button.backdrop-button,
+.backdrop-button {
+  background: transparent;
+  background-color: transparent;
+  border: none;
+  box-shadow: none;
+  outline: none;
+}
+
+/* ========================================= */
+/* Popup Container Window                    */
+/* ========================================= */
+window.quick-settings-window,
+.quick-settings-window {
+  background: transparent;
+  background-color: transparent;
+}
+
+.quicksettings-panel {
+  background-color: rgba(30, 30, 46, 0.92);
+  border: 1px solid rgba(69, 71, 90, 0.7);
+  border-radius: 16px;
+  padding: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+/* ========================================= */
+/* Header Bar                                */
+/* ========================================= */
+.header-bar {
+  margin-bottom: 2px;
+}
+
+.header-info {
+  margin-right: 8px;
+}
+
+.info-badge {
+  background-color: rgba(24, 24, 37, 0.75);
+  border: 1px solid rgba(69, 71, 90, 0.5);
+  border-radius: 10px;
+  padding: 4px 10px;
+}
+
+.info-icon {
+  font-size: 15px;
+  margin-right: 4px;
+}
+
+.uptime-icon {
+  color: #89dceb;
+}
+
+.battery-icon {
+  color: #a6e3a1;
+}
+
+.battery-icon.charging {
+  color: #f9e2af;
+}
+
+.info-text {
+  font-size: 12px;
+  font-weight: 600;
+  color: #cdd6f4;
+}
+
+.header-actions {
+}
+
+.action-btn {
+  background-color: rgba(24, 24, 37, 0.75);
+  border: 1px solid rgba(69, 71, 90, 0.5);
+  border-radius: 10px;
+  min-width: 32px;
+  min-height: 32px;
+  padding: 4px;
+  transition: all 180ms ease-in-out;
+}
+
+.action-btn:hover {
+  background-color: #45475a;
+  border-color: #89b4fa;
+}
+
+.action-btn-icon {
+  font-size: 15px;
+  color: #cdd6f4;
+}
+
+.power-btn:hover {
+  background-color: #f38ba8;
+  border-color: #f38ba8;
+}
+
+.power-btn:hover .action-btn-icon {
+  color: #11111b;
+}
+
+/* ========================================= */
+/* 2x3 Quick Toggles Grid                    */
+/* ========================================= */
+.quick-toggles-grid {
+  margin-top: 4px;
+}
+
+.toggle-card {
+  background-color: #313244;
+  border: 1px solid rgba(69, 71, 90, 0.6);
+  border-radius: 12px;
+  padding: 10px 12px;
+  transition: all 180ms ease-in-out;
+}
+
+.toggle-card:hover {
+  background-color: #45475a;
+  border-color: rgba(137, 180, 250, 0.4);
+}
+
+.toggle-card.active {
+  background-color: #288cff;
+  border-color: #89b4fa;
+}
+
+.toggle-card.active:hover {
+  background-color: #74c7ec;
+}
+
+.toggle-icon {
+  font-size: 20px;
+  color: #89b4fa;
+  margin-right: 4px;
+}
+
+.toggle-icon.active {
+  color: #11111b;
+}
+
+.toggle-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: #cdd6f4;
+}
+
+.toggle-card.active .toggle-title {
+  color: #11111b;
+}
+
+.toggle-subtitle {
+  font-size: 10px;
+  font-weight: 500;
+  color: #a6adc8;
+}
+
+.toggle-card.active .toggle-subtitle {
+  color: #1e1e2e;
+}
+
+/* ========================================= */
+/* Sliders Section                           */
+/* ========================================= */
+.sliders-card {
+  background-color: rgba(24, 24, 37, 0.75);
+  border: 1px solid rgba(69, 71, 90, 0.5);
+  border-radius: 14px;
+  padding: 12px;
+  margin-top: 4px;
+}
+
+.slider-row {
+  margin: 2px 0;
+}
+
+.slider-icon-btn,
+.slider-icon-box {
+  background-color: transparent;
+  border: none;
+  min-width: 28px;
+  min-height: 28px;
+  padding: 2px;
+  border-radius: 8px;
+  transition: all 150ms ease;
+}
+
+.slider-icon-btn:hover {
+  background-color: rgba(69, 71, 90, 0.5);
+}
+
+.slider-icon {
+  font-size: 18px;
+  color: #89b4fa;
+}
+
+.slider-value-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: #a6adc8;
+  min-width: 36px;
+}
+
+/* GTK4 Scale / Slider Styling */
+scale trough {
+  background-color: #313244;
+  border-radius: 8px;
+  min-height: 8px;
+  min-width: 8px;
+}
+
+scale highlight {
+  background-color: #288cff;
+  border-radius: 8px;
+}
+
+scale slider {
+  background-color: #cdd6f4;
+  border: 2px solid #1e1e2e;
+  border-radius: 50%;
+  min-width: 14px;
+  min-height: 14px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+}
+
+scale slider:hover {
+  background-color: #ffffff;
+  min-width: 16px;
+  min-height: 16px;
+}
+
+/* ========================================= */
+/* MPRIS Media Card                          */
+/* ========================================= */
+.media-card {
+  background-color: rgba(24, 24, 37, 0.85);
+  border: 1px solid rgba(69, 71, 90, 0.5);
+  border-radius: 14px;
+  padding: 10px 12px;
+  margin-top: 2px;
+}
+
+.media-art-box {
+  background-color: #313244;
+  border-radius: 10px;
+  min-width: 42px;
+  min-height: 42px;
+  padding: 6px;
+}
+
+.media-art-icon {
+  font-size: 22px;
+  color: #89b4fa;
+}
+
+.media-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #cdd6f4;
+}
+
+.media-artist {
+  font-size: 11px;
+  color: #a6adc8;
+}
+
+.media-controls {
+}
+
+.media-btn {
+  background-color: #313244;
+  border: 1px solid rgba(69, 71, 90, 0.5);
+  border-radius: 8px;
+  min-width: 28px;
+  min-height: 28px;
+  padding: 2px;
+  transition: all 150ms ease;
+}
+
+.media-btn:hover {
+  background-color: #45475a;
+  border-color: #89b4fa;
+}
+
+.media-play-btn {
+  background-color: #288cff;
+  border-color: #89b4fa;
+  min-width: 32px;
+  min-height: 32px;
+}
+
+.media-play-btn:hover {
+  background-color: #74c7ec;
+}
+
+.media-btn-icon {
+  font-size: 14px;
+  color: #cdd6f4;
+}
+
+.play-icon {
+  font-size: 16px;
+  color: #11111b;
+}

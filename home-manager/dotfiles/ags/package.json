@@ -1,0 +1,9 @@
+{
+  "name": "ags-quick-settings",
+  "version": "1.0.0",
+  "description": "Interactive Floating Quick Settings Popup Panel in AGS",
+  "dependencies": {
+    "ags": "*",
+    "gnim": "*"
+  }
+}

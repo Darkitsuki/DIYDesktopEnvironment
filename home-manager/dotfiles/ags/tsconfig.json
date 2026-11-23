@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "strict": true,
+    "module": "ES2022",
+    "target": "ES2020",
+    "lib": ["ES2023"],
+    "moduleResolution": "Bundler",
+    "jsx": "react-jsx",
+    "jsxImportSource": "ags/gtk4",
+    "baseUrl": ".",
+    "paths": {
+      "ags/*": ["node_modules/ags/*"],
+      "gnim/*": ["node_modules/gnim/*"]
+    }
+  }
+}

@@ -401,6 +401,14 @@ hl.window_rule({
 -- })
 -- overlayLayerRule:set_enabled(false)
 
+local quickSettingsBlur = hl.layer_rule({
+    name = "quick-settings-blur",
+    match = { namespace = "^quick-settings$" },
+    blur = true,
+    ignore_alpha = 0.2,
+})
+quickSettingsBlur:set_enabled(true)
+
 -- Hyprland-run windowrule
 hl.window_rule({
     name  = "move-hyprland-run",

@@ -254,7 +254,7 @@
 
     "custom/quick-settings": {
         "format": "⚙️",
-        "on-click": "ags toggle quicksettings",
+        "on-click": "ags toggle quick-settings",
         "tooltip": false
     }
 }
