@@ -421,6 +421,14 @@ local quickSettingsBlur = hl.layer_rule({
 })
 quickSettingsBlur:set_enabled(true)
 
+local hyprlauncherBlur = hl.layer_rule({
+    name = "hyprlauncher-blur",
+    match = { namespace = "^hyprlauncher$" },
+    blur = true,
+    ignore_alpha = 0.25,
+})
+hyprlauncherBlur:set_enabled(true)
+
 -- Hyprland-run windowrule
 hl.window_rule({
     name  = "move-hyprland-run",
