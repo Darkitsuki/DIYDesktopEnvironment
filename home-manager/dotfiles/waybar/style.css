@@ -187,3 +187,36 @@ menuitem:hover {
   color: #6c7086;
 }
 
+/* Google Drive 2-Way Sync Module */
+#custom-gdrive-sync {
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 15px;
+  padding: 0px 12px;
+  margin: 0;
+  color: #a6e3a1;
+  transition: all 0.2s ease;
+}
+
+#custom-gdrive-sync.synced {
+  color: #a6e3a1;
+}
+
+#custom-gdrive-sync.syncing {
+  color: #89b4fa;
+  font-weight: bold;
+}
+
+#custom-gdrive-sync.pending {
+  color: #f9e2af;
+}
+
+#custom-gdrive-sync.error {
+  color: #f38ba8;
+  font-weight: bold;
+}
+
+#custom-gdrive-sync.unmounted {
+  color: #6c7086;
+}
+
+
