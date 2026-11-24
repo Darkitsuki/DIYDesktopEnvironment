@@ -93,7 +93,7 @@ hl.on("hyprland.start", function ()
 --   hl.exec_cmd("waybar")
   hl.exec_cmd("hyprpaper")
 --   hl.exec_cmd("steam -silent")
-  hl.exec_cmd("systemctl --user start hyprpolkitagent")
+  -- hyprpolkitagent managed via systemd user unit: hyprpolkitagent.service
   hl.exec_cmd("xsettingsd")
 
   hl.exec_cmd("fcitx5 -d")
