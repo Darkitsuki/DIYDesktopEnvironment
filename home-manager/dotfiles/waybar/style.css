@@ -219,4 +219,16 @@ menuitem:hover {
   color: #6c7086;
 }
 
+tooltip {
+  background-color: rgba(30, 30, 46, 0.96);
+  border: 1px solid #89b4fa;
+  border-radius: 12px;
+  padding: 8px 12px;
+}
+
+tooltip label {
+  color: #cdd6f4;
+}
+
+
 
