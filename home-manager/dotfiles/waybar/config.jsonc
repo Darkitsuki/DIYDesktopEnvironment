@@ -204,6 +204,7 @@
         "return-type": "json",
         "interval": 2,
         "signal": 12,
+        "tooltip": true,
         "on-click": "/home/your-username/.local/share/nautilus/scripts/Sync\\ Google\\ Drive\\ Now",
         "on-click-right": "nautilus \"/run/media/your-username/YOUR_SD_CARD_UUID/Google Drive\"",
         "on-click-middle": "kitty --title \"Google Drive Sync Log\" bash -c 'tail -n 40 -f ~/.local/state/rclone-gdrive-sd.log'"
