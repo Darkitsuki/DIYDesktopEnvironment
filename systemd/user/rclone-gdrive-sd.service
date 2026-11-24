@@ -1,7 +1,10 @@
 [Unit]
-Description=Mirror Google Drive to SD Card
+Description=Mirror Google Drive to SD Card (optional)
+ConditionPathExists=%h/.local/bin/mirror-gdrive-sd.sh
+ConditionPathExists=%h/.config/rclone/rclone.conf
 
 [Service]
 Type=oneshot
 TimeoutStopSec=45s
+EnvironmentFile=-%h/.config/machine-config.env
 ExecStart=%h/.local/bin/mirror-gdrive-sd.sh

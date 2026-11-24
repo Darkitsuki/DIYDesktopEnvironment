@@ -14,11 +14,12 @@ import {
   externalBrightness,
   setExternalBrightnessDebounced,
   externalDisplayConnected,
+  externalDisplayName,
 } from "../services/brightness"
 
 interface SliderRowProps {
   icon: Accessor<string> | string
-  iconTooltip?: string
+  iconTooltip?: Accessor<string> | string
   onIconClick?: () => void
   value: Accessor<number>
   onValueChange: (val: number) => void
@@ -125,10 +126,10 @@ export default function Sliders() {
         customClass="mic-slider"
       />
 
-      {/* 3. Laptop Brightness (eDP-1) */}
+      {/* 3. Internal Display Brightness */}
       <SliderRow
         icon="󰃠"
-        iconTooltip="Laptop Display Brightness"
+        iconTooltip="Internal Display Brightness"
         value={laptopBrightness}
         onValueChange={setInternalBrightness}
         min={1}
@@ -136,14 +137,14 @@ export default function Sliders() {
         customClass="laptop-brightness-slider"
       />
 
-      {/* 4. External Monitor Brightness (HDMI-A-2) */}
+      {/* 4. External Monitor Brightness */}
       <box
         visible={externalDisplayConnected}
         orientation={Gtk.Orientation.VERTICAL}
       >
         <SliderRow
           icon="󰍹"
-          iconTooltip="External Monitor Brightness (HDMI-A-2)"
+          iconTooltip={externalDisplayName.as((name) => `External Monitor Brightness (${name})`)}
           value={externalBrightness}
           onValueChange={setExternalBrightnessDebounced}
           min={0}

@@ -188,11 +188,11 @@ grim -g "$(slurp)" screenshots/desktop-overview.png
 
 ### Architectural Layers
 
-1. **Operating System & Hardware Layer (Arch Linux + systemd):** Manages Linux kernel DRM/KMS devices (`/dev/dri/dgpu`, `/dev/dri/igpu`), NVIDIA/Intel graphics drivers, PipeWire/WirePlumber, NetworkManager, BlueZ, `power-profiles-daemon`, `udisks2`, and systemd user targets.
-2. **Configuration Management Layer (Nix + Home Manager):** `nix/nix.conf` enables `nix-command` and `flakes`. `home-manager/flake.nix` evaluates `home-manager/home.nix` (`homeConfigurations."<your-username>"`), installs `colloid-icon-theme` (Catppuccin variant), and links the seven core config directories from `~/.config/home-manager/dotfiles/` into `~/.config/` via `mkOutOfStoreSymlink`.
-3. **Display Server & Session Layer (SDDM -> UWSM -> systemd):** `uwsm/env` sets `AQ_DRM_DEVICES` and adds `$HOME/.nix-profile/share` to `XDG_DATA_DIRS` before starting the compositor, ensuring Nix-installed icons and multi-GPU DRM priority are available across the `graphical-session.target`.
-4. **Window Management Layer (Hyprland Lua + Hypr Ecosystem):** `hyprland.lua` configures monitors, workspaces, input devices, animations, window/layer rules, keybindings, and Wayland/IM environment variables. On `hyprland.start`, it spawns `hyprpaper`, `xsettingsd`, and `fcitx5 -d`, while `waybar`, `ags`, `hypridle`, and `hyprpolkitagent` are managed as systemd user services under `graphical-session.target` (with `sd-card-automount.service` ordered `Before=graphical-session.target`).
-5. **Desktop UI Layer (Waybar + AGS v3):** Waybar renders persistent workspaces, clock, MPRIS playback, network, battery, tray, and custom script modules. Clicking `custom/quick-settings` invokes `ags toggle quick-settings` via Astal IPC, opening the GTK4 Quick Settings popup, which polls system files (`/proc/*`, `/sys/class/*`) and executes CLI utilities (`wpctl`, `nmcli`, `brightnessctl`, `ddcutil`, `powerprofilesctl`, `playerctl`, `systemctl`, and external `~/.local/bin/` helpers).
+1. **Operating System & Hardware Layer (Arch Linux + systemd):** Manages Linux kernel DRM/KMS devices (auto-detecting `/dev/dri/dgpu` and `/dev/dri/igpu` when present), NVIDIA/Intel/AMD graphics drivers, PipeWire/WirePlumber, NetworkManager, BlueZ, `power-profiles-daemon`, `udisks2`, and systemd user targets.
+2. **Configuration Management Layer (Nix + Home Manager):** `nix/nix.conf` enables `nix-command` and `flakes`. `home-manager/flake.nix` defines a single `username` variable shared across `homeConfigurations.${username}`, `home.username`, and `home.homeDirectory`, installs `colloid-icon-theme` (Catppuccin variant), and links the seven core config directories from `~/.config/home-manager/dotfiles/` into `~/.config/` via `mkOutOfStoreSymlink`.
+3. **Display Server & Session Layer (SDDM -> UWSM -> systemd):** `uwsm/env` loads optional local overrides from `~/.config/machine-config.env` (copied from `machine-config.example`), sets `AQ_DRM_DEVICES` when hybrid DRM udev symlinks exist (or when overridden), and adds `$HOME/.nix-profile/share` to `XDG_DATA_DIRS`.
+4. **Window Management Layer (Hyprland Lua + Hypr Ecosystem):** `hyprland.lua` reads optional environment overrides (`DIY_PRIMARY_MONITOR`, `DIY_EXTERNAL_MONITOR`, `DIY_GPU_VENDOR`) with safe `preferred`/`auto` monitor fallbacks and conditional NVIDIA environment detection (`/dev/nvidia0`). On `hyprland.start`, it spawns `hyprpaper`, `xsettingsd`, and `fcitx5 -d`, while `waybar`, `ags`, `hypridle`, and `hyprpolkitagent` run as systemd user services under `graphical-session.target`.
+5. **Desktop UI Layer (Waybar + AGS v3):** Waybar renders persistent workspaces, clock, MPRIS playback, network, battery, tray, and custom script modules. Clicking `custom/quick-settings` invokes `ags toggle quick-settings` via Astal IPC, opening the GTK4 Quick Settings popup, which polls `/proc/*`, auto-discovers `/sys/class/power_supply/*` batteries and `/sys/class/hwmon/*` sensors, and invokes system CLIs (`wpctl`, `nmcli`, `brightnessctl`, `ddcutil`, `powerprofilesctl`, `playerctl`, `systemctl`) plus optional `$HOME/.local/bin/` helpers.
 6. **Application & Portal Layer:** `xdg-desktop-portal` (`hyprland;gtk` + `gnome` file chooser), GTK3/GTK4 CSS overrides, `xsettingsd`, `fontconfig`, `nautilus`, `kitty`, `btop`, `pavucontrol`, and `antigravity-flags.conf` (`--password-store=gnome-libsecret`).
 
 ### Architecture & Data-Flow Diagram
@@ -237,18 +237,13 @@ The tree below reflects the **tracked source layout** of the repository (excludi
 ```text
 DIYDesktopEnvironment/                      (cloned as ~/.config)
 ├── .config.code-workspace                  # VS Code multi-root workspace descriptor
-├── .gitignore                              # Ignores caches, browser/IDE state, secrets, systemd/
-├── ags -> /nix/store/.../.config/ags       # Symlink managed by Home Manager (out-of-store -> dotfiles/ags)
+├── .gitignore                              # Ignores caches, browser/IDE state, secrets, local machine config & generated symlinks
 ├── antigravity-flags.conf                  # Electron flag: --password-store=gnome-libsecret
 ├── antigravity-ide-flags.conf              # Electron flag: --password-store=gnome-libsecret
 ├── baloofileinformationrc                  # KDE Baloo metadata display preferences
 ├── btop/
 │   └── btop.conf                           # btop++ configuration (Nord theme, transparent background)
 ├── dolphinrc                               # Dolphin file manager preferences
-├── environment.d/
-│   └── 10-home-manager.conf -> /nix/store/... # Sets LOCALE_ARCHIVE_2_27 from Nix glibc-locales
-├── fcitx/
-│   └── dbus/                               # Tracked D-Bus address file (note: fcitx/dbus/ is in .gitignore)
 ├── fcitx5/
 │   ├── conf/
 │   │   ├── cached_layouts                  # XKB keyboard layout cache
@@ -257,14 +252,10 @@ DIYDesktopEnvironment/                      (cloned as ~/.config)
 │   └── profile                             # Default group: keyboard-us + unikey
 ├── fontconfig/
 │   └── fonts.conf                          # sans-serif & monospace font fallback aliases
-├── gtk-3.0 -> /nix/store/.../.config/gtk-3.0
-├── gtk-3.0.bak/                            # Pre-Catppuccin backup snapshot (Moga-Dark)
-├── gtk-4.0 -> /nix/store/.../.config/gtk-4.0
-├── gtk-4.0.bak/                            # Pre-Catppuccin backup snapshot (Moga-Dark)
 ├── home-manager/
 │   ├── flake.lock                          # Pinned nixpkgs-unstable & home-manager revisions
-│   ├── flake.nix                           # Flake entrypoint defining homeConfigurations."<your-username>"
-│   ├── home.nix                            # Username, packages, and 7 mkOutOfStoreSymlink mappings
+│   ├── flake.nix                           # Flake entrypoint with centralized `username` variable
+│   ├── home.nix                            # Packages and 7 mkOutOfStoreSymlink mappings derived from `username`
 │   └── dotfiles/                           # Authoritative source directory for core desktop configs
 │       ├── ags/                            # AGS v3 Quick Settings (TypeScript/TSX + GTK4 CSS)
 │       │   ├── app.ts                      # Entrypoint: initializes Backdrop, QuickSettings, alias
@@ -274,17 +265,17 @@ DIYDesktopEnvironment/                      (cloned as ~/.config)
 │       │   ├── style.css                   # Catppuccin Mocha + Electric Blue GTK4 CSS
 │       │   ├── style.css.v1_backup         # Legacy AGS v1 CSS backup (unused)
 │       │   ├── tsconfig.json               # JSX/TS configuration (jsxImportSource: ags/gtk4)
-│       │   ├── services/                   # State pollers & CLI wrappers (audio, brightness, gamemode, hdr, mpris, network, system)
+│       │   ├── services/                   # State pollers & config helpers (audio, brightness, config, gamemode, hdr, mpris, network, system)
 │       │   └── widget/                     # UI components (Backdrop, Header, SystemStats, QuickToggles, Sliders, MediaCard, QuickSettings)
-│       ├── gtk-3.0/                        # GTK3 settings.ini, bookmarks, custom compact Catppuccin gtk.css
+│       ├── gtk-3.0/                        # GTK3 settings.ini, bookmarks.example, compact Catppuccin gtk.css
 │       ├── gtk-4.0/                        # GTK4/Libadwaita settings.ini, custom Nautilus/FileChooser gtk.css
 │       ├── hypr/                           # Hyprland & Hypr ecosystem configs
 │       │   ├── hypridle.conf               # Idle dim (150s), lock (300s), DPMS (330s), suspend (1800s)
 │       │   ├── hyprland-gui.lua            # HyprMod-generated overrides (disables borderangle anim)
-│       │   ├── hyprland.lua                # Main Lua compositor config
+│       │   ├── hyprland.lua                # Main Lua compositor config (env-driven monitors & GPU detection)
 │       │   ├── hyprlauncher.conf           # 620x430 launcher with uwsm app -- prefix
-│       │   ├── hyprlock.conf               # Catppuccin Mocha lock screen
-│       │   ├── hyprpaper.conf              # Per-monitor wallpaper paths (eDP-1 & fallback)
+│       │   ├── hyprlock.conf               # Catppuccin Mocha lock screen (screenshot blur + $base fallback)
+│       │   ├── hyprpaper.conf              # Default wallpaper path (~/Pictures/Wallpapers/wallpaper.jpg)
 │       │   └── hyprtoolkit.conf            # Frosted-glass palette & Colloid-Catppuccin-Dark icon theme
 │       ├── waybar/
 │       │   ├── config.jsonc                # Status bar layout and built-in/custom modules
@@ -295,7 +286,7 @@ DIYDesktopEnvironment/                      (cloned as ~/.config)
 │       │   └── portals.conf                # Default=hyprland;gtk, FileChooser=gnome
 │       └── xsettingsd/
 │           └── xsettingsd.conf             # XWayland GTK theme, icon theme, font, cursor settings
-├── hypr -> /nix/store/.../.config/hypr
+├── machine-config.example                  # Template for optional local ~/.config/machine-config.env overrides
 ├── mimeapps.list                           # Default apps (Nautilus for directories, VS Code for text/TS/CSS)
 ├── nix/
 │   └── nix.conf                            # Enables nix-command and flakes
@@ -309,23 +300,19 @@ DIYDesktopEnvironment/                      (cloned as ~/.config)
 ├── screenshots/
 │   └── README.md                           # Placeholder guide for visual previews
 ├── systemd/
-│   └── user/                               # Tracked user units (forced past .gitignore's systemd/ rule)
-│       ├── rclone-gdrive-sd-fast.service   # Fast 2-way Google Drive sync (excludes Shared Modpack)
-│       ├── rclone-gdrive-sd.service        # Full 2-way Google Drive sync
-│       └── sd-card-automount.service       # Automounts SD card UUID via udisksctl before graphical-session
+│   └── user/                               # Optional user units (forced past .gitignore's systemd/ rule)
+│       ├── rclone-gdrive-sd-fast.service   # Fast 2-way Google Drive sync (requires script + rclone.conf)
+│       ├── rclone-gdrive-sd.service        # Full 2-way Google Drive sync (requires script + rclone.conf)
+│       └── sd-card-automount.service       # Optional SD card automount (reads DIY_SD_CARD_UUID from machine-config.env)
 ├── Thunar/                                 # Thunar custom actions (uca.xml) & shortcuts (accels.scm)
 ├── user-dirs.dirs                          # XDG user directories (includes XDG_PROJECTS_DIR)
 ├── user-dirs.locale                        # en_US
 ├── uwsm/
-│   └── env                                 # UWSM session env (AQ_DRM_DEVICES, XDG_DATA_DIRS)
-├── waybar -> /nix/store/.../.config/waybar
-├── xdg-desktop-portal -> /nix/store/.../.config/xdg-desktop-portal
-├── xfce4/                                  # Thunar xfconf settings
-├── xsettingsd -> /nix/store/.../.config/xsettingsd
-└── xsettingsd.bak/                         # Pre-Catppuccin backup snapshot
+│   └── env                                 # Sources machine-config.env, sets conditional AQ_DRM_DEVICES & XDG_DATA_DIRS
+└── xfce4/                                  # Thunar xfconf settings
 ```
 
-> **Tracked vs. Unmanaged Files Note:** Because this repo tracks `~/.config` directly, the root-level symlinks (`ags`, `hypr`, `waybar`, `gtk-3.0`, `gtk-4.0`, `xsettingsd`, `xdg-desktop-portal`, `environment.d/10-home-manager.conf`) currently point to a specific `/nix/store/<hash>-home-manager-files/...` path in Git. Running `home-manager switch` on a different machine or user will replace those local symlinks with your own Nix store generation.
+> **Generated Symlinks Note:** Running `home-manager switch` creates root-level symlinks (`ags`, `hypr`, `waybar`, `gtk-3.0`, `gtk-4.0`, `xsettingsd`, `xdg-desktop-portal`, and `environment.d/10-home-manager.conf`) pointing into your host's `/nix/store/...`. These generated symlinks and local runtime files (`machine-config.env`, `gtk-3.0/bookmarks`, `fcitx/dbus/`) are excluded by `.gitignore` so only authoritative source configurations are version-controlled.
 
 ---
 
@@ -334,13 +321,13 @@ DIYDesktopEnvironment/                      (cloned as ~/.config)
 ### System Requirements
 
 - **Operating System:** **Arch Linux (`x86_64`)** (verified in `/etc/os-release` and assumed by systemd unit paths such as `/usr/bin/ags`, `/usr/bin/udisksctl`, `/usr/lib/systemd/user/*`, and `/usr/share/btop/themes/nord.theme`). Other distributions may work if adapted, but are **not verified**.
-- **Wayland Session & Display Manager:** A Wayland-capable GPU driver stack and UWSM (`uwsm`). Current configuration targets a dual-GPU laptop (`AQ_DRM_DEVICES=/dev/dri/dgpu:/dev/dri/igpu`) with an NVIDIA dGPU (`LIBVA_DRIVER_NAME=nvidia`, `__GLX_VENDOR_LIBRARY_NAME=nvidia`) and Intel backlight (`brightnessctl`).
+- **Wayland Session & Display Manager:** A Wayland-capable GPU driver stack and UWSM (`uwsm`). Works on both single-GPU (Intel/AMD) and hybrid-GPU (NVIDIA + iGPU) systems: `uwsm/env` enables `AQ_DRM_DEVICES=/dev/dri/dgpu:/dev/dri/igpu` only when those udev symlinks exist, and `hyprland.lua` enables NVIDIA VA-API/GLX variables automatically when `/dev/nvidia0` is present (or via `DIY_GPU_VENDOR` in `machine-config.env`).
 - **Nix & Home Manager:** Nix with Flakes support (`nix` `2.36.0` and `home-manager` `26.11-pre` observed on the reference system; `home.stateVersion = "26.05"`).
-- **Reference-Machine Hardware Settings (must be adapted to your host):**
-  - Laptop internal display `eDP-1` (`1920x1080@144`) and optional external monitor `HDMI-A-2` (`1920x1080@180` with DDC/CI and HDR support).
-  - Battery sysfs node at `/sys/class/power_supply/BAT0` (used by `ags/services/system.ts`).
-  - NVIDIA PCI device at `0000:01:00.0` (reference-machine dGPU PCI address, used by `waybar-gpu-temp`).
-  - SD card partition UUID `<SD_CARD_UUID>` (configured in `sd-card-automount.service` and `gtk-3.0/bookmarks`; replace with your storage device's UUID).
+- **Optional Hardware & Per-Machine Settings (configured via `~/.config/machine-config.env`):**
+  - Monitors default to `preferred` / `auto`; set `DIY_PRIMARY_MONITOR` / `DIY_EXTERNAL_MONITOR` in `machine-config.env` to pin resolutions, refresh rates, or color management (e.g. `eDP-1` `1920x1080@144` and `HDMI-A-2` `1920x1080@180`).
+  - System batteries under `/sys/class/power_supply/*` are discovered dynamically by AGS (and hidden automatically on desktops without a battery), or pinned via `DIY_BATTERY_DEVICE`.
+  - Optional NVIDIA GPU telemetry (`waybar-gpu-temp`) and HDR toggling (`hypr-hdr-toggle`) fail gracefully when scripts or hardware are absent.
+  - Optional SD card automounting and Google Drive sync remain disabled until `DIY_SD_CARD_UUID` is configured in `machine-config.env` and `~/.config/rclone/rclone.conf` exists.
 
 ### Required Dependencies (Core Desktop)
 
@@ -444,28 +431,29 @@ git clone https://github.com/Darkitsuki/DIYDesktopEnvironment.git ~/.config
 cd ~/.config
 ```
 
-### 5. Inspect and Customize Machine-Specific Settings
+### 5. Configure Username and Optional Machine Settings
 
-Before running Home Manager, update hardcoded usernames, home paths, wallpapers, monitors, and hardware devices:
-
-1. **`home-manager/flake.nix`**: Replace the hardcoded username in `homeConfigurations."<your-username>"` with your Linux username (or pass `--flake ~/.config/home-manager#<your-username>`).
-2. **`home-manager/home.nix`**: Update `home.username` and `home.homeDirectory`:
+1. **Set Your Username (`home-manager/flake.nix`):** Update the single `username` variable near the top of `home-manager/flake.nix`:
    ```nix
-   home.username = "<your-username>";
-   home.homeDirectory = "/home/<your-username>";
+   username = "<your-username>";
    ```
-3. **`home-manager/dotfiles/hypr/hyprland.lua`**:
-   - Review the reference `hl.monitor(...)` entries (`eDP-1`, `HDMI-A-2`) to match your actual display names (`hyprctl monitors`), resolutions, and refresh rates.
-   - Update `hl.env("LIBVA_DRIVER_NAME", "nvidia")` / `__GLX_VENDOR_LIBRARY_NAME` if you are not on NVIDIA.
-   - Update the hardcoded `$HOME/.local/bin/hypr-gamemode` path (in the `SUPER + F1` binding) if using a custom path or script.
-4. **`home-manager/dotfiles/hypr/hyprpaper.conf` & `hyprlock.conf`**:
-   - Replace the hardcoded `$HOME/Pictures/Wallpapers/<wallpaper-file>` paths with valid wallpaper paths on your machine.
-5. **`uwsm/env`**:
-   - Verify `AQ_DRM_DEVICES=/dev/dri/dgpu:/dev/dri/igpu` (reference-machine udev symlinks) matches your `/dev/dri/` nodes (remove or adjust on single-GPU systems).
-6. **`home-manager/dotfiles/waybar/config.jsonc` & `home-manager/dotfiles/ags/`**:
-   - Update or remove hardcoded `$HOME/.local/bin/*` and `<SD_CARD_MOUNT>` (`/run/media/$USER/<SD_CARD_UUID>/...`) references if you do not use those external scripts or SD card sync services (see [Custom Modules and Scripts](#custom-modules-and-scripts)).
-7. **`home-manager/dotfiles/gtk-3.0/bookmarks`** (and `systemd/user/sd-card-automount.service`):
-   - Update `/home/<your-username>/...` bookmark paths and `<SD_CARD_UUID>` to match your username and storage device.
+   `homeConfigurations.${username}`, `home.username`, and `home.homeDirectory` (`/home/${username}`) all derive automatically from this value—no other Nix file needs editing.
+2. **Optional Machine Overrides (`machine-config.example` -> `~/.config/machine-config.env`):**
+   If you want to pin monitor modes, GPU driver selection, DDC/CI display index, battery device, or SD card UUID:
+   ```bash
+   cp machine-config.example ~/.config/machine-config.env
+   # Inspect connected outputs and disk UUIDs:
+   hyprctl monitors
+   lsblk -f
+   ```
+   `~/.config/machine-config.env` is excluded by `.gitignore` and sourced automatically by `uwsm/env` and optional systemd units. If skipped, Hyprland uses `preferred` / `auto` monitor defaults, auto-detects NVIDIA if `/dev/nvidia0` exists, and disables SD card automounting.
+3. **Optional Wallpaper (`hyprpaper.conf` & `hyprlock.conf`):**
+   - Place a wallpaper image at `~/Pictures/Wallpapers/wallpaper.jpg` (or customize `home-manager/dotfiles/hypr/hyprpaper.conf`). Missing wallpaper files do not block Hyprland startup.
+   - `hyprlock.conf` uses `path = screenshot` with a `$base` solid-color fallback out of the box (change to `path = ~/Pictures/Wallpapers/wallpaper.jpg` if you prefer a static image).
+4. **Optional GTK Bookmarks (`home-manager/dotfiles/gtk-3.0/`):**
+   Copy `home-manager/dotfiles/gtk-3.0/bookmarks.example` to `home-manager/dotfiles/gtk-3.0/bookmarks` (gitignored) and replace `<your-username>` if you want pre-populated sidebar bookmarks in GTK3/Nautilus.
+5. **Optional External Scripts (`$HOME/.local/bin/`):**
+   Review [Custom Modules and Scripts](#custom-modules-and-scripts) if you plan to install optional helpers (`hypr-gamemode`, `hypr-hdr-toggle`, `waybar-gpu-temp`, `waybar-gdrive-sync`, `mirror-gdrive-sd.sh`). Missing scripts degrade gracefully without breaking Waybar or AGS.
 
 ### 6. Apply the Home Manager Configuration
 
@@ -512,7 +500,7 @@ systemctl --user daemon-reload
 systemctl --user enable ags.service waybar.service hypridle.service hyprpolkitagent.service
 ```
 
-Only enable `sd-card-automount.service` or `rclone-gdrive-sd*.service` if you have adapted the UUID/paths and created `~/.local/bin/mirror-gdrive-sd.sh` (see [Custom Modules and Scripts](#custom-modules-and-scripts)).
+Only enable `sd-card-automount.service` or `rclone-gdrive-sd*.service` after obtaining your partition UUID with `lsblk -f`, setting `DIY_SD_CARD_UUID` in `~/.config/machine-config.env`, configuring `~/.config/rclone/rclone.conf`, and installing `~/.local/bin/mirror-gdrive-sd.sh`. All three units carry `ConditionPathExists=` guards so they remain inactive if unconfigured.
 
 ### 8. Start the Hyprland UWSM Session
 
@@ -528,37 +516,39 @@ uwsm start hyprland-uwsm.desktop
 
 ### User Environment & Nix
 
-- **Username & Home Directory:** Edit `home-manager/flake.nix` (`homeConfigurations."..."`) and `home-manager/home.nix` (`home.username`, `home.homeDirectory`), then re-run `home-manager switch --flake ~/.config/home-manager#<user>`.
+- **Username & Home Directory:** Edit the single `username` binding in `home-manager/flake.nix`, then re-run `home-manager switch --flake ~/.config/home-manager#<user>`. `home-manager/home.nix` inherits `username` and derives `home.homeDirectory = "/home/${username}"`.
 - **Nix Packages & Icon Theme:** Edit `home.packages` in `home-manager/home.nix` (currently installs `colloid-icon-theme` with `schemeVariants = [ "catppuccin" ]`).
-- **Session & DRM Variables:** Edit `uwsm/env` (requires logging out and starting a fresh UWSM session).
+- **Per-Machine Hardware & Session Variables:** Edit `~/.config/machine-config.env` (from `machine-config.example`) or `uwsm/env` (requires logging out and starting a fresh UWSM session).
 
 ### Hyprland (`home-manager/dotfiles/hypr/`)
 
-- **Monitors & Workspaces:** Edit `hl.monitor({...})` and `hl.workspace_rule({...})` in `home-manager/dotfiles/hypr/hyprland.lua`.
+- **Monitors & Workspaces:** Set `DIY_PRIMARY_MONITOR*` and `DIY_EXTERNAL_MONITOR*` in `~/.config/machine-config.env`, or add custom Lua rules in `~/.config/hypr/machine-local.lua` (gitignored, loaded via `pcall(require, "machine-local")`).
+- **GPU Settings:** Set `DIY_GPU_VENDOR` (`auto`, `nvidia`, `intel`, `amd`, `none`) in `~/.config/machine-config.env` (`auto` enables NVIDIA VA-API/GLX variables only when `/dev/nvidia0` or `/proc/driver/nvidia/version` exists).
 - **Keybindings:** Edit `hl.bind(...)` entries in `hyprland.lua` (`mainMod = "SUPER"`).
 - **Window & Layer Rules:** Add or adjust `hl.window_rule({...})` and `hl.layer_rule({...})` in `hyprland.lua`.
 - **Animations & Look:** Adjust `general`, `decoration`, `animations`, `hl.curve(...)`, and `hl.animation(...)` in `hyprland.lua` (note `require("hyprland-gui")` at the bottom loads HyprMod overrides from `hyprland-gui.lua`).
 - **Idle Timeouts & Lock Screen:** Edit `hypridle.conf` and `hyprlock.conf`.
-- **Wallpapers & Launcher:** Edit `hyprpaper.conf` and `hyprlauncher.conf`. Reload Hyprland live with `hyprctl reload`.
+- **Wallpapers & Launcher:** Place your wallpaper at `~/Pictures/Wallpapers/wallpaper.jpg` (or edit `hyprpaper.conf`) and customize `hyprlauncher.conf`. Reload Hyprland live with `hyprctl reload`.
 
 ### Waybar (`home-manager/dotfiles/waybar/`)
 
-- **Enabled Modules & Order:** Edit `modules-left`, `modules-center`, and `modules-right` in `home-manager/dotfiles/waybar/config.jsonc`. For example, you can add `"custom/gpu-temp"`, `"custom/hdr"`, `"custom/external-brightness"`, or `"custom/power-profile"` (already defined in the file) into `modules-right`.
+- **Enabled Modules & Order:** Edit `modules-left`, `modules-center`, and `modules-right` in `home-manager/dotfiles/waybar/config.jsonc`. Optional modules (`custom/gpu-temp`, `custom/hdr`, `custom/external-brightness`, `custom/power-profile`) are pre-defined and degrade gracefully if optional scripts or DDC/CI hardware are missing.
 - **Styling & Colors:** Edit `home-manager/dotfiles/waybar/style.css` (uses `#c0caf5`, `#7aa2f7`, `#1e1e2e`, `#89b4fa`, and state classes `.warning`, `.critical`, `.suspended`, `.on`, `.off`, `.syncing`, `.error`).
 - **Restart Waybar:** `systemctl --user restart waybar.service`.
 
 ### AGS Quick Settings (`home-manager/dotfiles/ags/`)
 
+- **Runtime Helper & Paths:** `home-manager/dotfiles/ags/services/config.ts` resolves `$HOME/.local/bin` (or `DIY_SCRIPTS_DIR`), `DIY_EXTERNAL_MONITOR`, `DIY_EXTERNAL_DDC_DISPLAY`, and `DIY_BATTERY_DEVICE`.
 - **Panel Layout & Size:** Edit `home-manager/dotfiles/ags/widget/QuickSettings.tsx` (`widthRequest={380}`, `marginTop={8}`, `marginRight={12}`).
 - **Quick Toggles:** Edit `home-manager/dotfiles/ags/widget/QuickToggles.tsx` to add/remove cards or rebind primary/secondary click handlers.
-- **Sliders & Polling:** Edit `widget/Sliders.tsx`, `widget/SystemStats.tsx`, and `services/*.ts` to change polling intervals, hardware sysfs paths (e.g., `BAT0`), or external monitor output name (`HDMI-A-2`).
+- **Battery & Hardware Telemetry:** `services/system.ts` auto-discovers system batteries under `/sys/class/power_supply/` (hiding the Header battery badge on desktops), while `widget/SystemStats.tsx` checks `hasScript("waybar-gpu-temp")` before polling GPU telemetry.
 - **Theme CSS:** Edit `home-manager/dotfiles/ags/style.css`.
 - **Reload AGS:** Click the reload icon in the Quick Settings header or run `systemctl --user restart ags.service`.
 
 ### Appearance (GTK3, GTK4, Fonts, Cursors)
 
 - **GTK3 / GTK4 Themes & Icons:** Edit `home-manager/dotfiles/gtk-3.0/settings.ini`, `gtk-3.0/gtk.css`, `gtk-4.0/settings.ini`, `gtk-4.0/gtk.css`, and `home-manager/dotfiles/xsettingsd/xsettingsd.conf`.
-- **GTK Bookmarks:** Edit `home-manager/dotfiles/gtk-3.0/bookmarks`.
+- **GTK Bookmarks:** Copy `home-manager/dotfiles/gtk-3.0/bookmarks.example` to `home-manager/dotfiles/gtk-3.0/bookmarks` (gitignored) and adjust paths for your user.
 - **Font Aliases:** Edit `fontconfig/fonts.conf` and run `fc-cache -fv`.
 - **Hyprtoolkit Theme:** Edit `home-manager/dotfiles/hypr/hyprtoolkit.conf`.
 
@@ -566,7 +556,7 @@ uwsm start hyprland-uwsm.desktop
 
 - **Fcitx5:** Edit `fcitx5/config` (trigger keys like `Super+space`, `Shift_L`, `Control+space`) and `fcitx5/profile` (input methods such as `keyboard-us` and `unikey`).
 - **Default Applications:** Edit `mimeapps.list` and `home-manager/dotfiles/xdg-desktop-portal/portals.conf`.
-- **SD Card & Rclone Services:** Edit `systemd/user/*.service` and `rclone/config-backup-exclude.txt`, then run `systemctl --user daemon-reload`.
+- **SD Card & Rclone Services:** Configure `DIY_SD_CARD_UUID` in `~/.config/machine-config.env` (discovered via `lsblk -f`) and `~/.config/rclone/rclone.conf`, edit `rclone/config-backup-exclude.txt` if needed, and run `systemctl --user daemon-reload`.
 
 ---
 
@@ -574,7 +564,7 @@ uwsm start hyprland-uwsm.desktop
 
 ### External Scripts Referenced by This Repository
 
-Several Hyprland bindings, Waybar modules, AGS services, and systemd units invoke scripts under `$HOME/.local/bin/` and `$HOME/.local/share/nautilus/scripts/`. **These scripts are NOT tracked in this Git repository** (the tracked configuration files currently reference hardcoded author-machine home paths that should be adapted to your environment).
+Several Hyprland bindings, Waybar modules, AGS services, and systemd units invoke optional scripts under `${DIY_SCRIPTS_DIR:-$HOME/.local/bin}/` and `${DIY_NAUTILUS_SCRIPTS_DIR:-$HOME/.local/share/nautilus/scripts}/`. **These scripts are NOT tracked in this Git repository**, and all config references resolve `$HOME` dynamically and fall back cleanly when absent.
 
 The table below documents their exact interfaces and behavior as observed on the reference host so you can recreate, adapt, or disable them cleanly:
 
@@ -592,7 +582,7 @@ The table below documents their exact interfaces and behavior as observed on the
 | Module Name | Command / Configuration | Interaction | Dependencies |
 | --- | --- | --- | --- |
 | `custom/playerctl` | `playerctl metadata --format '{{title}} - {{artist}}' 2>/dev/null` (2s interval, max-length 50) | Left-click: `play-pause`; Scroll up/down: `next` / `previous` | `playerctl` |
-| `custom/external-brightness` | `ddcutil --display 1 getvcp 10 --terse \| awk '{print $4}'` (2s interval) | Scroll up/down: `ddcutil --display 1 setvcp 10 +/- 5` | `ddcutil`, `awk` |
+| `custom/external-brightness` | `ddcutil --display "${DIY_EXTERNAL_DDC_DISPLAY:-1}" getvcp 10 --terse \| awk '{print $4}'` (2s interval) | Scroll up/down: `ddcutil --display "${DIY_EXTERNAL_DDC_DISPLAY:-1}" setvcp 10 +/- 5` | `ddcutil`, `awk` |
 | `custom/power-profile` | Queries `powerprofilesctl get` (2s interval), prints Nerd Font icon | Left-click: cycles `power-saver` -> `balanced` -> `performance` | `powerprofilesctl` |
 | `custom/quick-settings` | Static `⚙️` button | Left-click: `ags toggle quick-settings` | `ags` (running daemon) |
 | `custom/power` | Uses `$HOME/.config/waybar/power_menu.xml` | Left-click opens GTK menu (`suspend`, `hibernate`, `shutdown`, `reboot` via `systemctl`) | `systemd` |
@@ -605,18 +595,18 @@ The table below documents their exact interfaces and behavior as observed on the
 ### 1. Nix Flake Evaluation or `home-manager switch` Fails
 
 - **Symptoms:** `error: experimental Nix feature 'flakes' is disabled` or `flake 'path:.../home-manager' does not provide attribute 'homeConfigurations.<user>'`.
-- **Causes:** `nix/nix.conf` is not active yet, or `homeConfigurations` in `home-manager/flake.nix` still defines the author's original username rather than `$USER`.
+- **Causes:** `nix/nix.conf` is not active yet, or `username` in `home-manager/flake.nix` is still set to `"your-username"` rather than your Linux `$USER`.
 - **Diagnostics & Fix:**
   ```bash
   nix show-config | grep experimental-features
   nix flake show ~/.config/home-manager
   ```
-  Ensure `experimental-features = nix-command flakes` is enabled, update the username in `home-manager/flake.nix` and `home-manager/home.nix` to match `$USER`, and pass `-b backup` if Home Manager refuses to overwrite cloned symlinks.
+  Ensure `experimental-features = nix-command flakes` is enabled, update `username` in `home-manager/flake.nix` to match `$USER`, and pass `-b backup` if Home Manager needs to replace existing files.
 
 ### 2. Hyprland Fails to Start or Exits Immediately Under SDDM/UWSM
 
 - **Symptoms:** Session returns to SDDM immediately after login, or black screen on hybrid GPU laptop.
-- **Causes:** `AQ_DRM_DEVICES=/dev/dri/dgpu:/dev/dri/igpu` points to missing udev symlinks, `hyprland` version is older than `0.57` (lacking Lua config support for `hyprland.lua`), or `uwsm` environment variables aren't loaded.
+- **Causes:** An explicit `AQ_DRM_DEVICES` override in `~/.config/machine-config.env` points to missing DRM nodes, `hyprland` version is older than `0.57` (lacking Lua config support for `hyprland.lua`), or `uwsm` environment variables aren't loaded.
 - **Diagnostics & Fix:**
   ```bash
   ls -la /dev/dri/
@@ -628,7 +618,7 @@ The table below documents their exact interfaces and behavior as observed on the
 ### 3. Missing External Scripts in Waybar / AGS / Hyprland (`No such file or directory`)
 
 - **Symptoms:** `SUPER + F1` does nothing, Waybar `custom/gdrive-sync` shows nothing or fails, or AGS `SystemStats` GPU card always displays `--°C`.
-- **Causes:** `$HOME/.local/bin/*` scripts (`hypr-gamemode`, `hypr-hdr-toggle`, `waybar-gpu-temp`, `waybar-gdrive-sync`, `mirror-gdrive-sd.sh`) and `$HOME/.local/share/nautilus/scripts/Sync Google Drive Now` are external to the repository, and tracked config files currently reference hardcoded author-machine home paths.
+- **Causes:** `$HOME/.local/bin/*` scripts (`hypr-gamemode`, `hypr-hdr-toggle`, `waybar-gpu-temp`, `waybar-gdrive-sync`, `mirror-gdrive-sd.sh`) and `$HOME/.local/share/nautilus/scripts/Sync Google Drive Now` are optional external scripts not bundled in this repository.
 - **Diagnostics & Fix:**
   ```bash
   ls -la ~/.local/bin/
@@ -727,7 +717,7 @@ mv ~/.config ~/.config.failed
 mv ~/.config.backup.<timestamp> ~/.config
 ```
 
-Note that this repository also contains earlier backup snapshots (`gtk-3.0.bak/`, `gtk-4.0.bak/`, `xsettingsd.bak/`, and `home-manager/dotfiles/ags/app.js.v1_backup`, `style.css.v1_backup`) kept by the author for reference.
+Note that `home-manager/dotfiles/ags/` also preserves legacy AGS v1 reference snapshots (`app.js.v1_backup` and `style.css.v1_backup`) alongside the active TypeScript implementation.
 
 ---
 
@@ -757,12 +747,12 @@ Note that this repository also contains earlier backup snapshots (`gtk-3.0.bak/`
 
 ## Security Considerations
 
-- **Never Commit Credentials or Tokens:** Do not commit `rclone/rclone.conf`, `gh/hosts.yml`, `antigravity/plugin-secrets.json`, `antigravity/credential-user-scope`, SSH private keys, `.pem`/`.key` files, or API tokens.
+- **Never Commit Credentials or Tokens:** Do not commit `rclone/rclone.conf`, `gh/hosts.yml`, `antigravity/plugin-secrets.json`, `antigravity/credential-user-scope`, SSH private keys, `.pem`/`.key`/`.p12`/`.kdbx` files, `.env` files, or API tokens.
 - **Protect Rclone Configuration:** `rclone/rclone.conf` contains OAuth tokens for Google Drive and is listed in `.gitignore`. Keep its file permissions restricted (`chmod 600 ~/.config/rclone/rclone.conf`).
-- **Keep Browser Profiles & Runtime State Out of Git:** Never commit browser profiles (`BraveSoftware/`), Electron application state (`Antigravity/`, `CurseForge/`, `ow-electron/`), local SQLite/session databases, or personal runtime state; review `.gitignore` regularly so volatile directories stay untracked.
-- **Git History & `.gitignore` Caveat:** Adding a path to `.gitignore` only prevents *untracked* files from being staged in future commits—it does **not** remove files already committed in Git history. Always verify staged files before committing, rotate any credential that is ever exposed in history, and use `git filter-repo` if history scrubbing is required.
-- **Check Tracked Files Regularly:** Because this repository lives inside `~/.config`, run `git status` and `git ls-files` before pushing to verify no sensitive application files were accidentally force-added (`git add -f` bypasses `.gitignore`, as was intentionally done for `systemd/user/*.service` and `fcitx/dbus/`).
-- **Review Scripts & Symlinks:** Always inspect external scripts (especially anything invoked with `sudo`, such as `/usr/local/bin/victus-thermal-limit` referenced in `hypr-gamemode`) before granting passwordless `sudoers` rules, and be mindful of hardcoded author-machine home paths, `<SD_CARD_UUID>` identifiers, and `mkOutOfStoreSymlink` targets when adapting this repo.
+- **Keep Browser Profiles & Machine Runtime Files Out of Git:** Never commit browser profiles (`BraveSoftware/`), Electron application state (`Antigravity/`, `CurseForge/`, `ow-electron/`), local runtime state (`fcitx/dbus/`, `dconf/user`, `pulse/`, `go/telemetry/`), generated Nix store symlinks (`/ags`, `/hypr`, `/waybar`, etc.), or local hardware overrides (`machine-config.env`, `machine-local.lua`, `gtk-3.0/bookmarks`).
+- **Git History & `.gitignore` Caveat:** Adding a path to `.gitignore` only prevents *untracked* files from being staged in future commits—it does **not** remove files already committed in Git history. Always review `git status` and `git diff --cached` before committing, and use `git filter-repo` if sensitive data is ever committed.
+- **Check Tracked Files Regularly:** Because this repository lives inside `~/.config`, run `git status` and `git ls-files` before pushing to verify no sensitive or machine-specific files were accidentally force-added (`git add -f` bypasses `.gitignore`, as was intentionally done for `systemd/user/*.service`).
+- **Review Scripts & Hardware Overrides:** Always inspect external scripts (especially anything invoked with `sudo`, such as `/usr/local/bin/victus-thermal-limit` referenced in `hypr-gamemode`) before granting passwordless `sudoers` rules, and keep `machine-config.env` local to each host.
 
 ---
 

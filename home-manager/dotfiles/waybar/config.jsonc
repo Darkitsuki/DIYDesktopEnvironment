@@ -127,7 +127,7 @@
         "format-icons": ["󰉬", "", "󰉪"]
     },
     "custom/gpu-temp": {
-        "exec": "/home/your-username/.local/bin/waybar-gpu-temp",
+        "exec": "sh -c 'cmd=\"${DIY_SCRIPTS_DIR:-$HOME/.local/bin}/waybar-gpu-temp\"; if [ -x \"$cmd\" ]; then exec \"$cmd\"; else printf \"%s\\n\" \"{\\\"text\\\":\\\"--°C\\\",\\\"class\\\":\\\"suspended\\\",\\\"tooltip\\\":\\\"Optional GPU telemetry script not installed\\\"}\"; fi'",
         "return-type": "json",
         "interval": 3,
         "tooltip": true
@@ -141,26 +141,26 @@
     },
 
     "custom/external-brightness": {
-        "exec": "ddcutil --display 1 getvcp 10 --terse | awk '{print $4}'",   
-        "interval": 2, 
+        "exec": "sh -c 'ddcutil --display \"${DIY_EXTERNAL_DDC_DISPLAY:-1}\" getvcp 10 --terse 2>/dev/null | awk \"{print \\$4}\"'",
+        "interval": 2,
         "format": "{}% 󰃠",
         // "scroll-step": 5,
         // "format": "{percent}% {icon}",
         // "format-icons": ["", "", "", "", "", "", "", "", ""],
         "min-brightness": 1,
 
-        "on-scroll-up": "ddcutil --display 1 setvcp 10 + 5",
-        "on-scroll-down": "ddcutil --display 1 setvcp 10 - 5",
+        "on-scroll-up": "sh -c 'ddcutil --display \"${DIY_EXTERNAL_DDC_DISPLAY:-1}\" setvcp 10 + 5 2>/dev/null || true'",
+        "on-scroll-down": "sh -c 'ddcutil --display \"${DIY_EXTERNAL_DDC_DISPLAY:-1}\" setvcp 10 - 5 2>/dev/null || true'",
         "tooltip": false
     },
 
     "custom/hdr": {
-        "exec": "/home/your-username/.local/bin/hypr-hdr-toggle --status",
+        "exec": "sh -c 'cmd=\"${DIY_SCRIPTS_DIR:-$HOME/.local/bin}/hypr-hdr-toggle\"; if [ -x \"$cmd\" ]; then exec \"$cmd\" --status; else printf \"%s\\n\" \"{\\\"text\\\":\\\"N/A\\\",\\\"class\\\":\\\"disconnected\\\",\\\"tooltip\\\":\\\"Optional HDR script not installed\\\"}\"; fi'",
         "return-type": "json",
         "interval": 5,
         "signal": 11,
-        "on-click": "/home/your-username/.local/bin/hypr-hdr-toggle --toggle",
-        "on-click-right": "/home/your-username/.local/bin/hypr-hdr-toggle --cycle-preset",
+        "on-click": "sh -c 'cmd=\"${DIY_SCRIPTS_DIR:-$HOME/.local/bin}/hypr-hdr-toggle\"; [ -x \"$cmd\" ] && exec \"$cmd\" --toggle || notify-send -u low \"HDR\" \"Optional script not installed: $cmd\" 2>/dev/null || true'",
+        "on-click-right": "sh -c 'cmd=\"${DIY_SCRIPTS_DIR:-$HOME/.local/bin}/hypr-hdr-toggle\"; [ -x \"$cmd\" ] && exec \"$cmd\" --cycle-preset || true'",
         "tooltip": true
     },
     
@@ -200,14 +200,14 @@
         "on-click": "kitty -e nmtui"
     },
     "custom/gdrive-sync": {
-        "exec": "/home/your-username/.local/bin/waybar-gdrive-sync",
+        "exec": "sh -c 'cmd=\"${DIY_SCRIPTS_DIR:-$HOME/.local/bin}/waybar-gdrive-sync\"; if [ -x \"$cmd\" ]; then exec \"$cmd\"; else printf \"%s\\n\" \"{\\\"text\\\":\\\"\\\",\\\"class\\\":\\\"unmounted\\\",\\\"tooltip\\\":\\\"Optional Google Drive sync not configured\\\"}\"; fi'",
         "return-type": "json",
         "interval": 2,
         "signal": 12,
         "tooltip": true,
-        "on-click": "/home/your-username/.local/share/nautilus/scripts/Sync\\ Google\\ Drive\\ Now",
-        "on-click-right": "nautilus \"/run/media/your-username/YOUR_SD_CARD_UUID/Google Drive\"",
-        "on-click-middle": "kitty --title \"Google Drive Sync Log\" bash -c 'tail -n 40 -f ~/.local/state/rclone-gdrive-sd.log'"
+        "on-click": "sh -c 'cmd=\"${DIY_NAUTILUS_SCRIPTS_DIR:-$HOME/.local/share/nautilus/scripts}/Sync Google Drive Now\"; if [ -x \"$cmd\" ]; then exec \"$cmd\"; else notify-send -u low \"Google Drive Sync\" \"Optional script not installed: $cmd\" 2>/dev/null || true; fi'",
+        "on-click-right": "sh -c 'dir=\"${DIY_SD_CARD_MOUNT:-}\"; if [ -z \"$dir\" ] && [ -n \"${DIY_SD_CARD_UUID:-}\" ]; then mp=$(findmnt -rn -o TARGET \"/dev/disk/by-uuid/$DIY_SD_CARD_UUID\" 2>/dev/null | head -n1); [ -n \"$mp\" ] && dir=\"$mp/Google Drive\"; fi; if [ -n \"$dir\" ] && [ -d \"$dir\" ]; then exec nautilus \"$dir\"; else notify-send -u low \"Google Drive\" \"SD card sync folder is not configured or mounted\" 2>/dev/null || true; fi'",
+        "on-click-middle": "kitty --title \"Google Drive Sync Log\" bash -c 'if [ -f \"$HOME/.local/state/rclone-gdrive-sd.log\" ]; then tail -n 40 -f \"$HOME/.local/state/rclone-gdrive-sd.log\"; else echo \"No log found at ~/.local/state/rclone-gdrive-sd.log\"; read -r -p \"Press Enter to close...\"; fi'"
     },
     "pulseaudio": {
         "scroll-step": 5, // %, can be a float

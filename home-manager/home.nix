@@ -1,10 +1,9 @@
-{ config, pkgs, ... }:
+{ config, pkgs, username ? "your-username", ... }:
 
 {
-  # Home Manager needs a bit of information about you and the paths it should
-  # manage.
-  home.username = "your-username";
-  home.homeDirectory = "/home/your-username";
+  # Username is configured once in home-manager/flake.nix and passed via extraSpecialArgs.
+  home.username = username;
+  home.homeDirectory = "/home/${username}";
 
   # This value determines the Home Manager release that your configuration is
   # compatible with. This helps avoid breakage when a new Home Manager release
@@ -53,7 +52,7 @@
   #
   # or
   #
-  #  /etc/profiles/per-user/your-username/etc/profile.d/hm-session-vars.sh
+  #  /etc/profiles/per-user/<your-username>/etc/profile.d/hm-session-vars.sh
   #
   home.sessionVariables = {
     # EDITOR = "emacs";

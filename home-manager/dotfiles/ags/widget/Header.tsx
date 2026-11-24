@@ -27,8 +27,12 @@ export default function Header() {
           <label label={uptime} cssClasses={["info-text"]} />
         </box>
 
-        {/* Battery */}
-        <box cssClasses={["info-badge"]} spacing={4}>
+        {/* Battery (hidden automatically when host has no system battery) */}
+        <box
+          cssClasses={["info-badge"]}
+          spacing={4}
+          visible={battery.as((b) => b.available)}
+        >
           <label
             label={battery.as((b) => b.icon)}
             cssClasses={battery.as((b) => [

@@ -17,14 +17,35 @@
 -- Create your files separately and then require them like this:
 -- require("myColors")
 
--- hl.env("AQ_DRM_DEVICES", "/dev/dri/card2:/dev/dri/card1")
+local function file_exists(path)
+  local f = io.open(path, "r")
+  if f then
+    f:close()
+    return true
+  end
+  return false
+end
+
+local function env_nonempty(name, default_val)
+  local v = os.getenv(name)
+  if v and v ~= "" then
+    return v
+  end
+  return default_val
+end
 
 hl.env("XDG_SESSION_TYPE", "wayland")
 hl.env("XDG_CURRENT_DESKTOP", "Hyprland")
 hl.env("XDG_SESSION_DESKTOP", "Hyprland")
 
-hl.env("LIBVA_DRIVER_NAME", "nvidia")
-hl.env("__GLX_VENDOR_LIBRARY_NAME", "nvidia")
+-- Enable NVIDIA VA-API/GLX overrides only when configured or an NVIDIA GPU is present.
+local gpu_vendor = env_nonempty("DIY_GPU_VENDOR", "auto")
+local use_nvidia = (gpu_vendor == "nvidia")
+  or (gpu_vendor == "auto" and (file_exists("/dev/nvidia0") or file_exists("/proc/driver/nvidia/version")))
+if use_nvidia then
+  hl.env("LIBVA_DRIVER_NAME", "nvidia")
+  hl.env("__GLX_VENDOR_LIBRARY_NAME", "nvidia")
+end
 
 hl.env("ELECTRON_OZONE_PLATFORM_HINT", "auto")
 
@@ -33,23 +54,29 @@ hl.env("ELECTRON_OZONE_PLATFORM_HINT", "auto")
 ---- MONITORS ----
 ------------------
 
---See https://wiki.hypr.land/Configuring/Basics/Monitors/
-hl.monitor({
-  output   = "eDP-1",
-  mode     = "1920x1080@144",
-  position = "0x0",
-  scale    = 1
-})
+-- Configure optional explicit primary/external monitors via machine-config.env;
+-- otherwise the generic preferred/auto rule below handles all outputs cleanly.
+local primary_monitor = env_nonempty("DIY_PRIMARY_MONITOR", "")
+if primary_monitor ~= "" then
+  hl.monitor({
+    output   = primary_monitor,
+    mode     = env_nonempty("DIY_PRIMARY_MONITOR_MODE", "preferred"),
+    position = env_nonempty("DIY_PRIMARY_MONITOR_POS", "0x0"),
+    scale    = tonumber(env_nonempty("DIY_PRIMARY_MONITOR_SCALE", "1")) or 1,
+  })
+end
 
---See https://wiki.hypr.land/Configuring/Basics/Monitors/
-hl.monitor({
-  output   = "HDMI-A-2",
-  mode     = "1920x1080@180",
-  position = "1920x0",
-  scale    = 1,
-  bitdepth = 8,
-  cm       = "srgb",
-})
+local external_monitor = env_nonempty("DIY_EXTERNAL_MONITOR", "")
+if external_monitor ~= "" then
+  hl.monitor({
+    output   = external_monitor,
+    mode     = env_nonempty("DIY_EXTERNAL_MONITOR_MODE", "preferred"),
+    position = env_nonempty("DIY_EXTERNAL_MONITOR_POS", "auto"),
+    scale    = tonumber(env_nonempty("DIY_EXTERNAL_MONITOR_SCALE", "1")) or 1,
+    bitdepth = tonumber(env_nonempty("DIY_EXTERNAL_MONITOR_BITDEPTH", "8")) or 8,
+    cm       = env_nonempty("DIY_EXTERNAL_MONITOR_CM", "srgb"),
+  })
+end
 
 --See https://wiki.hypr.land/Configuring/Basics/Monitors/
 hl.monitor({
@@ -63,12 +90,15 @@ hl.monitor({
 ---- WORKSPACES ----
 --------------------
 
-hl.workspace_rule({
+local ws1_rule = {
   workspace  = "1",
-  monitor    = "eDP-1",
   default    = true,
   persistent = true,
-})
+}
+if primary_monitor ~= "" then
+  ws1_rule.monitor = primary_monitor
+end
+hl.workspace_rule(ws1_rule)
 
 ---------------------
 ---- MY PROGRAMS ----
@@ -548,8 +578,15 @@ hl.window_rule({
   center = true,
 })
 
--- Game Mode performance toggle (zero-overhead compositor effects & performance profile)
-hl.bind(mainMod .. " + F1", hl.dsp.exec_cmd("/home/your-username/.local/bin/hypr-gamemode"), { description = "hypr-gamemode" })
+-- Game Mode performance toggle (optional script under $DIY_SCRIPTS_DIR or ~/.local/bin)
+hl.bind(
+  mainMod .. " + F1",
+  hl.dsp.exec_cmd('sh -c \'cmd="${DIY_SCRIPTS_DIR:-$HOME/.local/bin}/hypr-gamemode"; if [ -x "$cmd" ]; then exec "$cmd"; elif command -v notify-send >/dev/null 2>&1; then notify-send -u low "Game Mode" "Optional script not installed: $cmd"; fi\''),
+  { description = "hypr-gamemode" }
+)
+
+-- Optional local per-machine Lua overrides (gitignored)
+pcall(require, "machine-local")
 
 -- HyprMod managed settings
 require("hyprland-gui")

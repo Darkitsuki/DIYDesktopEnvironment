@@ -1,24 +1,73 @@
 import { createState } from "gnim"
 import { execAsync } from "ags/process"
 import GLib from "gi://GLib?version=2.0"
+import Gio from "gi://Gio?version=2.0"
+import { configuredBatteryDevice } from "./config"
 
 export interface BatteryInfo {
+  available: boolean
   percent: number
   charging: boolean
   icon: string
 }
 
+let cachedBatteryDir: string | null = null
+
+function findBatteryDir(): string | null {
+  if (configuredBatteryDevice) {
+    const pinned = `/sys/class/power_supply/${configuredBatteryDevice}`
+    if (GLib.file_test(`${pinned}/capacity`, GLib.FileTest.EXISTS)) {
+      return pinned
+    }
+  }
+  if (cachedBatteryDir && GLib.file_test(`${cachedBatteryDir}/capacity`, GLib.FileTest.EXISTS)) {
+    return cachedBatteryDir
+  }
+  try {
+    const root = Gio.File.new_for_path("/sys/class/power_supply")
+    const iter = root.enumerate_children("standard::name", Gio.FileQueryInfoFlags.NONE, null)
+    const candidates: string[] = []
+    let info: Gio.FileInfo | null
+    while ((info = iter.next_file(null)) !== null) {
+      const name = info.get_name()
+      const dir = `/sys/class/power_supply/${name}`
+      if (!GLib.file_test(`${dir}/capacity`, GLib.FileTest.EXISTS)) continue
+      const [okType, typeBytes] = GLib.file_get_contents(`${dir}/type`)
+      if (!okType) continue
+      if (new TextDecoder().decode(typeBytes).trim() !== "Battery") continue
+      // Skip peripheral batteries (e.g. wireless mice) when scope == Device
+      if (GLib.file_test(`${dir}/scope`, GLib.FileTest.EXISTS)) {
+        const [okScope, scopeBytes] = GLib.file_get_contents(`${dir}/scope`)
+        if (okScope && new TextDecoder().decode(scopeBytes).trim() === "Device") continue
+      }
+      candidates.push(dir)
+    }
+    iter.close(null)
+    candidates.sort()
+    if (candidates.length > 0) {
+      cachedBatteryDir = candidates[0]
+      return cachedBatteryDir
+    }
+  } catch {}
+  return null
+}
+
 export function getBatteryInfo(): BatteryInfo {
   try {
+    const batDir = findBatteryDir()
+    if (!batDir) {
+      return { available: false, percent: 0, charging: false, icon: "󰁹" }
+    }
+
     let percent = 100
     let charging = false
 
-    const [hasCap, capBytes] = GLib.file_get_contents("/sys/class/power_supply/BAT0/capacity")
+    const [hasCap, capBytes] = GLib.file_get_contents(`${batDir}/capacity`)
     if (hasCap) {
-      percent = parseInt(new TextDecoder().decode(capBytes).trim(), 10) || 100
+      percent = parseInt(new TextDecoder().decode(capBytes).trim(), 10) || 0
     }
 
-    const [hasStat, statBytes] = GLib.file_get_contents("/sys/class/power_supply/BAT0/status")
+    const [hasStat, statBytes] = GLib.file_get_contents(`${batDir}/status`)
     if (hasStat) {
       const status = new TextDecoder().decode(statBytes).trim().toLowerCase()
       charging = status === "charging" || status === "full"
@@ -41,9 +90,9 @@ export function getBatteryInfo(): BatteryInfo {
       icon = "󰂃"
     }
 
-    return { percent, charging, icon }
+    return { available: true, percent, charging, icon }
   } catch {
-    return { percent: 100, charging: false, icon: "󰁹" }
+    return { available: false, percent: 0, charging: false, icon: "󰁹" }
   }
 }
 

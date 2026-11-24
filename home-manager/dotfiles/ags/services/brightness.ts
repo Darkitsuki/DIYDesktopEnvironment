@@ -1,13 +1,16 @@
 import { createState } from "gnim"
 import { execAsync } from "ags/process"
+import { ddcDisplayIndex, detectExternalMonitorName } from "./config"
 
 const [internalBright, setInternalBright] = createState(30)
 const [externalBright, setExternalBright] = createState(100)
 const [hasExternal, setHasExternal] = createState(false)
+const [externalName, setExternalName] = createState("External Display")
 
 export const laptopBrightness = internalBright
 export const externalBrightness = externalBright
 export const externalDisplayConnected = hasExternal
+export const externalDisplayName = externalName
 
 export async function updateInternalBrightness() {
   try {
@@ -35,9 +38,14 @@ export async function checkMonitors() {
   try {
     const out = await execAsync(["hyprctl", "monitors", "-j"])
     const monitors = JSON.parse(out)
-    const hdmi = monitors.some((m: any) => m.name === "HDMI-A-2" && !m.disabled)
-    setHasExternal(hdmi)
-    return hdmi
+    const ext = detectExternalMonitorName(monitors)
+    if (ext) {
+      setExternalName(ext)
+      setHasExternal(true)
+      return true
+    }
+    setHasExternal(false)
+    return false
   } catch {
     setHasExternal(false)
     return false
@@ -49,7 +57,7 @@ export async function updateExternalBrightness() {
   if (!connected) return
 
   try {
-    const out = await execAsync(["ddcutil", "--display", "1", "getvcp", "10"])
+    const out = await execAsync(["ddcutil", "--display", ddcDisplayIndex, "getvcp", "10"])
     // VCP code 0x10 (Brightness                    ): current value =   100, max value =   100
     const match = out.match(/current value\s*=\s*(\d+)/)
     if (match) {
@@ -72,7 +80,7 @@ export function setExternalBrightnessDebounced(val: number) {
   }
   ddcTimer = setTimeout(async () => {
     try {
-      await execAsync(["ddcutil", "--display", "1", "setvcp", "10", clamped.toString()])
+      await execAsync(["ddcutil", "--display", ddcDisplayIndex, "setvcp", "10", clamped.toString()])
     } catch (e) {
       console.error("ddcutil set error:", e)
     }

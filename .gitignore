@@ -70,6 +70,19 @@ Code/TransportSecurity
 Code/Trust Tokens*
 Code/SharedStorage*
 Code/.org.chromium.Chromium.*
+# === Local Machine Configuration & Generated Home Manager Symlinks ===
+machine-config.env
+home-manager/dotfiles/hypr/machine-local.lua
+home-manager/dotfiles/gtk-3.0/bookmarks
+/ags
+/hypr
+/waybar
+/gtk-3.0
+/gtk-4.0
+/xsettingsd
+/xdg-desktop-portal
+/environment.d/10-home-manager.conf
+
 # === Runtime State, Binary Databases & Temp Files ===
 fcitx/dbus/
 dconf/user

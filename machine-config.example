@@ -1,0 +1,67 @@
+# ==============================================================================
+# DIYDesktopEnvironment - Machine-Specific Configuration Template
+# ==============================================================================
+# Copy this file to ~/.config/machine-config.env (gitignored) and adjust values
+# for your local hardware. Do NOT commit ~/.config/machine-config.env to Git.
+#
+# Loaded automatically by uwsm/env at session startup and optionally read by
+# systemd user units (sd-card-automount.service, rclone-gdrive-sd*.service).
+# ==============================================================================
+
+# ------------------------------------------------------------------------------
+# Display Outputs (discover names with: hyprctl monitors)
+# ------------------------------------------------------------------------------
+# Leave DIY_PRIMARY_MONITOR empty to let Hyprland apply preferred/auto defaults.
+# Example laptop panel:
+# DIY_PRIMARY_MONITOR="eDP-1"
+# DIY_PRIMARY_MONITOR_MODE="1920x1080@144"
+# DIY_PRIMARY_MONITOR_POS="0x0"
+# DIY_PRIMARY_MONITOR_SCALE="1"
+
+# Optional external monitor (leave empty if unused or let auto-detection pick
+# the first connected non-internal display):
+# DIY_EXTERNAL_MONITOR="HDMI-A-2"
+# DIY_EXTERNAL_MONITOR_MODE="1920x1080@180"
+# DIY_EXTERNAL_MONITOR_POS="1920x0"
+# DIY_EXTERNAL_MONITOR_SCALE="1"
+# DIY_EXTERNAL_MONITOR_BITDEPTH="8"
+# DIY_EXTERNAL_MONITOR_CM="srgb"
+
+# External display index for ddcutil brightness control (discover: ddcutil detect)
+# DIY_EXTERNAL_DDC_DISPLAY="1"
+
+# ------------------------------------------------------------------------------
+# GPU & DRM Configuration
+# ------------------------------------------------------------------------------
+# GPU vendor mode for Hyprland NVIDIA environment variables:
+#   "auto"   (default: enables NVIDIA env vars only if /dev/nvidia0 exists)
+#   "nvidia" (always enable LIBVA_DRIVER_NAME=nvidia & __GLX_VENDOR_LIBRARY_NAME=nvidia)
+#   "intel" / "amd" / "none" (disable NVIDIA-specific env overrides)
+# DIY_GPU_VENDOR="auto"
+
+# Optional DRM device priority (uncomment and adjust only on multi-GPU systems;
+# uwsm/env automatically uses /dev/dri/dgpu:/dev/dri/igpu if both symlinks exist):
+# AQ_DRM_DEVICES="/dev/dri/dgpu:/dev/dri/igpu"
+
+# ------------------------------------------------------------------------------
+# Power Supply / Battery Sysfs Device (optional)
+# ------------------------------------------------------------------------------
+# By default, AGS scans /sys/class/power_supply/* for a system Battery device.
+# Set a specific sysfs name (e.g. "BAT0" or "BAT1") only if you need to pin one:
+# DIY_BATTERY_DEVICE="BAT0"
+
+# ------------------------------------------------------------------------------
+# Optional External Helper Scripts
+# ------------------------------------------------------------------------------
+# Override only if your optional scripts live outside the default XDG paths:
+# DIY_SCRIPTS_DIR="$HOME/.local/bin"
+# DIY_NAUTILUS_SCRIPTS_DIR="$HOME/.local/share/nautilus/scripts"
+
+# ------------------------------------------------------------------------------
+# Optional SD Card Automount & Google Drive Sync
+# ------------------------------------------------------------------------------
+# Obtain your partition UUID with: lsblk -f
+# Leave unset to disable automatic mounting and SD card shortcuts.
+# DIY_SD_CARD_UUID="YOUR-PARTITION-UUID"
+# Optional explicit mountpoint for Waybar right-click (auto-detected via findmnt if unset):
+# DIY_SD_CARD_MOUNT="/run/media/$USER/YOUR-SD-LABEL/Google Drive"

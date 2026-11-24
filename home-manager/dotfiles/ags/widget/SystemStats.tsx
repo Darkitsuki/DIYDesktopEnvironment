@@ -2,6 +2,7 @@ import { Gtk } from "ags/gtk4"
 import { createState } from "gnim"
 import { execAsync } from "ags/process"
 import GLib from "gi://GLib?version=2.0"
+import { hasScript, scriptPath } from "../services/config"
 
 interface StatItem {
   text: string
@@ -158,8 +159,15 @@ function getCpuTemp(): StatItem {
 // GPU Temperature: waybar-gpu-temp (D3cold safe)
 // ----------------------------------------------------
 async function getGpuTemp(): Promise<StatItem> {
+  if (!hasScript("waybar-gpu-temp")) {
+    return {
+      text: "--°C",
+      cssClass: "suspended",
+      tooltip: "GPU Temp: Optional waybar-gpu-temp script not installed",
+    }
+  }
   try {
-    const out = await execAsync(["/home/your-username/.local/bin/waybar-gpu-temp"])
+    const out = await execAsync([scriptPath("waybar-gpu-temp")])
     const data = JSON.parse(out.trim())
     return {
       text: (data.text || "--°C").trim(),
@@ -170,7 +178,7 @@ async function getGpuTemp(): Promise<StatItem> {
     return {
       text: "--°C",
       cssClass: "suspended",
-      tooltip: "NVIDIA GPU: Unavailable",
+      tooltip: "GPU Temp: Unavailable",
     }
   }
 }

@@ -124,20 +124,20 @@ export default function QuickToggles() {
         <ToggleCard
           icon="󰊴"
           title="Game Mode"
-          subtitle={gameMode.as((g) => (g ? "35W/45W CPU" : "Disabled"))}
+          subtitle={gameMode.as((g) => (g ? "Active" : "Disabled"))}
           active={gameMode}
           onPrimaryClick={toggleGameMode}
         />
       </box>
 
-      {/* Row 3: HDR (HDMI-A-2) & Notifications (DND) */}
+      {/* Row 3: HDR (External Display) & Notifications (DND) */}
       <box spacing={8} hexpand>
         <ToggleCard
           icon="󰹑"
           title={hdr.as((h) =>
             h.disconnected ? "No Display" : h.active ? "HDR (10-bit)" : "SDR (8-bit)",
           )}
-          subtitle="HDMI-A-2"
+          subtitle={hdr.as((h) => h.subtitle)}
           active={hdr.as((h) => h.active)}
           onPrimaryClick={toggleHdr}
         />

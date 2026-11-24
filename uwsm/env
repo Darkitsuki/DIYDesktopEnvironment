@@ -1,2 +1,15 @@
-export AQ_DRM_DEVICES=/dev/dri/dgpu:/dev/dri/igpu
+# Load optional local machine configuration (gitignored)
+if [ -f "${XDG_CONFIG_HOME:-$HOME/.config}/machine-config.env" ]; then
+  set -a
+  # shellcheck disable=SC1091
+  . "${XDG_CONFIG_HOME:-$HOME/.config}/machine-config.env"
+  set +a
+fi
+
+# Hybrid-GPU DRM priority: honor explicit AQ_DRM_DEVICES, or auto-enable when
+# both udev symlinks (/dev/dri/dgpu and /dev/dri/igpu) exist on the host.
+if [ -z "${AQ_DRM_DEVICES:-}" ] && [ -e /dev/dri/dgpu ] && [ -e /dev/dri/igpu ]; then
+  export AQ_DRM_DEVICES="/dev/dri/dgpu:/dev/dri/igpu"
+fi
+
 export XDG_DATA_DIRS="$HOME/.nix-profile/share:${XDG_DATA_DIRS:-/usr/local/share:/usr/share}"
