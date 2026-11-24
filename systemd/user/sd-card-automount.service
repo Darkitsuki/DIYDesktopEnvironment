@@ -1,0 +1,13 @@
+[Unit]
+Description=Auto-mount SD Card (YOUR_SD_CARD_UUID) via udisks2
+ConditionPathExists=/dev/disk/by-uuid/YOUR_SD_CARD_UUID
+Before=graphical-session.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/bin/bash -c 'findmnt -rn /dev/disk/by-uuid/YOUR_SD_CARD_UUID >/dev/null || /usr/bin/udisksctl mount --no-user-interaction -b /dev/disk/by-uuid/YOUR_SD_CARD_UUID'
+ExecStartPost=-/usr/bin/pkill -RTMIN+12 waybar
+
+[Install]
+WantedBy=default.target
