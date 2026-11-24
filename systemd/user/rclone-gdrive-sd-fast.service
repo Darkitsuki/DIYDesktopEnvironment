@@ -1,0 +1,7 @@
+[Unit]
+Description=Fast 2-Way Sync of Google Drive to SD Card (Excludes Shared Modpack)
+
+[Service]
+Type=oneshot
+TimeoutStopSec=45s
+ExecStart=%h/.local/bin/mirror-gdrive-sd.sh --fast

@@ -1,0 +1,7 @@
+[Unit]
+Description=Mirror Google Drive to SD Card
+
+[Service]
+Type=oneshot
+TimeoutStopSec=45s
+ExecStart=%h/.local/bin/mirror-gdrive-sd.sh
