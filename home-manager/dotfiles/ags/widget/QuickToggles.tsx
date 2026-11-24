@@ -1,5 +1,6 @@
+import app from "ags/gtk4/app"
 import { Gtk } from "ags/gtk4"
-import { Accessor } from "gnim"
+import { Accessor, createState } from "gnim"
 import {
   wifi,
   toggleWifi,
@@ -12,13 +13,19 @@ import {
 } from "../services/network"
 import { gameMode, toggleGameMode } from "../services/gamemode"
 import { hdr, toggleHdr } from "../services/hdr"
-import { dnd, toggleDnd } from "../services/system"
+import {
+  dnd,
+  toggleDnd,
+  keepAwake,
+  toggleKeepAwake,
+  lockScreen,
+} from "../services/system"
 
 interface ToggleProps {
   icon: Accessor<string> | string
   title: Accessor<string> | string
   subtitle: Accessor<string> | string
-  active: Accessor<boolean>
+  active?: Accessor<boolean> | boolean
   onPrimaryClick: () => void
   onSecondaryClick?: () => void
 }
@@ -27,19 +34,20 @@ function ToggleCard({
   icon,
   title,
   subtitle,
-  active,
+  active = false,
   onPrimaryClick,
   onSecondaryClick,
 }: ToggleProps) {
+  const activeAcc = typeof active === "boolean" ? createState(active)[0] : active
   const box = (
     <box
-      cssClasses={active.as((act) => ["toggle-card", act ? "active" : "inactive"])}
+      cssClasses={activeAcc.as((act) => ["toggle-card", act ? "active" : "inactive"])}
       spacing={10}
       hexpand
     >
       <label
         label={icon}
-        cssClasses={active.as((act) => ["toggle-icon", act ? "active" : ""])}
+        cssClasses={activeAcc.as((act) => ["toggle-icon", act ? "active" : ""])}
       />
       <box orientation={Gtk.Orientation.VERTICAL} valign={Gtk.Align.CENTER} hexpand>
         <label
@@ -139,6 +147,30 @@ export default function QuickToggles() {
           subtitle={dnd.as((d) => (d ? "Active" : "Off"))}
           active={dnd}
           onPrimaryClick={toggleDnd}
+        />
+      </box>
+
+      {/* Row 4: Keep Awake (hypridle) & Lock Screen (hyprlock) */}
+      <box spacing={8} hexpand>
+        <ToggleCard
+          icon={keepAwake.as((k) => (k ? "󰅶" : "󰾪"))}
+          title="Keep Awake"
+          subtitle={keepAwake.as((k) => (k ? "hypridle paused" : "Auto-lock 5m"))}
+          active={keepAwake}
+          onPrimaryClick={toggleKeepAwake}
+        />
+        <ToggleCard
+          icon="󰌾"
+          title="Lock Screen"
+          subtitle="hyprlock"
+          active={false}
+          onPrimaryClick={() => {
+            const qs = app.get_window("quick-settings")
+            if (qs) {
+              qs.visible = false
+            }
+            lockScreen()
+          }}
         />
       </box>
     </box>
