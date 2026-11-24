@@ -268,6 +268,7 @@ hl.config({
 
         follow_mouse = 1,
 
+        accel_profile = "flat",
         scroll_factor = 2.0, -- 0.1 - 10.0, 1.0 means no modification
         sensitivity = -0.5, -- -1.0 - 1.0, 0 means no modification
 
@@ -516,7 +517,9 @@ hl.window_rule({
 hl.window_rule({
   name = "minecraft-fullscreen-smooth",
   match = { class = "^(Minecraft.*|com\\.mojang\\.minecraft.*)$" },
-  immediate = true,
+  no_blur = true,
+  no_shadow = true,
+  no_anim = true,
 })
 
 hl.window_rule({
