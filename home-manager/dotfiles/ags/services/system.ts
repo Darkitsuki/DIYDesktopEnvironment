@@ -106,3 +106,60 @@ export async function openPowerMenu() {
     console.error("Power menu error:", e)
   }
 }
+
+// Keep Awake (hypridle pause/resume) State
+const [keepAwakeState, setKeepAwakeState] = createState(false)
+export const keepAwake = keepAwakeState
+
+export async function isKeepAwakeActive(): Promise<boolean> {
+  try {
+    const out = await execAsync(["sh", "-c", "systemctl --user is-active hypridle.service 2>/dev/null || true"])
+    return out.trim() !== "active"
+  } catch {
+    return false
+  }
+}
+
+export async function updateKeepAwake() {
+  const active = await isKeepAwakeActive()
+  setKeepAwakeState(active)
+}
+
+export async function toggleKeepAwake(): Promise<boolean> {
+  try {
+    const isAwake = await isKeepAwakeActive()
+    if (!isAwake) {
+      await execAsync([
+        "sh",
+        "-c",
+        'systemctl --user stop hypridle.service && notify-send -u low -t 2000 "Keep Awake: ON" "hypridle paused — screen will stay awake" 2>/dev/null || true',
+      ])
+      setKeepAwakeState(true)
+      return true
+    } else {
+      await execAsync([
+        "sh",
+        "-c",
+        'systemctl --user start hypridle.service && notify-send -u low -t 2000 "Keep Awake: OFF" "hypridle resumed (auto-lock 5m)" 2>/dev/null || true',
+      ])
+      setKeepAwakeState(false)
+      return false
+    }
+  } catch (e) {
+    console.error("toggleKeepAwake error:", e)
+    await updateKeepAwake()
+    return keepAwakeState.peek()
+  }
+}
+
+export async function lockScreen(): Promise<void> {
+  try {
+    await execAsync(["sh", "-c", "nohup sh -c 'pidof hyprlock || hyprlock' >/dev/null 2>&1 &"])
+  } catch (e) {
+    console.error("lockScreen error:", e)
+  }
+}
+
+updateKeepAwake()
+setInterval(updateKeepAwake, 3000)
+
