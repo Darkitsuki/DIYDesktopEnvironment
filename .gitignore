@@ -29,10 +29,21 @@ gh/hosts.yml
 **/*credential*
 *.pem
 *.key
+*.p12
+*.pfx
+*.kdbx
+*.ppk
+.env
+.env.*
+id_rsa
+id_ed25519
+id_ecdsa
+id_dsa
 # === Browser, IDE & Gaming Caches / Bloat ===
 Antigravity/
 Antigravity IDE/
 CurseForge/
+ow-electron/
 Code/Cache/
 Code/CachedData/
 Code/CachedExtensionVSIXs/
