@@ -23,6 +23,7 @@ rclone/rclone.conf
 # === Credentials & Secrets (NEVER PUSH TO GITHUB) ===
 antigravity/plugin-secrets.json
 antigravity/credential-user-scope
+gh/
 gh/hosts.yml
 **/*secret*
 **/*token*
