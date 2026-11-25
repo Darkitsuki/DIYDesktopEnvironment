@@ -219,6 +219,12 @@ menuitem:hover {
   color: #6c7086;
 }
 
+#custom-gdrive-sync.disabled {
+  padding: 0;
+  margin: 0;
+  background-color: transparent;
+}
+
 tooltip {
   background-color: rgba(30, 30, 46, 0.96);
   border: 1px solid #89b4fa;

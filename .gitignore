@@ -70,7 +70,8 @@ Code/TransportSecurity
 Code/Trust Tokens*
 Code/SharedStorage*
 Code/.org.chromium.Chromium.*
-# === Local Machine Configuration & Generated Home Manager Symlinks ===
+# === Local Machine Configuration, Audit Output & Generated Home Manager Symlinks ===
+/audit/
 machine-config.env
 home-manager/dotfiles/hypr/machine-local.lua
 home-manager/dotfiles/gtk-3.0/bookmarks

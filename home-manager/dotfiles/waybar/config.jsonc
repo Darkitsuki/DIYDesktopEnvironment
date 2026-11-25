@@ -43,8 +43,8 @@
         "disable-scroll": false,
         "warp-on-scroll": false,
         "all-outputs": true,
-        "on-scroll-up": "hyprctl dispatch 'hl.dsp.focus({ workspace = \"e-1\" })'",
-        "on-scroll-down": "hyprctl dispatch 'hl.dsp.focus({ workspace = \"e+1\" })'",
+        "on-scroll-up": "hyprctl dispatch workspace e-1",
+        "on-scroll-down": "hyprctl dispatch workspace e+1",
         "format": "{name}",
         "persistent-workspaces":{
             "*": [1,2,3,4,5]
@@ -200,7 +200,9 @@
         "on-click": "kitty -e nmtui"
     },
     "custom/gdrive-sync": {
-        "exec": "sh -c 'cmd=\"${DIY_SCRIPTS_DIR:-$HOME/.local/bin}/waybar-gdrive-sync\"; if [ -x \"$cmd\" ]; then exec \"$cmd\"; else printf \"%s\\n\" \"{\\\"text\\\":\\\"\\\",\\\"class\\\":\\\"unmounted\\\",\\\"tooltip\\\":\\\"Optional Google Drive sync not configured\\\"}\"; fi'",
+        "exec": "sh -c 'cmd=\"${DIY_SCRIPTS_DIR:-$HOME/.local/bin}/waybar-gdrive-sync\"; if [ -x \"$cmd\" ]; then exec \"$cmd\"; else printf \"%s\\n\" \"{\\\"text\\\":\\\"\\\",\\\"class\\\":\\\"disabled\\\",\\\"tooltip\\\":\\\"Optional Google Drive sync not configured\\\"}\"; fi'",
+        "exec-if": "sh -c 'cmd=\"${DIY_SCRIPTS_DIR:-$HOME/.local/bin}/waybar-gdrive-sync\"; [ -x \"$cmd\" ] && { [ -n \"${DIY_SD_CARD_UUID:-}${DIY_SD_CARD_MOUNT:-}\" ] || [ -f \"${XDG_CONFIG_HOME:-$HOME/.config}/rclone/rclone.conf\" ]; }'",
+        "hide-empty-text": true,
         "return-type": "json",
         "interval": 2,
         "signal": 12,

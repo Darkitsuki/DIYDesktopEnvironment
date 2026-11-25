@@ -4,8 +4,12 @@
 # Copy this file to ~/.config/machine-config.env (gitignored) and adjust values
 # for your local hardware. Do NOT commit ~/.config/machine-config.env to Git.
 #
-# Loaded automatically by uwsm/env at session startup and optionally read by
-# systemd user units (sd-card-automount.service, rclone-gdrive-sd*.service).
+# Loaded automatically by uwsm/env at session startup (POSIX shell-sourced,
+# expanding $HOME/$USER) and optionally read by systemd user units
+# (sd-card-automount.service, rclone-gdrive-sd*.service) via EnvironmentFile=.
+# NOTE: systemd EnvironmentFile= parses values literally WITHOUT shell variable
+# expansion. Keep DIY_SD_CARD_UUID plain and use literal absolute paths (never
+# $HOME or $USER) for any variable you expect systemd user units to read.
 # ==============================================================================
 
 # ------------------------------------------------------------------------------
@@ -53,9 +57,11 @@
 # ------------------------------------------------------------------------------
 # Optional External Helper Scripts
 # ------------------------------------------------------------------------------
-# Override only if your optional scripts live outside the default XDG paths:
-# DIY_SCRIPTS_DIR="$HOME/.local/bin"
-# DIY_NAUTILUS_SCRIPTS_DIR="$HOME/.local/share/nautilus/scripts"
+# Override only if your optional scripts live outside the default XDG paths
+# (defaults: $HOME/.local/bin and $HOME/.local/share/nautilus/scripts):
+# Use literal absolute paths if systemd services also read these variables.
+# DIY_SCRIPTS_DIR="/home/your-username/.local/bin"
+# DIY_NAUTILUS_SCRIPTS_DIR="/home/your-username/.local/share/nautilus/scripts"
 
 # ------------------------------------------------------------------------------
 # Optional SD Card Automount & Google Drive Sync
@@ -63,5 +69,6 @@
 # Obtain your partition UUID with: lsblk -f
 # Leave unset to disable automatic mounting and SD card shortcuts.
 # DIY_SD_CARD_UUID="YOUR-PARTITION-UUID"
-# Optional explicit mountpoint for Waybar right-click (auto-detected via findmnt if unset):
-# DIY_SD_CARD_MOUNT="/run/media/$USER/YOUR-SD-LABEL/Google Drive"
+# Optional explicit mountpoint for Waybar right-click (auto-detected via findmnt if unset).
+# Use a literal absolute path (do NOT use $USER here if read by systemd EnvironmentFile=):
+# DIY_SD_CARD_MOUNT="/run/media/your-username/YOUR-SD-LABEL/Google Drive"
