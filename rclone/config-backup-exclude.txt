@@ -1,5 +1,6 @@
 BraveSoftware/**
 Antigravity/**
+antigravity/**
 Antigravity IDE/**
 
 # Generic Electron/Chromium volatile caches & runtime subdirectories
@@ -49,3 +50,4 @@ Code/TransportSecurity
 Code/Trust Tokens*
 Code/SharedStorage*
 Code/.org.chromium.Chromium.*
+*.log

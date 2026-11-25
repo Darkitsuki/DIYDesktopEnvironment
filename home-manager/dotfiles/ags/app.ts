@@ -3,12 +3,14 @@ import { Astal } from "ags/gtk4"
 import style from "./style.css"
 import QuickSettings from "./widget/QuickSettings"
 import Backdrop from "./widget/Backdrop"
+import OSD from "./widget/OSD"
 
 app.start({
   css: style,
   main() {
     const backdrop = Backdrop()
     const quickSettings = QuickSettings()
+    OSD()
 
     // Alias window to support "quicksettings" without hyphen
     const alias = new Astal.Window({

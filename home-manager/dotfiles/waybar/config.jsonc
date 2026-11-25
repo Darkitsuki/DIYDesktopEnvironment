@@ -6,19 +6,18 @@
         "tooltip": false
     },  
     // "position": "bottom", // Waybar position (top|bottom|left|right)
-    "height": 26, // Waybar height (to be removed for auto height)
+    // "height": 26, // Waybar height (to be removed for auto height)
     // "width": 1280, // Waybar width
-    "spacing": 4, // Gaps between modules (4px)
+    "spacing": 6, // Gaps between modules (6px)
     // Choose the order of the modules
-    "margin-top": 10,
-    "margin-right": 10,
-    "margin-left": 10,
+    "margin-top": 0,
+    "margin-right": 0,
+    "margin-left": 0,
     "background": "none",
     "layer": "top",
     "passthrough": false,
 
     "modules-left": [
-        "clock",
         "hyprland/workspaces"
         // "custom/media"
     ],
@@ -26,10 +25,10 @@
     "modules-center": [
         // "hyprland/window",
         // "hyprland/media",
-        "custom/playerctl"
+        // "custom/playerctl",
+        "clock"
     ],
     "modules-right": [
-        "custom/separator",
         "pulseaudio",
         "network",
         "custom/gdrive-sync",
@@ -43,8 +42,8 @@
         "disable-scroll": false,
         "warp-on-scroll": false,
         "all-outputs": true,
-        "on-scroll-up": "hyprctl dispatch workspace e-1",
-        "on-scroll-down": "hyprctl dispatch workspace e+1",
+        "on-scroll-up": "hyprctl dispatch workspace e+1",
+        "on-scroll-down": "hyprctl dispatch workspace e-1",
         "format": "{name}",
         "persistent-workspaces":{
             "*": [1,2,3,4,5]
@@ -108,7 +107,26 @@
     },
     "clock": {
         // "timezone": "America/New_York",
+        "format": "{:%H:%M  %a %d/%m}",
         "tooltip-format": "<big>{:%Y %B}</big>\n<tt><small>{calendar}</small></tt>",
+        "calendar": {
+            "mode": "month",
+            "mode-mon-col": 3,
+            "weeks-pos": "right",
+            "on-scroll": 1,
+            "format": {
+                "months": "<span color='#cdd6f4'><b>{}</b></span>",
+                "days": "<span color='#bac2de'>{}</span>",
+                "weeks": "<span color='#6c7086'>W{}</span>",
+                "weekdays": "<span color='#89b4fa'><b>{}</b></span>",
+                "today": "<span color='#288cff'><b><u>{}</u></b></span>"
+            }
+        },
+        "actions": {
+            "on-click-right": "mode",
+            "on-scroll-up": "shift_up",
+            "on-scroll-down": "shift_down"
+        },
         "format-alt": "{:%Y-%m-%d}"
     },
     "cpu": {
@@ -197,7 +215,8 @@
         "format-linked": "{ifname} (No IP)",
         "format-disconnected": "⚠",
         // "format-alt": "{ifname}: {ipaddr}/{cidr}",
-        "on-click": "kitty -e nmtui"
+        "on-click": "kitty -e nmtui",
+        "on-click-right": "kitty -e nmtui"
     },
     "custom/gdrive-sync": {
         "exec": "sh -c 'cmd=\"${DIY_SCRIPTS_DIR:-$HOME/.local/bin}/waybar-gdrive-sync\"; if [ -x \"$cmd\" ]; then exec \"$cmd\"; else printf \"%s\\n\" \"{\\\"text\\\":\\\"\\\",\\\"class\\\":\\\"disabled\\\",\\\"tooltip\\\":\\\"Optional Google Drive sync not configured\\\"}\"; fi'",
@@ -228,7 +247,9 @@
             "car": "",
             "default": ["", "", ""]
         },
-        "on-click": "pavucontrol"
+        "on-click": "ags toggle quick-settings",
+        "on-click-right": "pavucontrol",
+        "on-click-middle": "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle"
     },
     "custom/media": {
         "format": "{icon} {text}",

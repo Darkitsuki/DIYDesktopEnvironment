@@ -455,6 +455,14 @@ local quickSettingsBlur = hl.layer_rule({
 })
 quickSettingsBlur:set_enabled(true)
 
+local osdBlur = hl.layer_rule({
+    name = "osd-blur",
+    match = { namespace = "^osd$" },
+    blur = true,
+    ignore_alpha = 0.2,
+})
+osdBlur:set_enabled(true)
+
 local hyprlauncherBlur = hl.layer_rule({
     name = "hyprlauncher-blur",
     match = { namespace = "^hyprlauncher$" },

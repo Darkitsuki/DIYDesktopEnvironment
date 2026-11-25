@@ -392,3 +392,166 @@ scale slider:hover {
   font-size: 16px;
   color: #11111b;
 }
+
+/* ========================================= */
+/* Compact Cloud & .config Sync Strip        */
+/* ========================================= */
+.sync-strip {
+  background-color: rgba(24, 24, 37, 0.85);
+  border: 1px solid #313244;
+  border-radius: 14px;
+  padding: 8px 10px;
+  margin-top: 2px;
+  transition: all 180ms ease-in-out;
+}
+
+.sync-strip:hover {
+  border-color: rgba(137, 180, 250, 0.4);
+}
+
+.sync-status-icon {
+  font-size: 16px;
+  color: #a6e3a1;
+  min-width: 18px;
+}
+
+.sync-status-icon.syncing {
+  color: #89b4fa;
+}
+
+.sync-status-icon.failed {
+  color: #f38ba8;
+}
+
+.sync-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: #cdd6f4;
+}
+
+.sync-subtitle {
+  font-size: 10px;
+  font-weight: 500;
+  color: #a6adc8;
+}
+
+.sync-btn {
+  background-color: #313244;
+  border: 1px solid rgba(69, 71, 90, 0.6);
+  border-radius: 10px;
+  padding: 5px 8px;
+  transition: all 180ms ease-in-out;
+}
+
+.sync-btn:hover {
+  background-color: #45475a;
+  border-color: #89b4fa;
+}
+
+.sync-btn-icon {
+  font-size: 12px;
+  color: #89b4fa;
+}
+
+.sync-btn-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: #cdd6f4;
+}
+
+.sync-backup-btn:hover {
+  background-color: #288cff;
+  border-color: #89b4fa;
+}
+
+.sync-backup-btn:hover .sync-btn-icon,
+.sync-backup-btn:hover .sync-btn-label {
+  color: #11111b;
+}
+
+/* ========================================= */
+/* Floating Bottom OSD                       */
+/* ========================================= */
+window.osd-window,
+.osd-window {
+  background: transparent;
+  background-color: transparent;
+}
+
+.osd-pill {
+  background-color: rgba(30, 30, 46, 0.9);
+  border: 1px solid rgba(137, 180, 250, 0.45);
+  border-radius: 999px;
+  padding: 10px 18px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.48);
+  min-width: 280px;
+}
+
+.osd-pill.muted {
+  border-color: rgba(243, 139, 168, 0.5);
+}
+
+.osd-icon {
+  font-size: 18px;
+  color: #89b4fa;
+  min-width: 20px;
+}
+
+.osd-pill.muted .osd-icon {
+  color: #f38ba8;
+}
+
+.osd-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: #cdd6f4;
+  min-width: 68px;
+}
+
+.osd-value {
+  font-size: 12px;
+  font-weight: 700;
+  color: #89b4fa;
+  min-width: 36px;
+}
+
+.osd-pill.muted .osd-value {
+  color: #a6adc8;
+}
+
+levelbar.osd-bar {
+  min-width: 120px;
+  min-height: 8px;
+}
+
+levelbar.osd-bar trough {
+  background-color: #313244;
+  border: none;
+  border-radius: 999px;
+  min-height: 8px;
+  padding: 0;
+}
+
+levelbar.osd-bar block.filled,
+levelbar.osd-bar block.filled.low,
+levelbar.osd-bar block.filled.high,
+levelbar.osd-bar block.filled.full {
+  background-color: #288cff;
+  background-image: linear-gradient(90deg, #288cff, #89b4fa);
+  border: none;
+  border-radius: 999px;
+  min-height: 8px;
+}
+
+levelbar.osd-bar block.empty {
+  background-color: transparent;
+  border: none;
+}
+
+.osd-pill.muted levelbar.osd-bar block.filled,
+.osd-pill.muted levelbar.osd-bar block.filled.low,
+.osd-pill.muted levelbar.osd-bar block.filled.high,
+.osd-pill.muted levelbar.osd-bar block.filled.full {
+  background-color: #585b70;
+  background-image: none;
+}

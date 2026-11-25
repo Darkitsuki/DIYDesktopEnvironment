@@ -7,9 +7,12 @@
 }
 
 window#waybar {
-    background: none;
+    background: transparent;
     background-color: transparent;
-    color: #c0caf5;
+    color: #cdd6f4;
+    margin-top: 6px;
+    margin-left: 10px;
+    margin-right: 10px;
 }
 
 #custom-separator {
@@ -18,14 +21,19 @@ window#waybar {
     font-weight: bold;
 }
 
+#clock,
+#pulseaudio,
+#network,
+#custom-gdrive-sync,
+#battery,
+#tray,
+#custom-quick-settings,
 #custom-playerctl,
 #mode,
 #scratchpad,
 #window,
 #mpd,
 #idle_inhibitor,
-#pulseaudio,
-#network,
 #custom-power-profile,
 #cpu,
 #memory,
@@ -35,16 +43,33 @@ window#waybar {
 #custom-external-brightness,
 #custom-hdr,
 #keyboard-state,
-#language,
-#battery,
-#clock,
-#custom-quick-settings,
-#tray {
-    background-color: rgba(0, 0, 0, 0.2);
-    border-radius: 15px;
-    padding: 0px 12px;
+#language {
+    background-color: rgba(30, 30, 46, 0.88);
+    border: 1px solid #45475a;
+    border-radius: 16px;
+    padding: 2px 10px;
     margin: 0;
-    color: #c0caf5;
+    color: #cdd6f4;
+    transition: all 0.2s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+#clock:hover,
+#pulseaudio:hover,
+#network:hover,
+#custom-gdrive-sync:hover,
+#battery:hover,
+#custom-quick-settings:hover {
+    border-color: #89b4fa;
+    background-color: rgba(49, 50, 68, 0.92);
+}
+
+#clock {
+    font-weight: 600;
+    padding: 2px 14px;
+}
+
+#custom-quick-settings {
+    padding: 2px 11px;
 }
 
 #power-profiles-daemon,
@@ -55,44 +80,48 @@ window#waybar {
 }
 
 #workspaces {
-    background:none;
-    background-color: rgba(0, 0, 0, 0.2);
-    border-radius: 13px;
+    background-color: rgba(30, 30, 46, 0.88);
+    border: 1px solid #45475a;
+    border-radius: 16px;
+    padding: 2px 6px;
     margin: 0;
 }
 
 #workspaces button {
-    padding: 0 6px;
-    color: #c0caf5;
+    padding: 2px 8px;
+    margin: 2px 2px;
+    color: #bac2de;
     background-color: transparent;
-    border-radius: 13px;
-
-    border:none;
+    border-radius: 12px;
+    border: none;
     box-shadow: none;
     outline: none;
-
-    transition: all 0.3s cubic-bezier(0.5, 0.5, 0.5, 0.5);
+    min-width: 18px;
+    transition: all 0.25s cubic-bezier(0.25, 1, 0.5, 1);
 }
 
 #workspaces button:hover {
     background: none;
-    background-color: rgba(42, 42, 181, 0.305);
-    color: #7aa2f7;
+    background-color: rgba(137, 180, 250, 0.2);
+    color: #89b4fa;
 }
 
-#workspaces button.focused{
+#workspaces button.focused {
     background: none;
 }
 
 #workspaces button.active {
-    color: #7aa2f7;
+    background: linear-gradient(135deg, #288cff, #89b4fa);
+    color: #11111b;
     font-weight: bold;
-    background-color: rgba(42, 42, 181, 0.538);
-
+    min-width: 28px;
+    padding: 2px 14px;
+    box-shadow: 0 0 8px rgba(40, 140, 255, 0.35);
 }
 
 #workspaces button.urgent {
-    color: #f7768e;
+    background-color: rgba(243, 139, 168, 0.25);
+    color: #f38ba8;
 }
 
 #keyboard-state label {
@@ -189,12 +218,13 @@ menuitem:hover {
 
 /* Google Drive 2-Way Sync Module */
 #custom-gdrive-sync {
-  background-color: rgba(0, 0, 0, 0.2);
-  border-radius: 15px;
-  padding: 0px 12px;
+  background-color: rgba(30, 30, 46, 0.88);
+  border: 1px solid #45475a;
+  border-radius: 16px;
+  padding: 2px 10px;
   margin: 0;
   color: #a6e3a1;
-  transition: all 0.2s ease;
+  transition: all 0.2s cubic-bezier(0.25, 1, 0.5, 1);
 }
 
 #custom-gdrive-sync.synced {
@@ -203,6 +233,7 @@ menuitem:hover {
 
 #custom-gdrive-sync.syncing {
   color: #89b4fa;
+  border-color: #288cff;
   font-weight: bold;
 }
 
@@ -212,6 +243,7 @@ menuitem:hover {
 
 #custom-gdrive-sync.error {
   color: #f38ba8;
+  border-color: #f38ba8;
   font-weight: bold;
 }
 
@@ -222,6 +254,7 @@ menuitem:hover {
 #custom-gdrive-sync.disabled {
   padding: 0;
   margin: 0;
+  border: none;
   background-color: transparent;
 }
 
