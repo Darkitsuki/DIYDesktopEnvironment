@@ -316,7 +316,8 @@ hl.gesture({
     action = "workspace"
 })
 
--- Example per-device config
+-- Optional per-device config (Razer DeathAdder V2 X HyperSpeed; no-op when disconnected)
+-- Discover device names with `hyprctl devices` or override in ~/.config/hypr/machine-local.lua
 -- See https://wiki.hypr.land/Configuring/Advanced-and-Cool/Devices/ for more
 hl.device({
     name = "razer-razer-deathadder-v2-x-hyperspeed-mouse",

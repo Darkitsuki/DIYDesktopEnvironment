@@ -409,7 +409,7 @@ sudo pacman -S \
   xdg-desktop-portal xdg-desktop-portal-hyprland xdg-desktop-portal-gtk xdg-desktop-portal-gnome \
   pipewire wireplumber pavucontrol networkmanager brightnessctl playerctl \
   grim slurp wl-clipboard libnotify wofi \
-  fcitx5 fcitx5-unikey \
+  fcitx5 fcitx5-unikey fcitx5-gtk fcitx5-qt \
   ttf-jetbrains-mono-nerd ttf-roboto noto-fonts noto-fonts-emoji ttf-nerd-fonts-symbols
 ```
 
