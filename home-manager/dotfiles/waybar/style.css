@@ -10,9 +10,6 @@ window#waybar {
     background: transparent;
     background-color: transparent;
     color: #cdd6f4;
-    margin-top: 6px;
-    margin-left: 10px;
-    margin-right: 10px;
 }
 
 #custom-separator {
@@ -28,7 +25,6 @@ window#waybar {
 #battery,
 #tray,
 #custom-quick-settings,
-#custom-playerctl,
 #mode,
 #scratchpad,
 #window,
@@ -153,9 +149,31 @@ window#waybar {
 }
 
 #custom-playerctl {
-    color: #c0caf5;
-    padding: 0 6px;
+    background-color: rgba(30, 30, 46, 0.88);
+    border: 1px solid #45475a;
+    border-radius: 16px;
+    padding: 2px 12px;
+    margin-left: 8px;
+    color: #cdd6f4;
+    transition: all 0.2s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+#custom-playerctl:hover,
+#custom-playerctl.playing {
+    border-color: #89b4fa;
+    color: #89b4fa;
+}
+
+#custom-playerctl:hover {
+    background-color: rgba(49, 50, 68, 0.92);
+}
+
+#custom-playerctl.stopped,
+#custom-playerctl.empty {
+    padding: 0;
     margin: 0;
+    border: none;
+    background: transparent;
 }
 
 /* Khung chứa Menu Pop-up */

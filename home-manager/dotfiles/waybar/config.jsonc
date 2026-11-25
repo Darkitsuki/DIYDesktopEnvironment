@@ -10,15 +10,17 @@
     // "width": 1280, // Waybar width
     "spacing": 6, // Gaps between modules (6px)
     // Choose the order of the modules
-    "margin-top": 0,
-    "margin-right": 0,
-    "margin-left": 0,
+    "margin-top": 8,
+    "margin-left": 12,
+    "margin-right": 12,
+    "margin-bottom": 0,
     "background": "none",
     "layer": "top",
     "passthrough": false,
 
     "modules-left": [
-        "hyprland/workspaces"
+        "hyprland/workspaces",
+        "custom/playerctl"
         // "custom/media"
     ],
 
@@ -80,13 +82,17 @@
         "tooltip-format": "{app}: {title}"
     },
     "custom/playerctl": {
-        "exec": "playerctl metadata --format '{{title}} - {{artist}}' 2>/dev/null",
+        "exec": "python3 -c 'import json,subprocess; out=subprocess.run([\"playerctl\",\"metadata\",\"--format\",\"{{status}}\\x1f{{playerName}}\\x1f{{title}}\\x1f{{artist}}\"],capture_output=True,text=True); p=(out.stdout.rstrip(\"\\n\").split(\"\\x1f\")+[\"\",\"\",\"\",\"\"])[:4] if out.returncode==0 else [\"\",\"\",\"\",\"\"]; st,pl,ti,ar=[x.strip() for x in p]; body=f\"{ti} - {ar}\" if ti and ar else (ti or ar); cls=st.lower() if st in (\"Playing\",\"Paused\") and body else \"stopped\"; ico=\"󰎈 \" if cls==\"playing\" else (\"󰏤 \" if cls==\"paused\" else \"\"); pl=pl or \"Media\"; print(json.dumps({\"text\":f\"{ico}{body}\" if cls!=\"stopped\" else \"\",\"tooltip\":f\"{pl} ({st}): {body}\" if cls!=\"stopped\" else \"\",\"class\":cls},ensure_ascii=False))'",
+        "return-type": "json",
+        "escape": true,
+        "hide-empty-text": true,
         "interval": 2,
         "format": "{}",
         //  
-        "max-length": 50,
+        "max-length": 30,
         "tooltip": true,
         "on-click": "playerctl play-pause",
+        "on-click-right": "playerctl next",
         "on-scroll-up": "playerctl next",
         "on-scroll-down": "playerctl previous"
     },
