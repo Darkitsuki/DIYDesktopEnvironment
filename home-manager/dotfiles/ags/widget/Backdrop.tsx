@@ -24,6 +24,10 @@ export default function Backdrop() {
           if (qs) {
             qs.visible = false
           }
+          const am = app.get_window("audio-menu")
+          if (am) {
+            am.visible = false
+          }
         }}
       />
     </window>

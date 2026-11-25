@@ -5,7 +5,6 @@ import { execAsync } from "ags/process"
 import GLib from "gi://GLib?version=2.0"
 import { homeDir } from "../services/config"
 import { refreshAudioDevices, updateMic, updateSpeaker } from "../services/audio"
-import { collapseAudioDrawers } from "./AudioDeviceMenu"
 import Header from "./Header"
 import SystemStats from "./SystemStats"
 import QuickToggles from "./QuickToggles"
@@ -268,8 +267,6 @@ export default function QuickSettings() {
       refreshAudioDevices()
       updateSpeaker()
       updateMic()
-    } else {
-      collapseAudioDrawers()
     }
   })
 

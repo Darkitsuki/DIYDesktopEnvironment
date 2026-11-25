@@ -2,24 +2,21 @@ import app from "ags/gtk4/app"
 import { Astal } from "ags/gtk4"
 import style from "./style.css"
 import QuickSettings from "./widget/QuickSettings"
+import AudioMenu from "./widget/AudioMenu"
 import Backdrop from "./widget/Backdrop"
 import OSD from "./widget/OSD"
-import { expandAudioDrawers } from "./widget/AudioDeviceMenu"
-import { updateMic, updateSpeaker } from "./services/audio"
+import { refreshAllAudio } from "./services/audio"
 
 app.start({
   css: style,
   requestHandler(argv, res) {
-    const [cmd, sub] = argv
+    const [cmd] = argv
     if (cmd === "audio") {
-      const target = sub === "input" || sub === "all" ? sub : "output"
-      const qs = app.get_window("quick-settings")
-      if (qs) {
-        qs.visible = true
+      const am = app.get_window("audio-menu")
+      if (am) {
+        am.visible = true
       }
-      expandAudioDrawers(target)
-      updateSpeaker()
-      updateMic()
+      refreshAllAudio()
       res("ok")
       return
     }
@@ -28,6 +25,7 @@ app.start({
   main() {
     const backdrop = Backdrop()
     const quickSettings = QuickSettings()
+    const audioMenu = AudioMenu()
     OSD()
 
     // Alias window to support "quicksettings" without hyphen
@@ -44,12 +42,23 @@ app.start({
       }
     })
 
-    // Sync backdrop visibility with quick-settings popup
+    const syncBackdrop = () => {
+      backdrop.visible = quickSettings.visible || audioMenu.visible
+    }
+
+    // Mutual exclusion & shared backdrop visibility
     app.connect("window-toggled", (_, win) => {
       if (win.name === "quick-settings") {
-        backdrop.visible = win.visible
+        if (win.visible && audioMenu.visible) {
+          audioMenu.visible = false
+        }
+        syncBackdrop()
+      } else if (win.name === "audio-menu") {
+        if (win.visible && quickSettings.visible) {
+          quickSettings.visible = false
+        }
+        syncBackdrop()
       }
     })
   },
 })
-

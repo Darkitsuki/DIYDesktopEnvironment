@@ -455,6 +455,14 @@ local quickSettingsBlur = hl.layer_rule({
 })
 quickSettingsBlur:set_enabled(true)
 
+local audioMenuBlur = hl.layer_rule({
+    name = "audio-menu-blur",
+    match = { namespace = "^audio-menu$" },
+    blur = true,
+    ignore_alpha = 0.2,
+})
+audioMenuBlur:set_enabled(true)
+
 local osdBlur = hl.layer_rule({
     name = "osd-blur",
     match = { namespace = "^osd$" },

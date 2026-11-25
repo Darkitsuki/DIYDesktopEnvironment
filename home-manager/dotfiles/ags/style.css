@@ -557,46 +557,49 @@ levelbar.osd-bar block.empty {
 }
 
 /* ========================================= */
-/* Audio Output / Input Device Drawers       */
+/* Dedicated Audio & Mixer Popup (audio-menu)*/
 /* ========================================= */
-.audio-device-drawer {
-  margin-left: 36px;
+window.audio-menu-window,
+.audio-menu-window {
+  background: transparent;
+  background-color: transparent;
 }
 
-.audio-device-trigger {
-  background-color: #181825;
-  border: 1px solid #313244;
-  border-radius: 10px;
-  padding: 5px 10px;
-  color: #cdd6f4;
-  transition: all 160ms ease-in-out;
+.audiomenu-panel {
+  background-color: rgba(30, 30, 46, 0.92);
+  border: 1px solid rgba(69, 71, 90, 0.7);
+  border-radius: 16px;
+  padding: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
 }
 
-.audio-device-trigger:hover {
-  background-color: #313244;
-  border-color: rgba(137, 180, 250, 0.45);
+.audiomenu-header {
+  margin-bottom: 2px;
 }
 
-.audio-device-trigger.open {
-  border-color: #89b4fa;
-  background-color: rgba(49, 50, 68, 0.85);
-}
-
-.audio-device-trigger-icon {
-  font-size: 13px;
+.audiomenu-header-icon {
+  font-size: 16px;
   color: #89b4fa;
-  min-width: 16px;
 }
 
-.audio-device-trigger-label {
-  font-size: 11px;
-  font-weight: 600;
+.audiomenu-header-title {
+  font-size: 13px;
+  font-weight: 700;
   color: #cdd6f4;
 }
 
-.audio-device-chevron {
-  font-size: 12px;
-  color: #a6adc8;
+.audio-section {
+  background-color: rgba(24, 24, 37, 0.78);
+  border: 1px solid rgba(69, 71, 90, 0.5);
+  border-radius: 14px;
+  padding: 10px 12px;
+}
+
+.audio-section-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: #89b4fa;
+  letter-spacing: 0.3px;
 }
 
 .audio-device-list {
@@ -604,7 +607,6 @@ levelbar.osd-bar block.empty {
   border: 1px solid #313244;
   border-radius: 10px;
   padding: 4px;
-  margin-top: 2px;
 }
 
 .audio-device-item {
@@ -661,8 +663,72 @@ levelbar.osd-bar block.empty {
   color: #11111b;
 }
 
-.audio-device-empty {
+.audio-empty-label {
   font-size: 11px;
   color: #6c7086;
-  padding: 6px 8px;
+  padding: 4px 6px;
+}
+
+.app-mixer-scroll {
+  background: transparent;
+}
+
+.app-stream-row {
+  background-color: #181825;
+  border: 1px solid #313244;
+  border-radius: 10px;
+  padding: 8px 10px;
+  transition: all 150ms ease;
+}
+
+.app-stream-row:hover {
+  border-color: rgba(137, 180, 250, 0.4);
+}
+
+.app-stream-icon {
+  color: #89b4fa;
+}
+
+.app-stream-name {
+  font-size: 11px;
+  font-weight: 700;
+  color: #cdd6f4;
+}
+
+.app-stream-media {
+  font-size: 10px;
+  color: #a6adc8;
+}
+
+.app-stream-mute-btn {
+  background-color: #313244;
+  border: 1px solid rgba(69, 71, 90, 0.5);
+  border-radius: 8px;
+  min-width: 26px;
+  min-height: 26px;
+  padding: 2px;
+  transition: all 150ms ease;
+}
+
+.app-stream-mute-btn:hover {
+  background-color: #45475a;
+  border-color: #89b4fa;
+}
+
+.app-stream-mute-btn.muted {
+  background-color: rgba(243, 139, 168, 0.18);
+  border-color: rgba(243, 139, 168, 0.55);
+}
+
+.app-stream-mute-icon {
+  font-size: 13px;
+  color: #89b4fa;
+}
+
+.app-stream-mute-btn.muted .app-stream-mute-icon {
+  color: #f38ba8;
+}
+
+.app-stream-pct {
+  min-width: 40px;
 }
