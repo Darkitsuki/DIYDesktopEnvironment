@@ -555,3 +555,114 @@ levelbar.osd-bar block.empty {
   background-color: #585b70;
   background-image: none;
 }
+
+/* ========================================= */
+/* Audio Output / Input Device Drawers       */
+/* ========================================= */
+.audio-device-drawer {
+  margin-left: 36px;
+}
+
+.audio-device-trigger {
+  background-color: #181825;
+  border: 1px solid #313244;
+  border-radius: 10px;
+  padding: 5px 10px;
+  color: #cdd6f4;
+  transition: all 160ms ease-in-out;
+}
+
+.audio-device-trigger:hover {
+  background-color: #313244;
+  border-color: rgba(137, 180, 250, 0.45);
+}
+
+.audio-device-trigger.open {
+  border-color: #89b4fa;
+  background-color: rgba(49, 50, 68, 0.85);
+}
+
+.audio-device-trigger-icon {
+  font-size: 13px;
+  color: #89b4fa;
+  min-width: 16px;
+}
+
+.audio-device-trigger-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: #cdd6f4;
+}
+
+.audio-device-chevron {
+  font-size: 12px;
+  color: #a6adc8;
+}
+
+.audio-device-list {
+  background-color: #181825;
+  border: 1px solid #313244;
+  border-radius: 10px;
+  padding: 4px;
+  margin-top: 2px;
+}
+
+.audio-device-item {
+  background-color: transparent;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  padding: 6px 8px;
+  color: #cdd6f4;
+  transition: all 150ms ease;
+}
+
+.audio-device-item:hover {
+  background-color: #313244;
+  border-color: rgba(137, 180, 250, 0.35);
+}
+
+.audio-device-item.unavailable .audio-device-item-label,
+.audio-device-item.unavailable .audio-device-item-icon {
+  color: #a6adc8;
+}
+
+.audio-device-item-icon {
+  font-size: 13px;
+  color: #89b4fa;
+  min-width: 16px;
+}
+
+.audio-device-item-label {
+  font-size: 11px;
+  font-weight: 500;
+  color: #cdd6f4;
+}
+
+.audio-device-item.active {
+  background-color: #288cff;
+  border-color: #89b4fa;
+  color: #11111b;
+  font-weight: 700;
+}
+
+.audio-device-item.active:hover {
+  background-color: #74c7ec;
+}
+
+.audio-device-item.active .audio-device-item-icon,
+.audio-device-item.active .audio-device-item-label,
+.audio-device-item.active .audio-device-check {
+  color: #11111b;
+  font-weight: 700;
+}
+
+.audio-device-check {
+  font-size: 12px;
+  color: #11111b;
+}
+
+.audio-device-empty {
+  font-size: 11px;
+  color: #6c7086;
+  padding: 6px 8px;
+}

@@ -4,6 +4,8 @@ import { createState } from "gnim"
 import { execAsync } from "ags/process"
 import GLib from "gi://GLib?version=2.0"
 import { homeDir } from "../services/config"
+import { refreshAudioDevices, updateMic, updateSpeaker } from "../services/audio"
+import { collapseAudioDrawers } from "./AudioDeviceMenu"
 import Header from "./Header"
 import SystemStats from "./SystemStats"
 import QuickToggles from "./QuickToggles"
@@ -225,6 +227,7 @@ export default function QuickSettings() {
       keymode={Astal.Keymode.ON_DEMAND}
       layer={Astal.Layer.TOP}
       exclusivity={Astal.Exclusivity.NORMAL}
+      resizable={false}
       application={app}
       cssClasses={["quick-settings-window"]}
     >
@@ -260,8 +263,13 @@ export default function QuickSettings() {
   ) as Astal.Window
 
   win.connect("notify::visible", () => {
-    if (win.visible && onOpenRefresh) {
-      onOpenRefresh()
+    if (win.visible) {
+      if (onOpenRefresh) onOpenRefresh()
+      refreshAudioDevices()
+      updateSpeaker()
+      updateMic()
+    } else {
+      collapseAudioDrawers()
     }
   })
 

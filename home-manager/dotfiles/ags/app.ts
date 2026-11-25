@@ -4,9 +4,27 @@ import style from "./style.css"
 import QuickSettings from "./widget/QuickSettings"
 import Backdrop from "./widget/Backdrop"
 import OSD from "./widget/OSD"
+import { expandAudioDrawers } from "./widget/AudioDeviceMenu"
+import { updateMic, updateSpeaker } from "./services/audio"
 
 app.start({
   css: style,
+  requestHandler(argv, res) {
+    const [cmd, sub] = argv
+    if (cmd === "audio") {
+      const target = sub === "input" || sub === "all" ? sub : "output"
+      const qs = app.get_window("quick-settings")
+      if (qs) {
+        qs.visible = true
+      }
+      expandAudioDrawers(target)
+      updateSpeaker()
+      updateMic()
+      res("ok")
+      return
+    }
+    res(`unknown request: ${argv.join(" ")}`)
+  },
   main() {
     const backdrop = Backdrop()
     const quickSettings = QuickSettings()

@@ -16,6 +16,7 @@ import {
   externalDisplayConnected,
   externalDisplayName,
 } from "../services/brightness"
+import { OutputDeviceMenu, InputDeviceMenu } from "./AudioDeviceMenu"
 
 interface SliderRowProps {
   icon: Accessor<string> | string
@@ -98,33 +99,39 @@ export default function Sliders() {
       spacing={10}
       cssClasses={["sliders-card"]}
     >
-      {/* 1. Output Volume */}
-      <SliderRow
-        icon={speaker.as((s) =>
-          s.muted
-            ? "󰝟"
-            : s.volume > 60
-            ? "󰕾"
-            : s.volume > 20
-            ? "󰖀"
-            : "󰕿",
-        )}
-        iconTooltip="Toggle Mute"
-        onIconClick={toggleSpeakerMute}
-        value={speaker.as((s) => s.volume)}
-        onValueChange={setSpeakerVolume}
-        customClass="speaker-slider"
-      />
+      {/* 1. Output Volume + Device Drawer */}
+      <box orientation={Gtk.Orientation.VERTICAL} spacing={6}>
+        <SliderRow
+          icon={speaker.as((s) =>
+            s.muted
+              ? "󰝟"
+              : s.volume > 60
+              ? "󰕾"
+              : s.volume > 20
+              ? "󰖀"
+              : "󰕿",
+          )}
+          iconTooltip="Toggle Mute"
+          onIconClick={toggleSpeakerMute}
+          value={speaker.as((s) => s.volume)}
+          onValueChange={setSpeakerVolume}
+          customClass="speaker-slider"
+        />
+        <OutputDeviceMenu />
+      </box>
 
-      {/* 2. Microphone Gain (shown if available or general control) */}
-      <SliderRow
-        icon={mic.as((m) => (m.muted || !m.available ? "󰍭" : "󰍬"))}
-        iconTooltip="Toggle Mic Mute"
-        onIconClick={toggleMicMute}
-        value={mic.as((m) => m.volume)}
-        onValueChange={setMicVolume}
-        customClass="mic-slider"
-      />
+      {/* 2. Microphone Gain + Device Drawer */}
+      <box orientation={Gtk.Orientation.VERTICAL} spacing={6}>
+        <SliderRow
+          icon={mic.as((m) => (m.muted || !m.available ? "󰍭" : "󰍬"))}
+          iconTooltip="Toggle Mic Mute"
+          onIconClick={toggleMicMute}
+          value={mic.as((m) => m.volume)}
+          onValueChange={setMicVolume}
+          customClass="mic-slider"
+        />
+        <InputDeviceMenu />
+      </box>
 
       {/* 3. Internal Display Brightness */}
       <SliderRow

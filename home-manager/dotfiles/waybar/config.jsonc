@@ -253,7 +253,7 @@
             "car": "",
             "default": ["", "", ""]
         },
-        "on-click": "ags toggle quick-settings",
+        "on-click": "ags request audio || ags toggle quick-settings",
         "on-click-right": "pavucontrol",
         "on-click-middle": "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle"
     },
