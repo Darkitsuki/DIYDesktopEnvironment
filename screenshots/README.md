@@ -14,7 +14,7 @@ Save all screenshots inside `screenshots/` using these exact filenames so they m
 | 2. Waybar Status Bar | `waybar-status-bar.png` | Top translucent pill bar with workspaces, `playerctl`, `gdrive-sync`, audio, network, and tray |
 | 3. Quick Settings | `quick-settings.png` | AGS v3 floating Quick Settings panel (telemetry strip, 2x4 toggles, sliders, MPRIS card) |
 | 4. Application Launcher | `application-launcher.png` | `hyprlauncher` centered 620x430 Spotlight-style launcher |
-| 5. File Manager | `file-manager.png` | Nautilus styled with `gtk-4.0/gtk.css` and `Colloid-Catppuccin-Dark-Nautilus` icons |
+| 5. File Manager | `file-manager.png` | Nautilus styled with `gtk-4.0/gtk.css` and `Colloid-Catppuccin-Dark` icons |
 | 6. System Monitoring | `system-monitoring.png` | `btop` (`btop/btop.conf`) alongside AGS `SystemStats` telemetry |
 
 ---
@@ -23,7 +23,7 @@ Save all screenshots inside `screenshots/` using these exact filenames so they m
 
 - **Format:** Lossless **PNG** (`.png`) only.
 - **Resolution:** At least **1280x720** for full-screen views (`desktop-overview.png`, `file-manager.png`, `system-monitoring.png`); regional crops (`waybar-status-bar.png`, `quick-settings.png`, `application-launcher.png`) should be captured at native display scale (`scale = 1`, `1920x1080` on `eDP-1`/`HDMI-A-2`) without downscaling.
-- **Visual Consistency:** Capture with the repository's Catppuccin Mocha + Electric Blue theme active across Hyprland, Waybar, AGS, GTK 3/4, `hyprtoolkit`, and `Colloid-Catppuccin-Dark-Nautilus` icons.
+- **Visual Consistency:** Capture with the repository's Catppuccin Mocha + Electric Blue theme active across Hyprland, Waybar, AGS, GTK 3/4, `hyprtoolkit`, and `Colloid-Catppuccin-Dark` icons.
 - **Filenames:** Use the exact lowercase, hyphenated filenames listed in the table above.
 
 ---
@@ -78,7 +78,7 @@ sleep 3 && grim -o eDP-1 screenshots/application-launcher.png
 4. **`application-launcher.png`**
    - Prepare `sleep 3 && grim -o eDP-1 screenshots/application-launcher.png` in a terminal, then press `SUPER + R` to open `hyprlauncher` (`620x430` frosted-glass overlay) and wait for capture.
 5. **`file-manager.png`**
-   - Open Nautilus (`SUPER + E`) showing a non-sensitive directory (such as a sample project or wallpaper folder) with the Catppuccin Mocha GTK4 theme and `Colloid-Catppuccin-Dark-Nautilus` icons clearly visible.
+   - Open Nautilus (`SUPER + E`) showing a non-sensitive directory (such as a sample project or wallpaper folder) with the Catppuccin Mocha GTK4 theme and `Colloid-Catppuccin-Dark` icons clearly visible.
    - Capture the window region with `grim -g "$(slurp)" screenshots/file-manager.png`.
 6. **`system-monitoring.png`**
    - Launch `btop` inside `kitty` (`SUPER + Q`) alongside the open AGS Quick Settings popup so both `btop` and the AGS `SystemStats` telemetry strip are visible.

@@ -71,9 +71,9 @@ Building a Hyprland desktop from individual tools often leads to visual inconsis
 
 ### Workspace Management
 
-- **Persistent Primary Workspace:** Pins workspace `1` as persistent and default on `eDP-1`.
+- **Persistent Primary Workspace:** Pins workspace `1` as persistent and default (bound to `DIY_PRIMARY_MONITOR` when configured in `~/.config/machine-config.env`).
 - **Keyboard, Mouse & Gesture Navigation:** Supports `SUPER + [0-9]` to focus workspaces 1–10, `SUPER + SHIFT + [0-9]` to move windows, `SUPER + mouse_down/up` to cycle workspaces, and a 3-finger horizontal touchpad swipe gesture (`hl.gesture`).
-- **Waybar Workspace Indicator:** Displays persistent workspaces `1`–`5` across outputs with scroll-wheel switching via `hyprctl dispatch 'hl.dsp.focus(...)'`.
+- **Waybar Workspace Indicator:** Displays persistent workspaces `1`–`5` across outputs with scroll-wheel switching via `hyprctl dispatch workspace e-1` / `e+1`.
 
 ### Status Bar
 
@@ -81,19 +81,19 @@ Building a Hyprland desktop from individual tools often leads to visual inconsis
 - **Active Top-Bar Layout:**
   - **Left:** `clock` (calendar tooltip, click toggles `YYYY-MM-DD`) and `hyprland/workspaces`.
   - **Center:** `custom/playerctl` (shows `title - artist`, click play/pause, scroll next/previous).
-  - **Right:** `pulseaudio` (click opens `pavucontrol`), `network` (click opens `kitty -e nmtui`), `custom/gdrive-sync` (live sync status, file progress tooltip, click/right-click/middle-click actions), `battery`, `tray`, and `custom/quick-settings` (toggles AGS `quick-settings`).
+  - **Right:** `pulseaudio` (click opens `pavucontrol`), `network` (click opens `kitty -e nmtui`), `custom/gdrive-sync` (hidden automatically via `exec-if` + `hide-empty-text` unless configured and helper-enabled; otherwise shows live sync status, progress tooltip, and click/right-click/middle-click actions), `battery`, `tray`, and `custom/quick-settings` (toggles AGS `quick-settings`).
 - **Additional Predefined Modules:** `config.jsonc` also defines `custom/gpu-temp`, `custom/hdr`, `custom/external-brightness`, `custom/power-profile`, `custom/power` (with `power_menu.xml`), `cpu`, `memory`, `temperature`, `backlight`, `keyboard-state`, and `idle_inhibitor` for users who wish to enable them in `modules-*`.
 
 ### Quick Settings (AGS v3)
 
 - **Floating GTK4 Popup (`home-manager/dotfiles/ags/`):** Built with AGS `3.1.0` (`ags/gtk4`, `Astal`, `gnim`), launched via `ags run` and toggled with `ags toggle quick-settings` (plus a `quicksettings` window alias and a fullscreen `Backdrop` click-away overlay + `Escape` key handler).
-- **Header Bar (`widget/Header.tsx`):** Shows live system uptime (`/proc/uptime`), `BAT0` capacity/charging badge, region screenshot button (`grim` + `slurp` + `wl-copy`), AGS service restart button (`systemctl --user restart ags.service`), and a `wofi` power menu button.
+- **Header Bar (`widget/Header.tsx`):** Shows live system uptime (`/proc/uptime`), auto-discovered system battery capacity/charging badge (or pinned `DIY_BATTERY_DEVICE`, hidden on desktops), region screenshot button (`grim` + `slurp` + `wl-copy`), AGS service restart button (`systemctl --user restart ags.service`), and a `wofi` power menu button.
 - **2x4 Quick Toggles (`widget/QuickToggles.tsx`):**
   - **Wi-Fi** (`nmcli` toggle, right-click launches `kitty --title nmtui -e nmtui`).
   - **Bluetooth** (`bluetoothctl` / `rfkill` toggle, right-click launches `blueman-manager`).
   - **Power Profile** (`powerprofilesctl` cycles `balanced` -> `performance` -> `power-saver`).
-  - **Game Mode** (toggles `$HOME/.local/bin/hypr-gamemode` and monitors `/tmp/hypr-gamemode.active`).
-  - **HDR (`HDMI-A-2`)** (toggles 8-bit SDR / 10-bit HDR via `$HOME/.local/bin/hypr-hdr-toggle`).
+  - **Game Mode** (toggles `${DIY_SCRIPTS_DIR:-$HOME/.local/bin}/hypr-gamemode` and monitors `/tmp/hypr-gamemode.active`).
+  - **HDR (`DIY_EXTERNAL_MONITOR` / `External Display`)** (toggles 8-bit SDR / 10-bit HDR via `${DIY_SCRIPTS_DIR:-$HOME/.local/bin}/hypr-hdr-toggle`).
   - **Do Not Disturb** (triggers `dunstctl` and `makoctl` pause/mode toggles).
   - **Keep Awake** (stops/starts `hypridle.service` via `systemctl --user`).
   - **Lock Screen** (closes popup and runs `pidof hyprlock || hyprlock`).
@@ -101,7 +101,7 @@ Building a Hyprland desktop from individual tools often leads to visual inconsis
 ### Audio, Brightness & Media Management
 
 - **PipeWire / WirePlumber Sliders & Keys:** AGS `services/audio.ts` and `Sliders.tsx` poll and control `@DEFAULT_AUDIO_SINK@` and `@DEFAULT_AUDIO_SOURCE@` via `wpctl`; Hyprland binds `XF86AudioRaiseVolume`, `XF86AudioLowerVolume`, `XF86AudioMute`, and `XF86AudioMicMute` (`locked = true`, `repeating = true`).
-- **Dual Display Brightness Control:** AGS controls laptop backlight (`eDP-1`) via `brightnessctl` and automatically reveals an external monitor brightness slider when `HDMI-A-2` is connected (`hyprctl monitors -j`), adjusting brightness over DDC/CI with `ddcutil --display 1` (150 ms debounced).
+- **Dual Display Brightness Control:** AGS controls internal laptop backlight via `brightnessctl` and automatically reveals an external monitor brightness slider when a non-`eDP`/`LVDS` monitor (or `DIY_EXTERNAL_MONITOR`) is connected (`hyprctl monitors -j`), adjusting brightness over DDC/CI with `ddcutil --display "${DIY_EXTERNAL_DDC_DISPLAY:-1}"` (150 ms debounced).
 - **MPRIS Media Card (`widget/MediaCard.tsx` & `services/mpris.ts`):** Dynamically appears inside Quick Settings when a player is `Playing` or `Paused` via `playerctl`, providing track/artist labels and prev/play-pause/next controls; Hyprland also maps `XF86AudioNext/Pause/Play/Prev`.
 
 ### Power & Idle Management
@@ -134,7 +134,7 @@ Building a Hyprland desktop from individual tools often leads to visual inconsis
 
 ### Theme and Appearance
 
-- **GTK3 & GTK4 / Libadwaita (`home-manager/dotfiles/gtk-3.0/`, `gtk-4.0/`):** Compact Catppuccin Mocha + Electric Blue styling (`gtk.css`) over `Adwaita:dark` / `Adwaita`, `Colloid-Catppuccin-Dark-Nautilus` icons, `Roboto 11` font, and `Adwaita` 24px cursors, mirrored in `xsettingsd/xsettingsd.conf` and `nwg-look/config`.
+- **GTK3 & GTK4 / Libadwaita (`home-manager/dotfiles/gtk-3.0/`, `gtk-4.0/`):** Compact Catppuccin Mocha + Electric Blue styling (`gtk.css`) over `Adwaita:dark` / `Adwaita`, `Colloid-Catppuccin-Dark` icons (provided by Home Manager's `colloid-icon-theme`), `Roboto 11` font, and `Adwaita` 24px cursors, mirrored in `xsettingsd/xsettingsd.conf` and `nwg-look/config`.
 - **Fontconfig (`fontconfig/fonts.conf`):** Maps `sans-serif` to `Noto Sans`, `Symbols Nerd Font`, `Noto Color Emoji` and `monospace` to `JetBrainsMono Nerd Font`, `Symbols Nerd Font`.
 - **Hyprland Ecosystem Styling:** `hyprtoolkit.conf` and `hyprlauncher.conf` extend the same palette and `Roboto` / `JetBrainsMono Nerd Font` typography to `hyprlauncher` and Hyprland toolkit apps.
 
@@ -152,7 +152,7 @@ Once screenshots are added to `screenshots/`, they map to the following views:
 | 2. Waybar Status Bar | `screenshots/waybar-status-bar.png` | Top translucent pill bar with workspaces, `playerctl`, `gdrive-sync`, audio, network, and tray |
 | 3. Quick Settings | `screenshots/quick-settings.png` | AGS v3 floating Quick Settings panel (telemetry strip, 2x4 toggles, sliders, MPRIS card) |
 | 4. Application Launcher | `screenshots/application-launcher.png` | `hyprlauncher` centered 620x430 Spotlight-style launcher |
-| 5. File Manager | `screenshots/file-manager.png` | Nautilus styled with `gtk-4.0/gtk.css` and `Colloid-Catppuccin-Dark-Nautilus` icons |
+| 5. File Manager | `screenshots/file-manager.png` | Nautilus styled with `gtk-4.0/gtk.css` and `Colloid-Catppuccin-Dark` icons |
 | 6. System Monitoring | `screenshots/system-monitoring.png` | `btop` (`btop/btop.conf`) alongside AGS `SystemStats` telemetry |
 
 To capture any view using the configured screenshot command:
@@ -190,7 +190,7 @@ grim -g "$(slurp)" screenshots/desktop-overview.png
 
 1. **Operating System & Hardware Layer (Arch Linux + systemd):** Manages Linux kernel DRM/KMS devices (auto-detecting `/dev/dri/dgpu` and `/dev/dri/igpu` when present), NVIDIA/Intel/AMD graphics drivers, PipeWire/WirePlumber, NetworkManager, BlueZ, `power-profiles-daemon`, `udisks2`, and systemd user targets.
 2. **Configuration Management Layer (Nix + Home Manager):** `nix/nix.conf` enables `nix-command` and `flakes`. `home-manager/flake.nix` defines a single `username` variable shared across `homeConfigurations.${username}`, `home.username`, and `home.homeDirectory`, installs `colloid-icon-theme` (Catppuccin variant), and links the seven core config directories from `~/.config/home-manager/dotfiles/` into `~/.config/` via `mkOutOfStoreSymlink`.
-3. **Display Server & Session Layer (SDDM -> UWSM -> systemd):** `uwsm/env` loads optional local overrides from `~/.config/machine-config.env` (copied from `machine-config.example`), sets `AQ_DRM_DEVICES` when hybrid DRM udev symlinks exist (or when overridden), and adds `$HOME/.nix-profile/share` to `XDG_DATA_DIRS`.
+3. **Display Server & Session Layer (SDDM -> UWSM -> systemd):** `uwsm/env` loads optional local overrides from `~/.config/machine-config.env` (copied from `machine-config.example`, POSIX shell-sourced), sets `AQ_DRM_DEVICES` when hybrid DRM udev symlinks exist (or when overridden), and adds `$HOME/.nix-profile/share` to `XDG_DATA_DIRS`. Note that optional `systemd/user/` units also attach `EnvironmentFile=-%h/.config/machine-config.env`, where systemd parses values literally without `$HOME`/`$USER` expansion.
 4. **Window Management Layer (Hyprland Lua + Hypr Ecosystem):** `hyprland.lua` reads optional environment overrides (`DIY_PRIMARY_MONITOR`, `DIY_EXTERNAL_MONITOR`, `DIY_GPU_VENDOR`) with safe `preferred`/`auto` monitor fallbacks and conditional NVIDIA environment detection (`/dev/nvidia0`). On `hyprland.start`, it spawns `hyprpaper`, `xsettingsd`, and `fcitx5 -d`, while `waybar`, `ags`, `hypridle`, and `hyprpolkitagent` run as systemd user services under `graphical-session.target`.
 5. **Desktop UI Layer (Waybar + AGS v3):** Waybar renders persistent workspaces, clock, MPRIS playback, network, battery, tray, and custom script modules. Clicking `custom/quick-settings` invokes `ags toggle quick-settings` via Astal IPC, opening the GTK4 Quick Settings popup, which polls `/proc/*`, auto-discovers `/sys/class/power_supply/*` batteries and `/sys/class/hwmon/*` sensors, and invokes system CLIs (`wpctl`, `nmcli`, `brightnessctl`, `ddcutil`, `powerprofilesctl`, `playerctl`, `systemctl`) plus optional `$HOME/.local/bin/` helpers.
 6. **Application & Portal Layer:** `xdg-desktop-portal` (`hyprland;gtk` + `gnome` file chooser), GTK3/GTK4 CSS overrides, `xsettingsd`, `fontconfig`, `nautilus`, `kitty`, `btop`, `pavucontrol`, and `antigravity-flags.conf` (`--password-store=gnome-libsecret`).
@@ -237,7 +237,7 @@ The tree below reflects the **tracked source layout** of the repository (excludi
 ```text
 DIYDesktopEnvironment/                      (cloned as ~/.config)
 ├── .config.code-workspace                  # VS Code multi-root workspace descriptor
-├── .gitignore                              # Ignores caches, browser/IDE state, secrets, local machine config & generated symlinks
+├── .gitignore                              # Ignores caches, browser/IDE state, secrets, /audit/, local machine config & generated symlinks
 ├── antigravity-flags.conf                  # Electron flag: --password-store=gnome-libsecret
 ├── antigravity-ide-flags.conf              # Electron flag: --password-store=gnome-libsecret
 ├── baloofileinformationrc                  # KDE Baloo metadata display preferences
@@ -400,11 +400,11 @@ Ensure `experimental-features = nix-command flakes` is active (this repo provide
 
 ### 3. Install System Dependencies
 
-Install the core Wayland, Hyprland, Bar, Widget, Portal, Font, and Audio packages on Arch Linux (adjust AUR packages such as `aylurs-gtk-shell` / `ags` or `hyprlauncher` using your preferred AUR helper if not in official repos):
+Install the core Wayland, Hyprland, Bar, Widget, Portal, Font, and Audio packages on Arch Linux (install AUR packages such as `aylurs-gtk-shell` / `ags` using your preferred AUR helper):
 
 ```bash
 sudo pacman -S \
-  hyprland uwsm hyprpaper hyprlock hypridle hyprpolkitagent \
+  hyprland uwsm hyprpaper hyprlock hypridle hyprpolkitagent hyprlauncher \
   waybar kitty nautilus xsettingsd \
   xdg-desktop-portal xdg-desktop-portal-hyprland xdg-desktop-portal-gtk xdg-desktop-portal-gnome \
   pipewire wireplumber pavucontrol networkmanager brightnessctl playerctl \
@@ -419,7 +419,7 @@ Install optional hardware/sync tools as needed:
 sudo pacman -S ddcutil power-profiles-daemon bluez bluez-utils blueman rclone udisks2 btop dunst
 ```
 
-> **Note:** Check exact AUR package names for `ags` v3 (for example `aylurs-gtk-shell-git` or `ags`) and `hyprlauncher` before installing, and ensure `ags --version` reports v3.x (`3.1.0` on the reference system) with `gnim` and `Astal` typelibs available.
+> **Note:** Check the exact AUR package name for `ags` v3 (for example `aylurs-gtk-shell` or `aylurs-gtk-shell-git`) before installing, and ensure `ags --version` reports v3.x (`3.1.0` on the reference system) with `gnim` and `Astal` typelibs available.
 
 ### 4. Back Up Existing `~/.config` and Clone the Repository
 
@@ -446,7 +446,7 @@ cd ~/.config
    hyprctl monitors
    lsblk -f
    ```
-   `~/.config/machine-config.env` is excluded by `.gitignore` and sourced automatically by `uwsm/env` and optional systemd units. If skipped, Hyprland uses `preferred` / `auto` monitor defaults, auto-detects NVIDIA if `/dev/nvidia0` exists, and disables SD card automounting.
+   `~/.config/machine-config.env` is excluded by `.gitignore`, sourced via POSIX shell by `uwsm/env`, and attached as an optional `EnvironmentFile=` in systemd user units (where `$HOME`/`$USER` are **not** expanded — use plain UUIDs and literal absolute paths for any variable read by systemd). If skipped, Hyprland uses `preferred` / `auto` monitor defaults, auto-detects NVIDIA if `/dev/nvidia0` exists, and disables SD card automounting.
 3. **Optional Wallpaper (`hyprpaper.conf` & `hyprlock.conf`):**
    - Place a wallpaper image at `~/Pictures/Wallpapers/wallpaper.jpg` (or customize `home-manager/dotfiles/hypr/hyprpaper.conf`). Missing wallpaper files do not block Hyprland startup.
    - `hyprlock.conf` uses `path = screenshot` with a `$base` solid-color fallback out of the box (change to `path = ~/Pictures/Wallpapers/wallpaper.jpg` if you prefer a static image).
@@ -532,7 +532,7 @@ uwsm start hyprland-uwsm.desktop
 
 ### Waybar (`home-manager/dotfiles/waybar/`)
 
-- **Enabled Modules & Order:** Edit `modules-left`, `modules-center`, and `modules-right` in `home-manager/dotfiles/waybar/config.jsonc`. Optional modules (`custom/gpu-temp`, `custom/hdr`, `custom/external-brightness`, `custom/power-profile`) are pre-defined and degrade gracefully if optional scripts or DDC/CI hardware are missing.
+- **Enabled Modules & Order:** Edit `modules-left`, `modules-center`, and `modules-right` in `home-manager/dotfiles/waybar/config.jsonc`. `custom/gdrive-sync` uses `exec-if` and `hide-empty-text` so it stays completely hidden unless `waybar-gdrive-sync` and SD/Rclone config are present, while optional modules (`custom/gpu-temp`, `custom/hdr`, `custom/external-brightness`, `custom/power-profile`) are pre-defined and degrade gracefully if optional scripts or DDC/CI hardware are missing.
 - **Styling & Colors:** Edit `home-manager/dotfiles/waybar/style.css` (uses `#c0caf5`, `#7aa2f7`, `#1e1e2e`, `#89b4fa`, and state classes `.warning`, `.critical`, `.suspended`, `.on`, `.off`, `.syncing`, `.error`).
 - **Restart Waybar:** `systemctl --user restart waybar.service`.
 
@@ -573,7 +573,7 @@ The table below documents their exact interfaces and behavior as observed on the
 | `hypr-gamemode` | `$HOME/.local/bin/hypr-gamemode` | Toggles zero-overhead Game Mode (disables animations, shadow, blur, rounding, gaps; sets `vrr = 2`, `direct_scanout = 2`, `scroll_factor = 1.0`) and restores via `hyprctl reload` | `bash`, `hyprctl`, `powerprofilesctl`, `notify-send` (optional `/usr/local/bin/victus-thermal-limit` via passwordless `sudo`) | Invoked with no arguments; tracks state in `/tmp/hypr-gamemode.active` & `/tmp/hypr-gamemode.prev_profile` | Bound to `SUPER + F1` in `hyprland.lua`; toggled & polled (1.5s) by AGS `services/gamemode.ts` | Uses both `hyprctl eval 'hl.config(...)'` (Hyprland 0.57+) and `hyprctl --batch` fallback |
 | `hypr-hdr-toggle` | `$HOME/.local/bin/hypr-hdr-toggle` | Queries or toggles 10-bit HDR (`hdr` / `hdredid`) vs. 8-bit `srgb` on `HDMI-A-2`, persisting changes into `hyprland.lua` after `luac -p` syntax validation | `python3`, `hyprctl`, `luac`, `pkill`, `notify-send` | Flags: `--status` / `-s` (JSON for Waybar/AGS), `--toggle`, `--cycle-preset`; sends `SIGRTMIN+11` to `waybar` | Used by Waybar `custom/hdr` (`signal: 11`) and AGS `services/hdr.ts` (polled every 3s) | Reference-machine defaults: `HDMI-A-2`, `1920x1080@180`, `1920x0`, and `LUA_CONFIG_PATH` |
 | `waybar-gpu-temp` | `$HOME/.local/bin/waybar-gpu-temp` | Reports NVIDIA GPU temperature, power draw/limit, and core clock as Waybar JSON without waking a D3cold-suspended dGPU | `python3`, `nvidia-smi` | Invoked with no arguments; checks `/sys/bus/pci/devices/0000:01:00.0/power/runtime_status` (reference dGPU bus ID) first | Used by Waybar `custom/gpu-temp` (3s interval) and AGS `widget/SystemStats.tsx` (3s interval) | Warning `>= 75°C`, Critical `>= 83°C`, Suspended class when D3cold |
-| `waybar-gdrive-sync` | `$HOME/.local/bin/waybar-gdrive-sync` | Outputs Waybar JSON showing Google Drive <-> SD card sync state (`synced`, `syncing`, `pending`, `error`, `unmounted`), active transferring files, next timer, and SD free space | `python3`, `systemctl`, `pgrep`, `~/.local/state/rclone-gdrive-sd.log` | Polled every 2s and refreshed via `SIGRTMIN+12` | Active in Waybar `modules-right` (`custom/gdrive-sync`) | Uses `SD_MOUNT="/run/media/$USER/<SD_CARD_UUID>"` (`<SD_CARD_MOUNT>`) and `/tmp/gdrive-sync-*` hint files |
+| `waybar-gdrive-sync` | `$HOME/.local/bin/waybar-gdrive-sync` | Outputs Waybar JSON showing Google Drive <-> SD card sync state (`synced`, `syncing`, `pending`, `error`, `unmounted`), active transferring files, next timer, and SD free space | `python3`, `systemctl`, `pgrep`, `~/.local/state/rclone-gdrive-sd.log` | Polled every 2s and refreshed via `SIGRTMIN+12` | Active in Waybar `modules-right` (`custom/gdrive-sync`, gated by `exec-if` + `hide-empty-text`) | Uses `SD_MOUNT="/run/media/$USER/<SD_CARD_UUID>"` (`<SD_CARD_MOUNT>`) and `/tmp/gdrive-sync-*` hint files |
 | `mirror-gdrive-sd.sh` | `%h/.local/bin/mirror-gdrive-sd.sh` | Runs `rclone bisync "Google Drive:" "$DEST_DIR"` with automatic mount check, `flock` locking, self-healing `--resync` recovery, and Nautilus emblem updates | `bash`, `rclone`, `udisksctl`, `flock`, `pkill`, optional `gdrive-emblems.py` | Flags: `--fast` (excludes `/Shared Modpack/**`, separate workdir), `--resync` | Executed by tracked `rclone-gdrive-sd.service` and `rclone-gdrive-sd-fast.service` | Requires configured `Google Drive:` remote in `~/.config/rclone/rclone.conf` |
 | `Sync Google Drive Now` | `$HOME/.local/share/nautilus/scripts/Sync Google Drive Now` | Starts `rclone-gdrive-sd-fast.service` asynchronously and sends desktop notifications on completion/failure | `bash`, `systemctl`, `notify-send` | Executed with no arguments | Triggered by left-clicking `custom/gdrive-sync` in Waybar (and via Nautilus right-click Scripts menu) | Checks block device `/dev/disk/by-uuid/<SD_CARD_UUID>` |
 
@@ -638,7 +638,7 @@ The table below documents their exact interfaces and behavior as observed on the
   ags run   # run interactively to inspect runtime errors
   ```
 
-### 5. GTK Theme or `Colloid-Catppuccin-Dark-Nautilus` Icons Missing
+### 5. GTK Theme or `Colloid-Catppuccin-Dark` Icons Missing
 
 - **Symptoms:** Nautilus or GTK3 file chooser falls back to default white theme or missing folder icons.
 - **Causes:** `$HOME/.nix-profile/share` is missing from `XDG_DATA_DIRS`, `home-manager switch` was not run, or `xsettingsd` is not running.
@@ -664,13 +664,13 @@ The table below documents their exact interfaces and behavior as observed on the
 ### 7. External Monitor Brightness (`ddcutil`) or HDR Fails
 
 - **Symptoms:** External brightness slider missing in AGS, `ddcutil` errors, or `hypr-hdr-toggle` fails.
-- **Causes:** `i2c-dev` kernel module not loaded, user not in `i2c` group, or monitor output is not named `HDMI-A-2`.
+- **Causes:** `i2c-dev` kernel module not loaded, user not in `i2c` group, `DIY_EXTERNAL_MONITOR` / `DIY_EXTERNAL_DDC_DISPLAY` not matching your display, or optional `hypr-hdr-toggle` script defaults pointing to `HDMI-A-2`.
 - **Diagnostics & Fix:**
   ```bash
   hyprctl monitors -j | grep -E '"name"|"colorManagementPreset"'
   ddcutil detect
   ```
-  Load `i2c-dev` and add your user to the `i2c` group (`sudo usermod -aG i2c "$USER"`), and update `HDMI-A-2` in `ags/services/brightness.ts` and `hyprland.lua` to match `hyprctl monitors`.
+  Load `i2c-dev` and add your user to the `i2c` group (`sudo usermod -aG i2c "$USER"`), configure `DIY_EXTERNAL_MONITOR` and `DIY_EXTERNAL_DDC_DISPLAY` in `~/.config/machine-config.env` (see `machine-config.example`), and update your external `~/.local/bin/hypr-hdr-toggle` script if used.
 
 ---
 
