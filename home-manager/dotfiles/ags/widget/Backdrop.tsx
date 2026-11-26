@@ -21,11 +21,13 @@ export default function Backdrop() {
     />
   ) as Gtk.Box
 
-  // Dismiss on outside left-click, right-click, or middle-click
+  // Dismiss on outside left-click, middle-click, or right-click without claiming the GTK sequence
   const click = new Gtk.GestureClick()
   click.set_button(0)
-  click.connect("released", () => {
+  click.set_propagation_phase(Gtk.PropagationPhase.CAPTURE)
+  click.connect("pressed", () => {
     const btn = click.get_current_button()
+    click.set_state(Gtk.EventSequenceState.DENIED)
     if (
       btn === Gdk.BUTTON_PRIMARY ||
       btn === Gdk.BUTTON_MIDDLE ||
@@ -36,13 +38,13 @@ export default function Backdrop() {
   })
   surface.add_controller(click)
 
-  // Dismiss on outside mouse wheel / touchpad scroll
+  // Dismiss on outside mouse wheel / touchpad scroll without claiming scroll propagation
   const scroll = new Gtk.EventControllerScroll({
     flags: Gtk.EventControllerScrollFlags.BOTH_AXES,
   })
   scroll.connect("scroll", () => {
     dismissPopups()
-    return true
+    return false
   })
   surface.add_controller(scroll)
 
