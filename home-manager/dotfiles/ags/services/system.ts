@@ -2,7 +2,7 @@ import { createState } from "gnim"
 import { execAsync } from "ags/process"
 import GLib from "gi://GLib?version=2.0"
 import Gio from "gi://Gio?version=2.0"
-import { configuredBatteryDevice } from "./config"
+import { configuredBatteryDevice, homeDir } from "./config"
 
 export interface BatteryInfo {
   available: boolean
@@ -146,11 +146,7 @@ export async function reloadAgs() {
 
 export async function openPowerMenu() {
   try {
-    await execAsync([
-      "sh",
-      "-c",
-      'choice=$(printf "Shutdown\\nReboot\\nSuspend\\nHibernate\\nLock" | wofi --dmenu --prompt "Power Menu" --width 260 --height 230); case "$choice" in Shutdown) systemctl poweroff ;; Reboot) systemctl reboot ;; Suspend) systemctl suspend ;; Hibernate) systemctl hibernate ;; Lock) loginctl lock-session ;; esac',
-    ])
+    await execAsync([`${homeDir}/.config/hypr/scripts/powermenu.sh`])
   } catch (e) {
     console.error("Power menu error:", e)
   }

@@ -486,6 +486,13 @@ local hyprlauncherBlur = hl.layer_rule({
 })
 hyprlauncherBlur:set_enabled(true)
 
+local wofiNoAnim = hl.layer_rule({
+    name = "wofi-no-anim",
+    match = { namespace = "^wofi$" },
+    no_anim = true,
+})
+wofiNoAnim:set_enabled(true)
+
 -- Hyprland-run windowrule
 hl.window_rule({
     name  = "move-hyprland-run",

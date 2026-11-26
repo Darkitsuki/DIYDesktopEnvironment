@@ -1,0 +1,91 @@
+* {
+  transition: none;
+  animation: none;
+  outline: none;
+  box-shadow: none;
+}
+
+#window,
+#window.background,
+window,
+window.background,
+window:backdrop {
+  background-color: #11111b;
+  border: 2px solid #313244;
+  border-radius: 16px;
+  font-family: "JetBrainsMono Nerd Font", "Symbols Nerd Font", sans-serif;
+  font-size: 14px;
+}
+
+#input,
+#input * {
+  min-height: 0;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: none;
+  font-size: 0;
+  opacity: 0;
+  -gtk-icon-source: none;
+}
+
+#outer-box {
+  padding: 6px;
+  margin: 0;
+  border: none;
+  background-color: transparent;
+}
+
+#inner-box,
+#scroll,
+#scroll viewport,
+#scroll box {
+  margin: 0;
+  padding: 0;
+  border: none;
+  background-color: transparent;
+}
+
+#scroll {
+  min-height: 190px;
+}
+
+#entry,
+#entry:backdrop {
+  padding: 6px 10px;
+  margin: 1px 0;
+  border-radius: 9px;
+  background-color: transparent;
+  color: #cdd6f4;
+}
+
+#entry:hover,
+#entry:hover #unselected,
+#entry:hover #text {
+  background-color: #313244;
+  color: #ffffff;
+}
+
+#entry:selected,
+#entry:selected:hover,
+#entry:selected:backdrop,
+#entry:focus,
+#entry:active,
+#entry:selected #text,
+#entry:selected:hover #text,
+#entry:selected:backdrop #text,
+#entry:focus #text,
+#entry:active #text,
+#entry:selected #unselected,
+#entry:selected:hover #unselected {
+  background-color: #3b82f6;
+  color: #ffffff;
+  font-weight: bold;
+}
+
+#text {
+  margin: 0;
+  padding: 0;
+  background-color: transparent;
+  color: inherit;
+}
