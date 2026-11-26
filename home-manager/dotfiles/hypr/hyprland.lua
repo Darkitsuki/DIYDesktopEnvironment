@@ -324,6 +324,13 @@ hl.device({
     sensitivity = -1,
 })
 
+-- Independent touchpad sensitivity & acceleration profile
+hl.device({
+  name = "syna32cc:00-06cb:ce7d-touchpad",
+  sensitivity = 0.2,
+  accel_profile = "adaptive",
+})
+
 ---------------------
 ---- KEYBINDINGS ----
 ---------------------
