@@ -20,39 +20,21 @@ export default function PowerMenu() {
     >
       <box
         orientation={Gtk.Orientation.VERTICAL}
-        spacing={8}
+        spacing={3}
         cssClasses={["powermenu-panel"]}
-        widthRequest={210}
+        widthRequest={168}
       >
-        <box cssClasses={["powermenu-header"]} halign={Gtk.Align.FILL}>
-          <box spacing={8} hexpand halign={Gtk.Align.START} valign={Gtk.Align.CENTER}>
-            <label label="⏻" cssClasses={["powermenu-header-icon"]} />
-            <label label="Power Menu" cssClasses={["powermenu-header-title"]} />
-          </box>
+        {POWER_ACTIONS.map((item) => (
           <button
-            cssClasses={["action-btn", "powermenu-close-btn"]}
-            tooltipText="Close"
-            onClicked={() => {
-              win.visible = false
-            }}
+            cssClasses={["powermenu-item", ...(item.danger ? ["danger"] : [])]}
+            onClicked={() => runPowerAction(item.command)}
           >
-            <label label="󰅖" cssClasses={["action-btn-icon"]} />
+            <box spacing={9} halign={Gtk.Align.START} valign={Gtk.Align.CENTER}>
+              <label label={item.icon} cssClasses={["powermenu-item-icon"]} />
+              <label label={item.label} cssClasses={["powermenu-item-label"]} />
+            </box>
           </button>
-        </box>
-
-        <box orientation={Gtk.Orientation.VERTICAL} spacing={4} cssClasses={["powermenu-list"]}>
-          {POWER_ACTIONS.map((item) => (
-            <button
-              cssClasses={["powermenu-item", ...(item.danger ? ["danger"] : [])]}
-              onClicked={() => runPowerAction(item.command)}
-            >
-              <box spacing={10} halign={Gtk.Align.START} valign={Gtk.Align.CENTER}>
-                <label label={item.icon} cssClasses={["powermenu-item-icon"]} />
-                <label label={item.label} cssClasses={["powermenu-item-label"]} />
-              </box>
-            </button>
-          ))}
-        </box>
+        ))}
       </box>
     </window>
   ) as Astal.Window

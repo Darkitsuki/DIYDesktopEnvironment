@@ -743,68 +743,37 @@ window.power-menu-window,
 }
 
 .powermenu-panel {
-  background-color: rgba(30, 30, 46, 0.92);
+  background-color: rgba(30, 30, 46, 0.94);
   border: 1px solid rgba(69, 71, 90, 0.7);
-  border-radius: 16px;
-  padding: 12px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-}
-
-.powermenu-header {
-  margin-bottom: 2px;
-}
-
-.powermenu-header-icon {
-  font-size: 15px;
-  color: #f38ba8;
-}
-
-.powermenu-header-title {
-  font-size: 13px;
-  font-weight: 700;
-  color: #cdd6f4;
-}
-
-.powermenu-close-btn {
-  min-width: 26px;
-  min-height: 26px;
-  border-radius: 8px;
-  padding: 2px;
-}
-
-.powermenu-list {
-  background-color: #181825;
-  border: 1px solid #313244;
-  border-radius: 12px;
+  border-radius: 14px;
   padding: 6px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
 }
 
 .powermenu-item {
   background-color: transparent;
-  border: 1px solid transparent;
+  border: none;
   border-radius: 9px;
-  padding: 8px 12px;
+  padding: 6px 10px;
   color: #cdd6f4;
-  transition: all 140ms ease;
+  transition: background-color 120ms ease, color 120ms ease;
 }
 
 .powermenu-item:hover {
   background-color: #313244;
-  border-color: rgba(137, 180, 250, 0.35);
   color: #ffffff;
 }
 
 .powermenu-item:active,
 .powermenu-item:focus-visible {
   background-color: #3b82f6;
-  border-color: #89b4fa;
   color: #ffffff;
 }
 
 .powermenu-item-icon {
-  font-size: 15px;
+  font-size: 14px;
   color: #89b4fa;
-  min-width: 18px;
+  min-width: 16px;
 }
 
 .powermenu-item.danger .powermenu-item-icon {
