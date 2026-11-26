@@ -60,8 +60,13 @@ window#waybar {
 }
 
 #clock {
+    background-color: rgba(30, 30, 46, 0.88);
+    border: 1px solid #45475a;
+    border-radius: 16px;
+    padding: 2px 12px;
+    margin-left: 8px;
+    color: #cdd6f4;
     font-weight: 600;
-    padding: 2px 14px;
 }
 
 #custom-quick-settings {
@@ -149,11 +154,12 @@ window#waybar {
 }
 
 #custom-playerctl {
+    min-width: 140px;
     background-color: rgba(30, 30, 46, 0.88);
     border: 1px solid #45475a;
     border-radius: 16px;
-    padding: 2px 12px;
-    margin-left: 8px;
+    padding: 2px 14px;
+    margin: 0;
     color: #cdd6f4;
     transition: all 0.2s cubic-bezier(0.25, 1, 0.5, 1);
 }
@@ -170,6 +176,7 @@ window#waybar {
 
 #custom-playerctl.stopped,
 #custom-playerctl.empty {
+    min-width: 0;
     padding: 0;
     margin: 0;
     border: none;
