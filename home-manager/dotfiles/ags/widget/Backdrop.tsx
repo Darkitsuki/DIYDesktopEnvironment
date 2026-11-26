@@ -10,6 +10,7 @@ export default function Backdrop() {
       namespace="quick-settings-backdrop"
       visible={false}
       anchor={TOP | BOTTOM | LEFT | RIGHT}
+      keymode={Astal.Keymode.NONE}
       layer={Astal.Layer.TOP}
       exclusivity={Astal.Exclusivity.IGNORE}
       application={app}

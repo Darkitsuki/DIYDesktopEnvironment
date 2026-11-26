@@ -33,6 +33,8 @@ app.start({
     const quickSettings = QuickSettings()
     const audioMenu = AudioMenu()
     const powerMenu = PowerMenu()
+    quickSettings.layer = Astal.Layer.OVERLAY
+    audioMenu.layer = Astal.Layer.OVERLAY
     OSD()
 
     // Alias window to support "quicksettings" without hyphen

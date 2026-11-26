@@ -12,7 +12,7 @@ export default function PowerMenu() {
       marginTop={8}
       marginRight={12}
       keymode={Astal.Keymode.ON_DEMAND}
-      layer={Astal.Layer.TOP}
+      layer={Astal.Layer.OVERLAY}
       exclusivity={Astal.Exclusivity.NORMAL}
       resizable={false}
       application={app}

@@ -25,14 +25,17 @@
 /* ========================================= */
 window.backdrop-window,
 .backdrop-window {
-  background: transparent;
-  background-color: transparent;
+  background-color: rgba(0, 0, 0, 0.004);
   border: none;
   box-shadow: none;
 }
 
 button.backdrop-button,
-.backdrop-button {
+.backdrop-button,
+button.backdrop-button:hover,
+.backdrop-button:hover,
+button.backdrop-button:active,
+.backdrop-button:active {
   background: transparent;
   background-color: transparent;
   border: none;
