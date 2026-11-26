@@ -1,8 +1,9 @@
+import app from "ags/gtk4/app"
 import { createState } from "gnim"
 import { execAsync } from "ags/process"
 import GLib from "gi://GLib?version=2.0"
 import Gio from "gi://Gio?version=2.0"
-import { configuredBatteryDevice, homeDir } from "./config"
+import { configuredBatteryDevice } from "./config"
 
 export interface BatteryInfo {
   available: boolean
@@ -144,11 +145,69 @@ export async function reloadAgs() {
   }
 }
 
-export async function openPowerMenu() {
+export interface PowerAction {
+  id: string
+  label: string
+  icon: string
+  command: string
+  danger?: boolean
+}
+
+export const POWER_ACTIONS: PowerAction[] = [
+  {
+    id: "logout",
+    label: "Logout",
+    icon: "󰍃",
+    command:
+      'if command -v uwsm >/dev/null 2>&1 && uwsm check is-active >/dev/null 2>&1; then uwsm stop; else hyprctl dispatch "hl.dsp.exit()"; fi',
+  },
+  {
+    id: "lock",
+    label: "Lock",
+    icon: "󰌾",
+    command: "nohup sh -c 'pidof hyprlock >/dev/null || hyprlock' >/dev/null 2>&1 &",
+  },
+  {
+    id: "suspend",
+    label: "Suspend",
+    icon: "󰒲",
+    command: "systemctl suspend",
+  },
+  {
+    id: "hibernate",
+    label: "Hibernate",
+    icon: "󰜗",
+    command: "systemctl hibernate",
+  },
+  {
+    id: "reboot",
+    label: "Reboot",
+    icon: "󰜉",
+    command: "systemctl reboot",
+    danger: true,
+  },
+  {
+    id: "shutdown",
+    label: "Shutdown",
+    icon: "󰐥",
+    command: "systemctl poweroff",
+    danger: true,
+  },
+]
+
+export function openPowerMenu() {
+  app.toggle_window("power-menu")
+}
+
+export async function runPowerAction(command: string) {
+  for (const name of ["power-menu", "quick-settings", "audio-menu"]) {
+    const win = app.get_window(name)
+    if (win) win.visible = false
+  }
   try {
-    await execAsync([`${homeDir}/.config/hypr/scripts/powermenu.sh`])
+    await execAsync(["bash", "-c", command])
   } catch (e) {
-    console.error("Power menu error:", e)
+    console.error("Power action error:", e)
   }
 }
 

@@ -470,6 +470,14 @@ local audioMenuBlur = hl.layer_rule({
 })
 audioMenuBlur:set_enabled(true)
 
+local powerMenuBlur = hl.layer_rule({
+    name = "power-menu-blur",
+    match = { namespace = "^power-menu$" },
+    blur = true,
+    ignore_alpha = 0.2,
+})
+powerMenuBlur:set_enabled(true)
+
 local osdBlur = hl.layer_rule({
     name = "osd-blur",
     match = { namespace = "^osd$" },

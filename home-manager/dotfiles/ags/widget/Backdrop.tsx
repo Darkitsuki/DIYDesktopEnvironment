@@ -28,6 +28,10 @@ export default function Backdrop() {
           if (am) {
             am.visible = false
           }
+          const pm = app.get_window("power-menu")
+          if (pm) {
+            pm.visible = false
+          }
         }}
       />
     </window>

@@ -3,6 +3,7 @@ import { Astal } from "ags/gtk4"
 import style from "./style.css"
 import QuickSettings from "./widget/QuickSettings"
 import AudioMenu from "./widget/AudioMenu"
+import PowerMenu from "./widget/PowerMenu"
 import Backdrop from "./widget/Backdrop"
 import OSD from "./widget/OSD"
 import { refreshAllAudio } from "./services/audio"
@@ -20,12 +21,18 @@ app.start({
       res("ok")
       return
     }
+    if (cmd === "power") {
+      app.toggle_window("power-menu")
+      res("ok")
+      return
+    }
     res(`unknown request: ${argv.join(" ")}`)
   },
   main() {
     const backdrop = Backdrop()
     const quickSettings = QuickSettings()
     const audioMenu = AudioMenu()
+    const powerMenu = PowerMenu()
     OSD()
 
     // Alias window to support "quicksettings" without hyphen
@@ -43,22 +50,23 @@ app.start({
     })
 
     const syncBackdrop = () => {
-      backdrop.visible = quickSettings.visible || audioMenu.visible
+      backdrop.visible = quickSettings.visible || audioMenu.visible || powerMenu.visible
     }
 
-    // Mutual exclusion & shared backdrop visibility
-    app.connect("window-toggled", (_, win) => {
-      if (win.name === "quick-settings") {
-        if (win.visible && audioMenu.visible) {
-          audioMenu.visible = false
+    // Mutual exclusion & shared backdrop visibility (handles both toggle and Esc/close)
+    const bindPopup = (target: Astal.Window, others: Astal.Window[]) => {
+      target.connect("notify::visible", () => {
+        if (target.visible) {
+          for (const other of others) {
+            if (other.visible) other.visible = false
+          }
         }
         syncBackdrop()
-      } else if (win.name === "audio-menu") {
-        if (win.visible && quickSettings.visible) {
-          quickSettings.visible = false
-        }
-        syncBackdrop()
-      }
-    })
+      })
+    }
+
+    bindPopup(quickSettings, [audioMenu, powerMenu])
+    bindPopup(audioMenu, [quickSettings, powerMenu])
+    bindPopup(powerMenu, [quickSettings, audioMenu])
   },
 })
