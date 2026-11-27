@@ -23,8 +23,8 @@ PanelWindow {
 
     margins {
         top: Theme.barMargin
-        left: 12
-        right: 12
+        left: 10
+        right: 10
     }
 
     Rectangle {
@@ -37,8 +37,10 @@ PanelWindow {
 
         RowLayout {
             anchors.fill: parent
-            anchors.leftMargin: Theme.spaceSm
-            anchors.rightMargin: Theme.spaceSm
+            anchors.topMargin: 0
+            anchors.bottomMargin: 0
+            anchors.leftMargin: 0
+            anchors.rightMargin: 0
             spacing: Theme.spaceSm
 
             RowLayout {
