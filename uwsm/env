@@ -6,11 +6,28 @@ if [ -f "${XDG_CONFIG_HOME:-$HOME/.config}/machine-config.env" ]; then
   set +a
 fi
 
-# Hybrid-GPU DRM priority: honor explicit AQ_DRM_DEVICES, or default to Intel iGPU
-# primary for zero-copy eDP-1 scanout/hardware cursors and D3cold dGPU sleep
-# when both udev symlinks (/dev/dri/igpu and /dev/dri/dgpu) exist on the host.
-if [ -z "${AQ_DRM_DEVICES:-}" ] && [ -e /dev/dri/igpu ] && [ -e /dev/dri/dgpu ]; then
-  export AQ_DRM_DEVICES="/dev/dri/igpu:/dev/dri/dgpu"
+# Hybrid-GPU DRM priority: honor explicit AQ_DRM_DEVICES; otherwise include dGPU
+# only when a dGPU external connector (e.g. HDMI-A-2) is connected at launch,
+# keeping laptop-only sessions iGPU-only so RTX 3050 Ti can enter D3cold.
+if [ -z "${AQ_DRM_DEVICES:-}" ] && [ -e /dev/dri/igpu ]; then
+  if [ -e /dev/dri/dgpu ]; then
+    _dgpu_card=$(basename "$(readlink -f /dev/dri/dgpu)")
+    _dgpu_connected=0
+    for _drm_status in /sys/class/drm/"$_dgpu_card"-*/status; do
+      if [ -r "$_drm_status" ] && read -r _conn_state < "$_drm_status" && [ "$_conn_state" = "connected" ]; then
+        _dgpu_connected=1
+        break
+      fi
+    done
+    if [ "$_dgpu_connected" -eq 1 ]; then
+      export AQ_DRM_DEVICES="/dev/dri/igpu:/dev/dri/dgpu"
+    else
+      export AQ_DRM_DEVICES="/dev/dri/igpu"
+    fi
+    unset _dgpu_card _dgpu_connected _drm_status _conn_state
+  else
+    export AQ_DRM_DEVICES="/dev/dri/igpu"
+  fi
 fi
 
 export XDG_DATA_DIRS="$HOME/.nix-profile/share:${XDG_DATA_DIRS:-/usr/local/share:/usr/share}"

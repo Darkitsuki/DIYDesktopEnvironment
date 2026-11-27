@@ -691,5 +691,12 @@ hl.bind("ALT + R", hl.dsp.exec_cmd("ags toggle perf-overlay"), { description = "
 -- Optional local per-machine Lua overrides (gitignored)
 pcall(require, "machine-local")
 
+-- Enable hardware cursor planes on eDP-1 even when an NVIDIA dGPU is present
+hl.config({
+  cursor = {
+    no_hardware_cursors = 0,
+  },
+})
+
 -- HyprMod managed settings
 require("hyprland-gui")
