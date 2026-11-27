@@ -417,13 +417,9 @@ hl.bind("XF86AudioPlay",  hl.dsp.exec_cmd("playerctl play-pause"), { locked = tr
 hl.bind("XF86AudioPrev",  hl.dsp.exec_cmd("playerctl previous"),   { locked = true })
 
 -- ==========================================
--- CHỤP MÀN HÌNH (SNIPPING TOOL + FREEZE)
+-- CHỤP MÀN HÌNH (WINDOWS SNIPPING TOOL)
 -- ==========================================
-hl.bind(mainMod .. " + SHIFT + S", hl.dsp.exec_cmd("/home/HoaHung/.local/bin/hypr-screenshot region"), { description = "Screenshot: Freeze & select region (Satty)" })
-hl.bind(mainMod .. " + CTRL + S",  hl.dsp.exec_cmd("/home/HoaHung/.local/bin/hypr-screenshot menu"),   { description = "Screenshot: Snipping Tool mode menu" })
-hl.bind(mainMod .. " + ALT + S",   hl.dsp.exec_cmd("/home/HoaHung/.local/bin/hypr-screenshot window"), { description = "Screenshot: Freeze & select window (Satty)" })
-hl.bind("Print",                   hl.dsp.exec_cmd("/home/HoaHung/.local/bin/hypr-screenshot screen"), { description = "Screenshot: Focused monitor (Satty)" })
-hl.bind("SHIFT + Print",           hl.dsp.exec_cmd("/home/HoaHung/.local/bin/hypr-screenshot region-copy"), { description = "Screenshot: Freeze & copy region to clipboard" })
+hl.bind(mainMod .. " + SHIFT + S", hl.dsp.exec_cmd("/home/HoaHung/.local/bin/hypr-screenshot menu"), { description = "Snipping Tool: Screenshot mode menu" })
 
 --------------------------------
 ---- WINDOWS AND WORKSPACES ----
@@ -672,14 +668,6 @@ hl.window_rule({
   match = { class = "^(minecraft-launcher)$" },
   float = true,
   center = true,
-})
-
-hl.window_rule({
-  name = "satty-snipping-float",
-  match = { class = "^(com\\.gabm\\.satty)$" },
-  float = true,
-  center = true,
-  no_dim = true,
 })
 
 -- Game Mode performance toggle (optional script under $DIY_SCRIPTS_DIR or ~/.local/bin)
