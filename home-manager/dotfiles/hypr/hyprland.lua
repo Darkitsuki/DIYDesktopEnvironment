@@ -550,6 +550,14 @@ local quickshellBarAnim = hl.layer_rule({
 })
 quickshellBarAnim:set_enabled(true)
 
+local screenshotFreezeNoAnim = hl.layer_rule({
+  name = "screenshot-freeze-no-anim",
+  match = { namespace = "^(hyprpicker|selection)$" },
+  no_anim = true,
+  blur = false,
+})
+screenshotFreezeNoAnim:set_enabled(true)
+
 -- Hyprland-run windowrule
 hl.window_rule({
     name  = "move-hyprland-run",
