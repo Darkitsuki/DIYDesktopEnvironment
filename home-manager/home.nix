@@ -66,6 +66,7 @@
     "gtk-4.0".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.config/home-manager/dotfiles/gtk-4.0";
     "xsettingsd".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.config/home-manager/dotfiles/xsettingsd";
     "xdg-desktop-portal".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.config/home-manager/dotfiles/xdg-desktop-portal";
+    "quickshell".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.config/home-manager/dotfiles/quickshell";
   };
 
   # Let Home Manager install and manage itself.

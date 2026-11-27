@@ -83,6 +83,7 @@ home-manager/dotfiles/gtk-3.0/bookmarks
 /gtk-4.0
 /xsettingsd
 /xdg-desktop-portal
+/quickshell
 /environment.d/10-home-manager.conf
 
 # === Runtime State, Binary Databases & Temp Files ===
