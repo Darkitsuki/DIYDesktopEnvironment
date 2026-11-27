@@ -13,11 +13,19 @@ PanelWindow {
     id: root
 
     property bool isOpen: false
+    property bool windowPinned: false
+    property bool forceHideNow: false
+    property bool temporarilyUnfocusedForPaste: false
+
     property string activeMode: "apps" // "apps" | "clipboard"
     property string viewMode: "list"   // "list" | "grid"
     property int selectedIndex: 0
 
+    property real dragOffsetX: 0
+    property real dragOffsetY: 0
+
     property var pinnedAppIds: ({})
+    property var pinnedClipboardKeys: ({})
     property var clipboardEntries: []
     property bool clipboardLoading: false
     property var decodedPreviews: ({})
@@ -33,7 +41,8 @@ PanelWindow {
     property real contextMenuAnchorY: 0
 
     readonly property string homeDir: Quickshell.env("HOME") || "/home/HoaHung"
-    readonly property string pinsFilePath: homeDir + "/.local/state/quickshell-launcher-pins.json"
+    readonly property string appPinsFilePath: homeDir + "/.local/state/quickshell-launcher-pins.json"
+    readonly property string clipPinsFilePath: homeDir + "/.local/state/quickshell-clipboard-pins.json"
 
     readonly property var focusedScreen: {
         const screens = Quickshell.screens;
@@ -50,7 +59,8 @@ PanelWindow {
     }
 
     Component.onCompleted: {
-        loadPins();
+        loadAppPins();
+        loadClipPins();
     }
 
     // -------------------------------------------------------------------------
@@ -276,28 +286,23 @@ PanelWindow {
     readonly property bool calcTakesEnter: calcMatch !== null && (calcMatch.explicit || activeItems.length === 0)
 
     // -------------------------------------------------------------------------
-    // Persistent App Pinning
+    // Persistent App & Clipboard Pinning
     // -------------------------------------------------------------------------
-    function loadPins() {
-        if (pinsLoadProc.running)
+    function loadAppPins() {
+        if (appPinsLoadProc.running)
             return;
-        pinsLoadProc.command = ["sh", "-c", "[ -r \"$1\" ] && cat \"$1\" || printf '[]'", "_", root.pinsFilePath];
-        pinsLoadProc.running = true;
+        appPinsLoadProc.command = ["sh", "-c", "[ -r \"$1\" ] && cat \"$1\" || printf '[]'", "_", root.appPinsFilePath];
+        appPinsLoadProc.running = true;
     }
 
-    function savePins(pinsMap) {
-        const ids = Object.keys(pinsMap);
-        const payload = JSON.stringify(ids);
-        pinsSaveProc.command = [
+    function saveAppPins(pinsMap) {
+        const payload = JSON.stringify(Object.keys(pinsMap));
+        appPinsSaveProc.command = [
             "sh", "-c",
             "mkdir -p \"$(dirname \"$1\")\" && printf '%s\\n' \"$2\" > \"$1\"",
-            "_", root.pinsFilePath, payload
+            "_", root.appPinsFilePath, payload
         ];
-        pinsSaveProc.running = true;
-    }
-
-    function isAppPinned(desktopId) {
-        return !!(desktopId && root.pinnedAppIds[desktopId]);
+        appPinsSaveProc.running = true;
     }
 
     function toggleAppPin(appItem) {
@@ -309,7 +314,36 @@ PanelWindow {
         else
             updated[appItem.id] = true;
         root.pinnedAppIds = updated;
-        savePins(updated);
+        saveAppPins(updated);
+    }
+
+    function loadClipPins() {
+        if (clipPinsLoadProc.running)
+            return;
+        clipPinsLoadProc.command = ["sh", "-c", "[ -r \"$1\" ] && cat \"$1\" || printf '[]'", "_", root.clipPinsFilePath];
+        clipPinsLoadProc.running = true;
+    }
+
+    function saveClipPins(pinsMap) {
+        const payload = JSON.stringify(Object.keys(pinsMap));
+        clipPinsSaveProc.command = [
+            "sh", "-c",
+            "mkdir -p \"$(dirname \"$1\")\" && printf '%s\\n' \"$2\" > \"$1\"",
+            "_", root.clipPinsFilePath, payload
+        ];
+        clipPinsSaveProc.running = true;
+    }
+
+    function toggleClipboardPin(clipItem) {
+        if (!clipItem || !clipItem.rawLine)
+            return;
+        const updated = Object.assign({}, root.pinnedClipboardKeys);
+        if (updated[clipItem.rawLine])
+            delete updated[clipItem.rawLine];
+        else
+            updated[clipItem.rawLine] = true;
+        root.pinnedClipboardKeys = updated;
+        saveClipPins(updated);
     }
 
     // -------------------------------------------------------------------------
@@ -399,16 +433,34 @@ PanelWindow {
     }
 
     readonly property var filteredClipboard: {
+        const pins = root.pinnedClipboardKeys;
         const q = searchInput.text.trim().toLowerCase();
-        if (!q)
-            return root.clipboardEntries;
-        const matches = [];
+        const pinnedMatches = [];
+        const regularMatches = [];
+
         for (let i = 0; i < root.clipboardEntries.length; i++) {
-            const item = root.clipboardEntries[i];
-            if (item.searchText.indexOf(q) !== -1)
-                matches.push(item);
+            const base = root.clipboardEntries[i];
+            if (q.length > 0 && base.searchText.indexOf(q) === -1)
+                continue;
+            const isPinned = !!pins[base.rawLine];
+            const item = {
+                id: base.id,
+                rawLine: base.rawLine,
+                preview: base.preview,
+                displayTitle: base.displayTitle,
+                kind: base.kind,
+                isImage: base.isImage,
+                imageMeta: base.imageMeta,
+                imageCompactMeta: base.imageCompactMeta,
+                searchText: base.searchText,
+                pinned: isPinned
+            };
+            if (isPinned)
+                pinnedMatches.push(item);
+            else
+                regularMatches.push(item);
         }
-        return matches;
+        return pinnedMatches.concat(regularMatches);
     }
 
     readonly property var activeItems: root.activeMode === "apps" ? root.filteredApps : root.filteredClipboard
@@ -428,6 +480,22 @@ PanelWindow {
     // -------------------------------------------------------------------------
     // Clipboard Parsing & Decoding
     // -------------------------------------------------------------------------
+    function formatCompactImageMeta(meta) {
+        if (!meta)
+            return "";
+        const sizeMatch = meta.match(/(\d+\s*[KMG]i?B)/i);
+        const dimMatch = meta.match(/(\d+x\d+)/i);
+        const fmtMatch = meta.match(/\b(png|jpe?g|webp|gif|bmp|tiff|avif)\b/i);
+        const parts = [];
+        if (dimMatch)
+            parts.push(dimMatch[1]);
+        if (sizeMatch)
+            parts.push(sizeMatch[1]);
+        if (fmtMatch && parts.length < 2)
+            parts.push(fmtMatch[1].toUpperCase());
+        return parts.length > 0 ? parts.join(" · ") : meta;
+    }
+
     function parseClipboardLine(line) {
         const tabIdx = line.indexOf("\t");
         if (tabIdx === -1)
@@ -441,6 +509,7 @@ PanelWindow {
         let kind = "TEXT";
         let isImage = false;
         let imageMeta = "";
+        let imageCompactMeta = "";
         let displayTitle = trimmed;
 
         const imgMatch = trimmed.match(/^\[\[\s*binary data\s+(.+?)\s*\]\]$/i);
@@ -450,6 +519,7 @@ PanelWindow {
                 kind = "IMAGE";
                 isImage = true;
                 imageMeta = meta;
+                imageCompactMeta = formatCompactImageMeta(meta);
                 displayTitle = "Image  •  " + meta;
             }
         } else if (/^(https?:\/\/|www\.|ftp:\/\/|file:\/\/)\S+/i.test(trimmed)) {
@@ -471,6 +541,7 @@ PanelWindow {
             kind: kind,
             isImage: isImage,
             imageMeta: imageMeta,
+            imageCompactMeta: imageCompactMeta,
             searchText: (displayTitle + " " + preview + " " + kind).toLowerCase()
         };
     }
@@ -489,8 +560,8 @@ PanelWindow {
         root.clipboardEntries = parsed;
         if (root.selectedIndex >= parsed.length)
             root.selectedIndex = Math.max(0, parsed.length - 1);
-        if (root.activeMode === "clipboard" && parsed.length > 0 && parsed[0].isImage)
-            root.requestImagePreview(parsed[0]);
+        if (root.activeMode === "clipboard" && root.filteredClipboard.length > 0 && root.filteredClipboard[0].isImage)
+            root.requestImagePreview(root.filteredClipboard[0]);
     }
 
     function refreshClipboard() {
@@ -554,10 +625,10 @@ PanelWindow {
     }
 
     // -------------------------------------------------------------------------
-    // Processes
+    // Processes & Auto-Paste Timers
     // -------------------------------------------------------------------------
     Process {
-        id: pinsLoadProc
+        id: appPinsLoadProc
         stdout: StdioCollector {
             onStreamFinished: {
                 const raw = text.trim();
@@ -583,7 +654,37 @@ PanelWindow {
     }
 
     Process {
-        id: pinsSaveProc
+        id: appPinsSaveProc
+    }
+
+    Process {
+        id: clipPinsLoadProc
+        stdout: StdioCollector {
+            onStreamFinished: {
+                const raw = text.trim();
+                if (!raw) {
+                    root.pinnedClipboardKeys = ({});
+                    return;
+                }
+                try {
+                    const parsed = JSON.parse(raw);
+                    const map = {};
+                    if (Array.isArray(parsed)) {
+                        for (let i = 0; i < parsed.length; i++) {
+                            if (typeof parsed[i] === "string" && parsed[i].length > 0)
+                                map[parsed[i]] = true;
+                        }
+                    }
+                    root.pinnedClipboardKeys = map;
+                } catch (e) {
+                    root.pinnedClipboardKeys = ({});
+                }
+            }
+        }
+    }
+
+    Process {
+        id: clipPinsSaveProc
     }
 
     Process {
@@ -630,6 +731,38 @@ PanelWindow {
         }
     }
 
+    Timer {
+        id: pasteDispatchTimer
+        interval: 85
+        repeat: false
+        onTriggered: {
+            Quickshell.execDetached([
+                "sh", "-c",
+                "eval \"$(hyprctl activewindow -j 2>/dev/null | python3 -c 'import json,shlex,sys; d=json.load(sys.stdin); print(\"win_class=\"+shlex.quote((d.get(\"class\") or d.get(\"initialClass\") or \"\").lower())); print(\"win_addr=\"+shlex.quote(d.get(\"address\") or \"\"))' 2>/dev/null || true)\"; " +
+                "target=\"activewindow\"; [ -n \"${win_addr:-}\" ] && target=\"address:$win_addr\"; " +
+                "case \"${win_class:-}\" in " +
+                "*kitty*|*alacritty*|*foot*|*wezterm*|*ghostty*|*konsole*|*gnome-terminal*) " +
+                "  hyprctl dispatch \"hl.dsp.send_shortcut({ mods = \\\"CTRL SHIFT\\\", key = \\\"V\\\", window = \\\"$target\\\" })\" >/dev/null 2>&1 || " +
+                "  { command -v wtype >/dev/null 2>&1 && wtype -M ctrl -M shift -k v -m shift -m ctrl; } ;; " +
+                "*) " +
+                "  hyprctl dispatch \"hl.dsp.send_shortcut({ mods = \\\"CTRL\\\", key = \\\"V\\\", window = \\\"$target\\\" })\" >/dev/null 2>&1 || " +
+                "  { command -v wtype >/dev/null 2>&1 && wtype -M ctrl -k v -m ctrl; } ;; " +
+                "esac"
+            ]);
+        }
+    }
+
+    Timer {
+        id: restoreFocusTimer
+        interval: 140
+        repeat: false
+        onTriggered: {
+            root.temporarilyUnfocusedForPaste = false;
+            if (root.isOpen)
+                focusTimer.restart();
+        }
+    }
+
     // -------------------------------------------------------------------------
     // Context Menu Actions & Helpers
     // -------------------------------------------------------------------------
@@ -669,8 +802,14 @@ PanelWindow {
             const clip = root.contextMenuItem;
             const actions = [
                 {
+                    id: "clip_paste",
+                    label: "Paste Now",
+                    icon: "󰆒",
+                    destructive: false
+                },
+                {
                     id: "clip_copy",
-                    label: "Copy to Clipboard",
+                    label: "Copy Only",
                     icon: "󰆏",
                     destructive: false
                 }
@@ -683,6 +822,12 @@ PanelWindow {
                     destructive: false
                 });
             }
+            actions.push({
+                id: "clip_pin",
+                label: clip.pinned ? "Unpin" : "Pin to Top",
+                icon: clip.pinned ? "󰐄" : "󰐃",
+                destructive: false
+            });
             if (clip.kind === "URL") {
                 actions.push({
                     id: "clip_open_url",
@@ -745,33 +890,45 @@ PanelWindow {
             searchInput.forceActiveFocus();
         } else if (actionId === "app_copy_cmd") {
             copyTextToClipboard(item.execCommand || item.name);
-            close();
+            if (!root.windowPinned)
+                close();
         } else if (actionId === "app_copy_id") {
             copyTextToClipboard(item.id || item.name);
-            close();
+            if (!root.windowPinned)
+                close();
+        } else if (actionId === "clip_paste") {
+            copyAndPasteEntry(item.rawLine, !root.windowPinned);
         } else if (actionId === "clip_copy") {
-            activateClipboardItem(item);
+            copyEntryOnly(item.rawLine);
+            if (!root.windowPinned)
+                close();
         } else if (actionId === "clip_copy_trimmed") {
             Quickshell.execDetached([
                 "sh", "-c",
                 "printf '%s\\n' \"$1\" | cliphist decode | python3 -c 'import sys; sys.stdout.write(sys.stdin.read().strip())' | wl-copy",
                 "_", item.rawLine
             ]);
-            close();
+            if (!root.windowPinned)
+                close();
+        } else if (actionId === "clip_pin") {
+            toggleClipboardPin(item);
+            searchInput.forceActiveFocus();
         } else if (actionId === "clip_open_url") {
             Quickshell.execDetached([
                 "sh", "-c",
                 "url=$(printf '%s\\n' \"$1\" | cliphist decode | python3 -c 'import sys; sys.stdout.write(sys.stdin.read().strip())'); [ -n \"$url\" ] && exec xdg-open \"$url\"",
                 "_", item.rawLine
             ]);
-            close();
+            if (!root.windowPinned)
+                close();
         } else if (actionId === "clip_save_image") {
             Quickshell.execDetached([
                 "sh", "-c",
                 "mkdir -p \"$HOME/Pictures\" && fname=\"Clipboard-$(date +%Y%m%d-%H%M%S).png\" && out=\"$HOME/Pictures/$fname\" && printf '%s\\n' \"$1\" | cliphist decode > \"$out\" && if command -v notify-send >/dev/null 2>&1; then notify-send -u low -t 3000 \"Clipboard\" \"Image saved to ~/Pictures/$fname\"; fi",
                 "_", item.rawLine
             ]);
-            close();
+            if (!root.windowPinned)
+                close();
         } else if (actionId === "clip_delete") {
             deleteClipboardItem(item);
             searchInput.forceActiveFocus();
@@ -782,11 +939,14 @@ PanelWindow {
     }
 
     // -------------------------------------------------------------------------
-    // Mode / View / Open / Close / Actions
+    // Mode / View / Open / Close / Drag / Paste Actions
     // -------------------------------------------------------------------------
     function openMode(mode) {
         const targetMode = (mode === "clipboard") ? "clipboard" : "apps";
         closeContextMenu();
+        root.forceHideNow = false;
+        root.temporarilyUnfocusedForPaste = false;
+
         if (root.isOpen) {
             if (root.activeMode === targetMode) {
                 close();
@@ -794,6 +954,11 @@ PanelWindow {
             }
             switchMode(targetMode);
             return;
+        }
+
+        if (!root.windowPinned) {
+            root.dragOffsetX = 0;
+            root.dragOffsetY = 0;
         }
 
         root.activeMode = targetMode;
@@ -841,6 +1006,11 @@ PanelWindow {
         setViewMode(root.viewMode === "list" ? "grid" : "list");
     }
 
+    function toggleWindowPin() {
+        root.windowPinned = !root.windowPinned;
+        searchInput.forceActiveFocus();
+    }
+
     function syncViewScroll() {
         const idx = root.selectedIndex;
         if (idx < 0 || idx >= root.activeItems.length)
@@ -854,6 +1024,20 @@ PanelWindow {
     function close() {
         closeContextMenu();
         root.isOpen = false;
+    }
+
+    function clampDragOffsets(nextX, nextY) {
+        const minX = 12 - paletteCard.baseCenterX;
+        const maxX = root.width - paletteCard.width - 12 - paletteCard.baseCenterX;
+        const minY = 12 - paletteCard.baseCenterY;
+        const maxY = root.height - paletteCard.height - 12 - paletteCard.baseCenterY;
+        root.dragOffsetX = Math.max(minX, Math.min(maxX, nextX));
+        root.dragOffsetY = Math.max(minY, Math.min(maxY, nextY));
+    }
+
+    function resetDragPosition() {
+        root.dragOffsetX = 0;
+        root.dragOffsetY = 0;
     }
 
     function moveSelection(delta) {
@@ -871,29 +1055,53 @@ PanelWindow {
         Quickshell.execDetached(["sh", "-c", "printf '%s' \"$1\" | wl-copy", "_", text]);
     }
 
+    function copyEntryOnly(rawLine) {
+        if (!rawLine)
+            return;
+        Quickshell.execDetached([
+            "sh", "-c",
+            "printf '%s\\n' \"$1\" | cliphist decode | wl-copy",
+            "_", rawLine
+        ]);
+    }
+
+    function copyAndPasteEntry(rawLine, closeAfter) {
+        if (!rawLine)
+            return;
+
+        copyEntryOnly(rawLine);
+
+        if (closeAfter && !root.windowPinned) {
+            root.forceHideNow = true;
+            close();
+        } else {
+            root.temporarilyUnfocusedForPaste = true;
+            restoreFocusTimer.restart();
+        }
+
+        pasteDispatchTimer.restart();
+    }
+
     function copyCalcResult() {
         if (!root.calcMatch)
             return;
         copyTextToClipboard(root.calcMatch.result);
-        close();
+        if (!root.windowPinned)
+            close();
     }
 
     function activateAppItem(item) {
         if (!item || !item.entry)
             return;
         item.entry.execute();
-        close();
+        if (!root.windowPinned)
+            close();
     }
 
     function activateClipboardItem(item) {
         if (!item || !item.rawLine)
             return;
-        Quickshell.execDetached([
-            "sh", "-c",
-            "printf '%s\\n' \"$1\" | cliphist decode | wl-copy",
-            "_", item.rawLine
-        ]);
-        close();
+        copyAndPasteEntry(item.rawLine, !root.windowPinned);
     }
 
     function deleteClipboardItem(item) {
@@ -902,6 +1110,14 @@ PanelWindow {
         const updated = Object.assign({}, root.decodedPreviews);
         delete updated[item.id];
         root.decodedPreviews = updated;
+
+        if (root.pinnedClipboardKeys[item.rawLine]) {
+            const pinsUpdated = Object.assign({}, root.pinnedClipboardKeys);
+            delete pinsUpdated[item.rawLine];
+            root.pinnedClipboardKeys = pinsUpdated;
+            saveClipPins(pinsUpdated);
+        }
+
         clipDeleteProc.command = [
             "sh", "-c",
             "printf '%s\\n' \"$1\" | cliphist delete && rm -f -- \"/tmp/qs-cliphist-preview-$2.png\"",
@@ -915,6 +1131,8 @@ PanelWindow {
             return;
         root.decodedPreviews = ({});
         root.previewQueue = [];
+        root.pinnedClipboardKeys = ({});
+        saveClipPins({});
         clipWipeProc.command = [
             "sh", "-c",
             "cliphist wipe && rm -f /tmp/qs-cliphist-preview-*.png && if command -v notify-send >/dev/null 2>&1; then notify-send -u low -t 2000 \"Clipboard\" \"History cleared\"; fi"
@@ -942,10 +1160,12 @@ PanelWindow {
 
         if (event.key === Qt.Key_Escape) {
             event.accepted = true;
-            if (root.contextMenuOpen)
+            if (root.contextMenuOpen) {
                 closeContextMenu();
-            else
+            } else {
+                root.windowPinned = false;
                 close();
+            }
             return;
         }
 
@@ -1026,26 +1246,26 @@ PanelWindow {
         interval: 16
         repeat: false
         onTriggered: {
-            if (root.isOpen)
+            if (root.isOpen && !root.temporarilyUnfocusedForPaste)
                 searchInput.forceActiveFocus();
         }
     }
 
     onVisibleChanged: {
-        if (visible && root.isOpen)
+        if (visible && root.isOpen && !root.temporarilyUnfocusedForPaste)
             focusTimer.restart();
     }
 
     // -------------------------------------------------------------------------
     // Layer-Shell Window Configuration
     // -------------------------------------------------------------------------
-    visible: root.isOpen || paletteCard.opacity > 0.01
+    visible: !root.forceHideNow && (root.isOpen || paletteCard.opacity > 0.01)
     color: "transparent"
     screen: root.focusedScreen
 
     WlrLayershell.namespace: "quickshell-launcher"
     WlrLayershell.layer: WlrLayer.Overlay
-    WlrLayershell.keyboardFocus: root.isOpen ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
+    WlrLayershell.keyboardFocus: (root.isOpen && !root.temporarilyUnfocusedForPaste) ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
     WlrLayershell.exclusionMode: ExclusionMode.Ignore
 
     anchors {
@@ -1055,24 +1275,36 @@ PanelWindow {
         right: true
     }
 
-    // Transparent backdrop area: clicking outside closes the palette
+    // Transparent backdrop area: clicking outside closes unless windowPinned
     MouseArea {
         anchors.fill: parent
         acceptedButtons: Qt.LeftButton | Qt.RightButton | Qt.MiddleButton
-        onClicked: root.close()
+        onClicked: {
+            if (root.contextMenuOpen) {
+                root.closeContextMenu();
+                return;
+            }
+            if (!root.windowPinned)
+                root.close();
+        }
     }
 
-    // Centered floating One UI palette container (680 x 460 px)
+    // Compact draggable floating One UI palette container (580 x 400 px)
     Rectangle {
         id: paletteCard
 
-        anchors.centerIn: parent
-        width: 680
-        height: 460
+        readonly property real baseCenterX: Math.round((root.width - width) / 2)
+        readonly property real baseCenterY: Math.round((root.height - height) / 2)
+
+        width: 580
+        height: 400
+        x: Math.max(12, Math.min(root.width - width - 12, baseCenterX + root.dragOffsetX))
+        y: Math.max(12, Math.min(root.height - height - 12, baseCenterY + root.dragOffsetY))
+
         radius: Theme.radiusLg
         color: Theme.baseTranslucent
         border.width: Theme.borderWidth
-        border.color: Theme.borderColor
+        border.color: root.windowPinned ? Theme.accentActive : Theme.borderColor
         clip: true
 
         opacity: root.isOpen ? 1.0 : 0.0
@@ -1092,6 +1324,10 @@ PanelWindow {
             }
         }
 
+        Behavior on border.color {
+            ColorAnimation { duration: 180 }
+        }
+
         transform: Translate {
             y: root.isOpen ? 0 : 12
 
@@ -1103,39 +1339,188 @@ PanelWindow {
             }
         }
 
-        // Absorb clicks inside the container so they don't hit the backdrop
+        // Background drag / click-absorber inside card
         MouseArea {
+            id: cardDragArea
             anchors.fill: parent
             acceptedButtons: Qt.AllButtons
-            onClicked: function(mouse) {
+
+            property bool dragging: false
+            property real startGlobalX: 0
+            property real startGlobalY: 0
+            property real startOffsetX: 0
+            property real startOffsetY: 0
+
+            onPressed: function(mouse) {
                 mouse.accepted = true;
                 if (root.contextMenuOpen)
                     root.closeContextMenu();
+                if (mouse.button === Qt.LeftButton) {
+                    const globalPt = cardDragArea.mapToItem(root.contentItem, mouse.x, mouse.y);
+                    dragging = true;
+                    startGlobalX = globalPt.x;
+                    startGlobalY = globalPt.y;
+                    startOffsetX = root.dragOffsetX;
+                    startOffsetY = root.dragOffsetY;
+                }
+            }
+
+            onPositionChanged: function(mouse) {
+                if (!dragging)
+                    return;
+                const globalPt = cardDragArea.mapToItem(root.contentItem, mouse.x, mouse.y);
+                root.clampDragOffsets(
+                    startOffsetX + (globalPt.x - startGlobalX),
+                    startOffsetY + (globalPt.y - startGlobalY)
+                );
+            }
+
+            onReleased: {
+                dragging = false;
+                searchInput.forceActiveFocus();
+            }
+
+            onCanceled: {
+                dragging = false;
             }
         }
 
         ColumnLayout {
             anchors.fill: parent
-            anchors.bottomMargin: Theme.spaceSm
-            spacing: 0
+            anchors.margins: 10
+            spacing: 8
 
             // -----------------------------------------------------------------
-            // Zone 1: Unified Header Bar (Search + View Toggle + Mode Switcher)
+            // Zone 1: Compact Draggable Header Bar (34 px controls)
             // -----------------------------------------------------------------
-            Rectangle {
+            Item {
+                id: headerBar
                 Layout.fillWidth: true
-                implicitHeight: 64
-                color: "transparent"
+                implicitHeight: 34
+
+                // Header drag & double-click-to-center handler
+                MouseArea {
+                    id: headerDragArea
+                    anchors.fill: parent
+                    acceptedButtons: Qt.LeftButton
+                    cursorShape: dragging ? Qt.ClosedHandCursor : Qt.OpenHandCursor
+
+                    property bool dragging: false
+                    property real startGlobalX: 0
+                    property real startGlobalY: 0
+                    property real startOffsetX: 0
+                    property real startOffsetY: 0
+
+                    onPressed: function(mouse) {
+                        if (root.contextMenuOpen)
+                            root.closeContextMenu();
+                        const globalPt = headerDragArea.mapToItem(root.contentItem, mouse.x, mouse.y);
+                        dragging = true;
+                        startGlobalX = globalPt.x;
+                        startGlobalY = globalPt.y;
+                        startOffsetX = root.dragOffsetX;
+                        startOffsetY = root.dragOffsetY;
+                    }
+
+                    onPositionChanged: function(mouse) {
+                        if (!dragging)
+                            return;
+                        const globalPt = headerDragArea.mapToItem(root.contentItem, mouse.x, mouse.y);
+                        root.clampDragOffsets(
+                            startOffsetX + (globalPt.x - startGlobalX),
+                            startOffsetY + (globalPt.y - startGlobalY)
+                        );
+                    }
+
+                    onReleased: {
+                        dragging = false;
+                        searchInput.forceActiveFocus();
+                    }
+
+                    onCanceled: {
+                        dragging = false;
+                    }
+
+                    onDoubleClicked: {
+                        dragging = false;
+                        root.resetDragPosition();
+                        searchInput.forceActiveFocus();
+                    }
+                }
 
                 RowLayout {
                     anchors.fill: parent
-                    anchors.leftMargin: Theme.spaceMd
-                    anchors.rightMargin: Theme.spaceMd
-                    anchors.topMargin: Theme.spaceMd
-                    anchors.bottomMargin: Theme.spaceMd
-                    spacing: Theme.spaceSm
+                    spacing: 6
 
-                    // Search Input Pill
+                    // Compact Drag Grip (drag to move, double-click to center)
+                    Item {
+                        implicitWidth: 16
+                        Layout.fillHeight: true
+
+                        Text {
+                            anchors.centerIn: parent
+                            text: "󰇜"
+                            font.family: Theme.fontFamily
+                            font.pixelSize: Theme.fontSizeMd
+                            color: gripDragArea.containsMouse || gripDragArea.dragging ? Theme.accent : Theme.overlay0
+
+                            Behavior on color {
+                                ColorAnimation { duration: 150 }
+                            }
+                        }
+
+                        MouseArea {
+                            id: gripDragArea
+                            anchors.fill: parent
+                            hoverEnabled: true
+                            acceptedButtons: Qt.LeftButton
+                            cursorShape: dragging ? Qt.ClosedHandCursor : Qt.OpenHandCursor
+
+                            property bool dragging: false
+                            property real startGlobalX: 0
+                            property real startGlobalY: 0
+                            property real startOffsetX: 0
+                            property real startOffsetY: 0
+
+                            onPressed: function(mouse) {
+                                if (root.contextMenuOpen)
+                                    root.closeContextMenu();
+                                const globalPt = gripDragArea.mapToItem(root.contentItem, mouse.x, mouse.y);
+                                dragging = true;
+                                startGlobalX = globalPt.x;
+                                startGlobalY = globalPt.y;
+                                startOffsetX = root.dragOffsetX;
+                                startOffsetY = root.dragOffsetY;
+                            }
+
+                            onPositionChanged: function(mouse) {
+                                if (!dragging)
+                                    return;
+                                const globalPt = gripDragArea.mapToItem(root.contentItem, mouse.x, mouse.y);
+                                root.clampDragOffsets(
+                                    startOffsetX + (globalPt.x - startGlobalX),
+                                    startOffsetY + (globalPt.y - startGlobalY)
+                                );
+                            }
+
+                            onReleased: {
+                                dragging = false;
+                                searchInput.forceActiveFocus();
+                            }
+
+                            onCanceled: {
+                                dragging = false;
+                            }
+
+                            onDoubleClicked: {
+                                dragging = false;
+                                root.resetDragPosition();
+                                searchInput.forceActiveFocus();
+                            }
+                        }
+                    }
+
+                    // Compact Search Input Pill
                     Rectangle {
                         Layout.fillWidth: true
                         Layout.fillHeight: true
@@ -1150,14 +1535,14 @@ PanelWindow {
 
                         RowLayout {
                             anchors.fill: parent
-                            anchors.leftMargin: Theme.spaceMd
-                            anchors.rightMargin: Theme.spaceSm
-                            spacing: Theme.spaceSm
+                            anchors.leftMargin: Theme.spaceSm
+                            anchors.rightMargin: 6
+                            spacing: 6
 
                             Text {
                                 text: ""
                                 font.family: Theme.fontFamily
-                                font.pixelSize: Theme.iconSizeMd
+                                font.pixelSize: Theme.iconSizeSm
                                 color: searchInput.activeFocus ? Theme.accent : Theme.subtext0
 
                                 Behavior on color {
@@ -1179,7 +1564,7 @@ PanelWindow {
                                           ? "Search apps or type = to calculate..."
                                           : "Search clipboard history..."
                                     font.family: Theme.fontFamilySans
-                                    font.pixelSize: Theme.fontSizeMd
+                                    font.pixelSize: Theme.fontSizeSm
                                     color: Theme.overlay1
                                     elide: Text.ElideRight
                                 }
@@ -1193,7 +1578,7 @@ PanelWindow {
                                     selectionColor: Theme.accentActive
                                     selectedTextColor: Theme.crust
                                     font.family: Theme.fontFamilySans
-                                    font.pixelSize: Theme.fontSizeLg
+                                    font.pixelSize: Theme.fontSizeMd
                                     clip: true
 
                                     onTextChanged: {
@@ -1215,8 +1600,8 @@ PanelWindow {
                             // Clear Query Button
                             Rectangle {
                                 visible: searchInput.text.length > 0
-                                implicitWidth: 24
-                                implicitHeight: 24
+                                implicitWidth: 22
+                                implicitHeight: 22
                                 radius: Theme.radiusPill
                                 color: clearMouse.containsMouse ? Theme.surface1 : "transparent"
 
@@ -1224,7 +1609,7 @@ PanelWindow {
                                     anchors.centerIn: parent
                                     text: ""
                                     font.family: Theme.fontFamily
-                                    font.pixelSize: Theme.fontSizeSm
+                                    font.pixelSize: Theme.fontSizeXs
                                     color: clearMouse.containsMouse ? Theme.text : Theme.subtext0
                                 }
 
@@ -1245,7 +1630,7 @@ PanelWindow {
                     // Segmented View Toggle Pill (List / Grid, Ctrl+G)
                     Rectangle {
                         id: viewSwitcher
-                        implicitWidth: 70
+                        implicitWidth: 62
                         Layout.fillHeight: true
                         radius: Theme.radiusPill
                         color: Theme.surface0
@@ -1281,7 +1666,7 @@ PanelWindow {
                                     anchors.centerIn: parent
                                     text: ""
                                     font.family: Theme.fontFamily
-                                    font.pixelSize: Theme.fontSizeMd
+                                    font.pixelSize: Theme.fontSizeSm
                                     color: root.viewMode === "list" ? Theme.crust : Theme.subtext0
 
                                     Behavior on color {
@@ -1304,7 +1689,7 @@ PanelWindow {
                                     anchors.centerIn: parent
                                     text: "󰕰"
                                     font.family: Theme.fontFamily
-                                    font.pixelSize: Theme.fontSizeMd
+                                    font.pixelSize: Theme.fontSizeSm
                                     color: root.viewMode === "grid" ? Theme.crust : Theme.subtext0
 
                                     Behavior on color {
@@ -1324,7 +1709,7 @@ PanelWindow {
                     // Segmented Pill Mode Switcher (Apps | Clipboard)
                     Rectangle {
                         id: tabSwitcher
-                        implicitWidth: 244
+                        implicitWidth: 204
                         Layout.fillHeight: true
                         radius: Theme.radiusPill
                         color: Theme.surface0
@@ -1358,13 +1743,13 @@ PanelWindow {
 
                                 Row {
                                     anchors.centerIn: parent
-                                    spacing: 5
+                                    spacing: 4
 
                                     Text {
                                         anchors.verticalCenter: parent.verticalCenter
                                         text: "󰀻 Apps"
                                         font.family: Theme.fontFamily
-                                        font.pixelSize: Theme.fontSizeSm
+                                        font.pixelSize: Theme.fontSizeXs
                                         font.weight: root.activeMode === "apps" ? Font.Bold : Font.Medium
                                         color: root.activeMode === "apps" ? Theme.crust : Theme.subtext0
 
@@ -1376,8 +1761,8 @@ PanelWindow {
                                     Rectangle {
                                         anchors.verticalCenter: parent.verticalCenter
                                         visible: root.filteredApps.length > 0
-                                        implicitHeight: 16
-                                        implicitWidth: appsCountText.implicitWidth + 8
+                                        implicitHeight: 14
+                                        implicitWidth: appsCountText.implicitWidth + 6
                                         radius: Theme.radiusPill
                                         color: root.activeMode === "apps"
                                                ? Qt.rgba(17 / 255, 17 / 255, 27 / 255, 0.22)
@@ -1408,13 +1793,13 @@ PanelWindow {
 
                                 Row {
                                     anchors.centerIn: parent
-                                    spacing: 5
+                                    spacing: 4
 
                                     Text {
                                         anchors.verticalCenter: parent.verticalCenter
                                         text: "󰅌 Clipboard"
                                         font.family: Theme.fontFamily
-                                        font.pixelSize: Theme.fontSizeSm
+                                        font.pixelSize: Theme.fontSizeXs
                                         font.weight: root.activeMode === "clipboard" ? Font.Bold : Font.Medium
                                         color: root.activeMode === "clipboard" ? Theme.crust : Theme.subtext0
 
@@ -1426,8 +1811,8 @@ PanelWindow {
                                     Rectangle {
                                         anchors.verticalCenter: parent.verticalCenter
                                         visible: root.clipboardEntries.length > 0
-                                        implicitHeight: 16
-                                        implicitWidth: clipCountText.implicitWidth + 8
+                                        implicitHeight: 14
+                                        implicitWidth: clipCountText.implicitWidth + 6
                                         radius: Theme.radiusPill
                                         color: root.activeMode === "clipboard"
                                                ? Qt.rgba(17 / 255, 17 / 255, 27 / 255, 0.22)
@@ -1455,6 +1840,45 @@ PanelWindow {
                             }
                         }
                     }
+
+                    // Pin Window Toggle Button
+                    Rectangle {
+                        id: pinWindowBtn
+                        implicitWidth: 34
+                        Layout.fillHeight: true
+                        radius: Theme.radiusPill
+                        color: root.windowPinned
+                               ? Theme.accentActive
+                               : (pinBtnMouse.containsMouse ? Theme.surface1 : Theme.surface0)
+                        border.width: Theme.borderWidth
+                        border.color: root.windowPinned
+                                      ? Theme.accentActive
+                                      : (pinBtnMouse.containsMouse ? Theme.accent : Theme.surface1)
+
+                        Behavior on color {
+                            ColorAnimation { duration: 180 }
+                        }
+
+                        Behavior on border.color {
+                            ColorAnimation { duration: 180 }
+                        }
+
+                        Text {
+                            anchors.centerIn: parent
+                            text: root.windowPinned ? "󰐃" : "󰐄"
+                            font.family: Theme.fontFamily
+                            font.pixelSize: Theme.iconSizeSm
+                            color: root.windowPinned ? Theme.crust : (pinBtnMouse.containsMouse ? Theme.accent : Theme.subtext0)
+                        }
+
+                        MouseArea {
+                            id: pinBtnMouse
+                            anchors.fill: parent
+                            hoverEnabled: true
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: root.toggleWindowPin()
+                        }
+                    }
                 }
             }
 
@@ -1468,90 +1892,82 @@ PanelWindow {
             // -----------------------------------------------------------------
             // Zone 2: Inline Calculator Strip (Conditional)
             // -----------------------------------------------------------------
-            Item {
+            Rectangle {
+                id: calcCard
                 Layout.fillWidth: true
                 visible: root.calcMatch !== null
-                implicitHeight: visible ? 54 : 0
+                implicitHeight: visible ? 40 : 0
+                radius: Theme.radiusMd
+                color: calcMouse.containsMouse
+                       ? Qt.rgba(40 / 255, 140 / 255, 255 / 255, 0.24)
+                       : Qt.rgba(40 / 255, 140 / 255, 255 / 255, 0.15)
+                border.width: Theme.borderWidth
+                border.color: Theme.accentActive
 
-                Rectangle {
-                    id: calcCard
+                RowLayout {
                     anchors.fill: parent
                     anchors.leftMargin: Theme.spaceMd
                     anchors.rightMargin: Theme.spaceMd
-                    anchors.topMargin: Theme.spaceSm
-                    anchors.bottomMargin: 2
-                    radius: Theme.radiusMd
-                    color: calcMouse.containsMouse
-                           ? Qt.rgba(40 / 255, 140 / 255, 255 / 255, 0.24)
-                           : Qt.rgba(40 / 255, 140 / 255, 255 / 255, 0.15)
-                    border.width: Theme.borderWidth
-                    border.color: Theme.accentActive
+                    spacing: Theme.spaceSm
 
-                    RowLayout {
-                        anchors.fill: parent
-                        anchors.leftMargin: Theme.spaceMd
-                        anchors.rightMargin: Theme.spaceMd
-                        spacing: Theme.spaceSm
+                    Text {
+                        text: ""
+                        font.family: Theme.fontFamily
+                        font.pixelSize: Theme.iconSizeSm
+                        color: Theme.accent
+                    }
+
+                    Text {
+                        text: "Result"
+                        font.family: Theme.fontFamilySans
+                        font.pixelSize: Theme.fontSizeXs
+                        font.weight: Font.Bold
+                        color: Theme.accent
+                    }
+
+                    Text {
+                        text: root.calcMatch ? (root.calcMatch.expr + " =") : ""
+                        font.family: Theme.fontFamily
+                        font.pixelSize: Theme.fontSizeSm
+                        color: Theme.subtext1
+                        elide: Text.ElideLeft
+                        Layout.maximumWidth: 180
+                    }
+
+                    Text {
+                        Layout.fillWidth: true
+                        text: root.calcMatch ? root.calcMatch.result : ""
+                        font.family: Theme.fontFamily
+                        font.pixelSize: Theme.fontSizeLg
+                        font.weight: Font.Bold
+                        color: Theme.text
+                        elide: Text.ElideRight
+                    }
+
+                    Rectangle {
+                        implicitHeight: 20
+                        implicitWidth: calcHintText.implicitWidth + Theme.spaceSm * 2
+                        radius: Theme.radiusPill
+                        color: Theme.accentActive
 
                         Text {
-                            text: ""
-                            font.family: Theme.fontFamily
-                            font.pixelSize: Theme.iconSizeMd
-                            color: Theme.accent
-                        }
-
-                        Text {
-                            text: "Result"
+                            id: calcHintText
+                            anchors.centerIn: parent
+                            text: root.calcTakesEnter ? "Press Enter to copy" : "Click to copy"
                             font.family: Theme.fontFamilySans
                             font.pixelSize: Theme.fontSizeXs
                             font.weight: Font.Bold
-                            color: Theme.accent
-                        }
-
-                        Text {
-                            text: root.calcMatch ? (root.calcMatch.expr + "  =") : ""
-                            font.family: Theme.fontFamily
-                            font.pixelSize: Theme.fontSizeMd
-                            color: Theme.subtext1
-                            elide: Text.ElideLeft
-                            Layout.maximumWidth: 220
-                        }
-
-                        Text {
-                            Layout.fillWidth: true
-                            text: root.calcMatch ? root.calcMatch.result : ""
-                            font.family: Theme.fontFamily
-                            font.pixelSize: Theme.fontSizeXl
-                            font.weight: Font.Bold
-                            color: Theme.text
-                            elide: Text.ElideRight
-                        }
-
-                        Rectangle {
-                            implicitHeight: 22
-                            implicitWidth: calcHintText.implicitWidth + Theme.spaceMd
-                            radius: Theme.radiusPill
-                            color: Theme.accentActive
-
-                            Text {
-                                id: calcHintText
-                                anchors.centerIn: parent
-                                text: root.calcTakesEnter ? "Press Enter to copy" : "Click to copy"
-                                font.family: Theme.fontFamilySans
-                                font.pixelSize: Theme.fontSizeXs
-                                font.weight: Font.Bold
-                                color: Theme.crust
-                            }
+                            color: Theme.crust
                         }
                     }
+                }
 
-                    MouseArea {
-                        id: calcMouse
-                        anchors.fill: parent
-                        hoverEnabled: true
-                        cursorShape: Qt.PointingHandCursor
-                        onClicked: root.copyCalcResult()
-                    }
+                MouseArea {
+                    id: calcMouse
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: root.copyCalcResult()
                 }
             }
 
@@ -1561,13 +1977,12 @@ PanelWindow {
             Item {
                 Layout.fillWidth: true
                 visible: root.activeMode === "clipboard"
-                implicitHeight: visible ? 34 : 0
+                implicitHeight: visible ? 24 : 0
 
                 RowLayout {
                     anchors.fill: parent
-                    anchors.leftMargin: Theme.spaceMd
-                    anchors.rightMargin: Theme.spaceMd
-                    anchors.topMargin: Theme.spaceXs
+                    anchors.leftMargin: 2
+                    anchors.rightMargin: 2
                     spacing: Theme.spaceSm
 
                     Text {
@@ -1581,7 +1996,7 @@ PanelWindow {
                             return total + (total === 1 ? " item" : " items");
                         }
                         font.family: Theme.fontFamilySans
-                        font.pixelSize: Theme.fontSizeSm
+                        font.pixelSize: Theme.fontSizeXs
                         color: Theme.subtext0
                     }
 
@@ -1591,8 +2006,8 @@ PanelWindow {
 
                     Rectangle {
                         visible: root.clipboardEntries.length > 0
-                        implicitHeight: 24
-                        implicitWidth: wipeLabel.implicitWidth + Theme.spaceMd
+                        implicitHeight: 22
+                        implicitWidth: wipeLabel.implicitWidth + Theme.spaceSm * 2
                         radius: Theme.radiusPill
                         color: wipeMouse.containsMouse
                                ? Qt.rgba(243 / 255, 139 / 255, 168 / 255, 0.22)
@@ -1631,12 +2046,8 @@ PanelWindow {
             Item {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
-                Layout.topMargin: Theme.spaceSm
-                Layout.leftMargin: Theme.spaceMd
-                Layout.rightMargin: Theme.spaceMd
-                Layout.bottomMargin: Theme.spaceXs
 
-                // List View
+                // Compact List View (44 px Apps / 48 px Clipboard)
                 ListView {
                     id: resultsList
                     anchors.fill: parent
@@ -1650,7 +2061,7 @@ PanelWindow {
                     highlightFollowsCurrentItem: false
                     highlight: Rectangle {
                         width: resultsList.width
-                        height: resultsList.currentItem ? resultsList.currentItem.height : 54
+                        height: resultsList.currentItem ? resultsList.currentItem.height : 44
                         y: resultsList.currentItem ? resultsList.currentItem.y : 0
                         visible: resultsList.count > 0 && resultsList.currentItem !== null
                         radius: Theme.radiusMd
@@ -1682,7 +2093,7 @@ PanelWindow {
                         readonly property bool isApps: root.activeMode === "apps"
 
                         width: resultsList.width
-                        height: 54
+                        height: isApps ? 44 : 48
 
                         Component.onCompleted: {
                             if (!isApps && modelData && modelData.isImage)
@@ -1739,22 +2150,22 @@ PanelWindow {
                             }
                         }
 
-                        // Apps List Row Content
+                        // Apps List Row Content (44 px)
                         RowLayout {
                             visible: rowDelegate.isApps
                             anchors.fill: parent
-                            anchors.leftMargin: Theme.spaceMd
-                            anchors.rightMargin: Theme.spaceMd
-                            spacing: Theme.spaceMd
+                            anchors.leftMargin: Theme.spaceSm
+                            anchors.rightMargin: Theme.spaceSm
+                            spacing: Theme.spaceSm
 
                             Item {
-                                implicitWidth: 32
-                                implicitHeight: 32
+                                implicitWidth: 30
+                                implicitHeight: 30
 
                                 IconImage {
                                     id: appIcon
                                     anchors.fill: parent
-                                    implicitSize: 32
+                                    implicitSize: 30
                                     asynchronous: true
                                     source: (rowDelegate.isApps && rowDelegate.modelData.iconName)
                                             ? Quickshell.iconPath(rowDelegate.modelData.iconName, true)
@@ -1767,20 +2178,20 @@ PanelWindow {
                                     visible: appIcon.status !== Image.Ready
                                     text: "󰣆"
                                     font.family: Theme.fontFamily
-                                    font.pixelSize: 22
+                                    font.pixelSize: 20
                                     color: rowDelegate.isSelected ? Theme.accent : Theme.subtext0
                                 }
                             }
 
                             ColumnLayout {
                                 Layout.fillWidth: true
-                                spacing: 2
+                                spacing: 1
 
                                 Text {
                                     Layout.fillWidth: true
                                     text: rowDelegate.isApps ? rowDelegate.modelData.name : ""
                                     font.family: Theme.fontFamilySans
-                                    font.pixelSize: Theme.fontSizeLg
+                                    font.pixelSize: Theme.fontSizeMd
                                     font.weight: Font.Bold
                                     color: rowDelegate.isSelected ? Theme.text : Theme.subtext1
                                     elide: Text.ElideRight
@@ -1791,7 +2202,7 @@ PanelWindow {
                                     visible: text.length > 0
                                     text: rowDelegate.isApps ? rowDelegate.modelData.subtitle : ""
                                     font.family: Theme.fontFamilySans
-                                    font.pixelSize: Theme.fontSizeSm
+                                    font.pixelSize: Theme.fontSizeXs
                                     color: Theme.subtext0
                                     elide: Text.ElideRight
                                 }
@@ -1801,14 +2212,14 @@ PanelWindow {
                                 visible: rowDelegate.isApps && rowDelegate.modelData.pinned
                                 text: "󰐃"
                                 font.family: Theme.fontFamily
-                                font.pixelSize: Theme.iconSizeSm
+                                font.pixelSize: Theme.fontSizeSm
                                 color: Theme.accent
                             }
 
                             Rectangle {
                                 visible: rowDelegate.isApps && rowDelegate.modelData.category.length > 0
-                                implicitHeight: 22
-                                implicitWidth: catLabel.implicitWidth + Theme.spaceMd
+                                implicitHeight: 20
+                                implicitWidth: catLabel.implicitWidth + Theme.spaceSm * 2
                                 radius: Theme.radiusPill
                                 color: rowDelegate.isSelected
                                        ? Qt.rgba(137 / 255, 180 / 255, 250 / 255, 0.18)
@@ -1827,19 +2238,19 @@ PanelWindow {
                             }
                         }
 
-                        // Clipboard List Row Content
+                        // Clipboard List Row Content (48 px)
                         RowLayout {
                             visible: !rowDelegate.isApps
                             anchors.fill: parent
-                            anchors.leftMargin: Theme.spaceMd
-                            anchors.rightMargin: Theme.spaceSm
+                            anchors.leftMargin: Theme.spaceSm
+                            anchors.rightMargin: 6
                             spacing: Theme.spaceSm
 
                             // Left Type Badge / Thumbnail Preview
-                            Rectangle {
+                            ClippingRectangle {
                                 id: listThumbBox
-                                implicitWidth: 64
-                                implicitHeight: 36
+                                implicitWidth: 58
+                                implicitHeight: 34
                                 radius: Theme.radiusSm
                                 color: Theme.surface0
                                 border.width: 1
@@ -1851,7 +2262,6 @@ PanelWindow {
                                                     0.45
                                                 )
                                               : Theme.surface1
-                                clip: true
 
                                 readonly property string thumbSource: (!rowDelegate.isApps && rowDelegate.modelData.isImage)
                                                                       ? root.previewSourceFor(rowDelegate.modelData.id)
@@ -1860,7 +2270,6 @@ PanelWindow {
                                 Image {
                                     id: rowThumb
                                     anchors.fill: parent
-                                    anchors.margins: 2
                                     visible: listThumbBox.thumbSource !== "" && status === Image.Ready
                                     source: listThumbBox.thumbSource
                                     fillMode: Image.PreserveAspectCrop
@@ -1870,7 +2279,7 @@ PanelWindow {
 
                                 Row {
                                     anchors.centerIn: parent
-                                    spacing: 4
+                                    spacing: 3
                                     visible: !rowThumb.visible
 
                                     Text {
@@ -1898,7 +2307,7 @@ PanelWindow {
                                 font.family: (!rowDelegate.isApps && (rowDelegate.modelData.kind === "CODE" || rowDelegate.modelData.kind === "URL"))
                                              ? Theme.fontFamily
                                              : Theme.fontFamilySans
-                                font.pixelSize: Theme.fontSizeMd
+                                font.pixelSize: Theme.fontSizeSm
                                 font.weight: rowDelegate.isSelected ? Font.DemiBold : Font.Normal
                                 color: rowDelegate.isSelected ? Theme.text : Theme.subtext1
                                 elide: Text.ElideRight
@@ -1906,10 +2315,18 @@ PanelWindow {
                                 wrapMode: Text.WrapAnywhere
                             }
 
+                            Text {
+                                visible: !rowDelegate.isApps && rowDelegate.modelData.pinned
+                                text: "󰐃"
+                                font.family: Theme.fontFamily
+                                font.pixelSize: Theme.fontSizeSm
+                                color: Theme.accent
+                            }
+
                             // Inline Delete Button
                             Rectangle {
-                                implicitWidth: 28
-                                implicitHeight: 28
+                                implicitWidth: 26
+                                implicitHeight: 26
                                 radius: Theme.radiusSm
                                 color: delMouse.containsMouse
                                        ? Qt.rgba(243 / 255, 139 / 255, 168 / 255, 0.22)
@@ -1940,7 +2357,7 @@ PanelWindow {
                     }
                 }
 
-                // Grid View (4 cols in Apps, 2 cols in Clipboard)
+                // Grid View (4 cols x 76 px in Apps, 2 cols x 126 px card in Clipboard)
                 GridView {
                     id: resultsGrid
                     anchors.fill: parent
@@ -1952,7 +2369,7 @@ PanelWindow {
 
                     readonly property int columns: root.activeMode === "apps" ? 4 : 2
                     cellWidth: Math.floor(width / columns)
-                    cellHeight: root.activeMode === "apps" ? 112 : 132
+                    cellHeight: root.activeMode === "apps" ? 84 : 134
 
                     highlightFollowsCurrentItem: false
                     highlight: Rectangle {
@@ -1962,9 +2379,12 @@ PanelWindow {
                         height: Math.max(0, resultsGrid.cellHeight - 8)
                         visible: resultsGrid.count > 0 && resultsGrid.currentItem !== null
                         radius: Theme.radiusMd
-                        color: Qt.rgba(49 / 255, 50 / 255, 68 / 255, 0.92)
+                        color: (root.activeMode === "clipboard" && root.selectedClipboardItem && root.selectedClipboardItem.isImage)
+                               ? "transparent"
+                               : Qt.rgba(49 / 255, 50 / 255, 68 / 255, 0.92)
                         border.width: Theme.borderWidth
                         border.color: Theme.accent
+                        z: 2
 
                         Behavior on x {
                             NumberAnimation {
@@ -2002,15 +2422,18 @@ PanelWindow {
                                 root.requestImagePreview(modelData);
                         }
 
+                        // Card shell for Apps & non-image Clipboard items
                         Rectangle {
                             id: gridCard
                             anchors.fill: parent
                             anchors.margins: 4
                             radius: Theme.radiusMd
-                            color: gridDelegate.isSelected
+                            color: (!gridDelegate.isApps && gridDelegate.modelData.isImage)
                                    ? "transparent"
-                                   : (gridMouse.containsMouse ? Theme.surface0 : Theme.mantle)
-                            border.width: Theme.borderWidth
+                                   : (gridDelegate.isSelected
+                                      ? "transparent"
+                                      : (gridMouse.containsMouse ? Theme.surface0 : Theme.mantle))
+                            border.width: (!gridDelegate.isApps && gridDelegate.modelData.isImage) ? 0 : Theme.borderWidth
                             border.color: gridDelegate.isSelected
                                           ? "transparent"
                                           : (gridMouse.containsMouse ? Theme.accent : Theme.surface0)
@@ -2057,11 +2480,11 @@ PanelWindow {
                             }
                         }
 
-                        // Apps Grid Card Content
+                        // Apps Grid Card Content (76 px card)
                         Item {
                             visible: gridDelegate.isApps
                             anchors.fill: gridCard
-                            anchors.margins: Theme.spaceSm
+                            anchors.margins: 6
 
                             Text {
                                 anchors.top: parent.top
@@ -2069,24 +2492,24 @@ PanelWindow {
                                 visible: gridDelegate.isApps && gridDelegate.modelData.pinned
                                 text: "󰐃"
                                 font.family: Theme.fontFamily
-                                font.pixelSize: Theme.fontSizeSm
+                                font.pixelSize: Theme.fontSizeXs
                                 color: Theme.accent
                             }
 
                             ColumnLayout {
                                 anchors.centerIn: parent
                                 width: parent.width
-                                spacing: Theme.spaceSm
+                                spacing: 4
 
                                 Item {
                                     Layout.alignment: Qt.AlignHCenter
-                                    implicitWidth: 42
-                                    implicitHeight: 42
+                                    implicitWidth: 34
+                                    implicitHeight: 34
 
                                     IconImage {
                                         id: gridAppIcon
                                         anchors.fill: parent
-                                        implicitSize: 42
+                                        implicitSize: 34
                                         asynchronous: true
                                         source: (gridDelegate.isApps && gridDelegate.modelData.iconName)
                                                 ? Quickshell.iconPath(gridDelegate.modelData.iconName, true)
@@ -2099,7 +2522,7 @@ PanelWindow {
                                         visible: gridAppIcon.status !== Image.Ready
                                         text: "󰣆"
                                         font.family: Theme.fontFamily
-                                        font.pixelSize: 28
+                                        font.pixelSize: 24
                                         color: gridDelegate.isSelected ? Theme.accent : Theme.subtext0
                                     }
                                 }
@@ -2109,7 +2532,7 @@ PanelWindow {
                                     horizontalAlignment: Text.AlignHCenter
                                     text: gridDelegate.isApps ? gridDelegate.modelData.name : ""
                                     font.family: Theme.fontFamilySans
-                                    font.pixelSize: Theme.fontSizeSm
+                                    font.pixelSize: Theme.fontSizeXs
                                     font.weight: gridDelegate.isSelected ? Font.Bold : Font.Medium
                                     color: gridDelegate.isSelected ? Theme.text : Theme.subtext1
                                     elide: Text.ElideRight
@@ -2119,20 +2542,185 @@ PanelWindow {
                             }
                         }
 
-                        // Clipboard Grid Card Content
+                        // Full-Bleed Clipboard IMAGE Card (126 px card, 10 px radius)
+                        ClippingRectangle {
+                            id: fullBleedImageCard
+                            visible: !gridDelegate.isApps && gridDelegate.modelData.isImage
+                            anchors.fill: gridCard
+                            radius: Theme.radiusMd
+                            color: Theme.crust
+                            border.width: Theme.borderWidth
+                            border.color: gridDelegate.isSelected
+                                          ? Theme.accent
+                                          : (gridMouse.containsMouse ? Theme.accent : Theme.surface1)
+
+                            readonly property string thumbSource: (!gridDelegate.isApps && gridDelegate.modelData.isImage)
+                                                                  ? root.previewSourceFor(gridDelegate.modelData.id)
+                                                                  : ""
+
+                            Image {
+                                id: gridFullBleedThumb
+                                anchors.fill: parent
+                                anchors.margins: 1
+                                visible: fullBleedImageCard.thumbSource !== "" && status === Image.Ready
+                                source: fullBleedImageCard.thumbSource
+                                fillMode: Image.PreserveAspectCrop
+                                asynchronous: true
+                                cache: false
+                            }
+
+                            Text {
+                                anchors.centerIn: parent
+                                visible: !gridFullBleedThumb.visible
+                                text: "󰋩"
+                                font.family: Theme.fontFamily
+                                font.pixelSize: 28
+                                color: Theme.mauve
+                            }
+
+                            // Top gradient scrim for floating badges
+                            Rectangle {
+                                anchors.top: parent.top
+                                anchors.left: parent.left
+                                anchors.right: parent.right
+                                height: 38
+                                gradient: Gradient {
+                                    GradientStop { position: 0.0; color: Qt.rgba(17 / 255, 17 / 255, 27 / 255, 0.85) }
+                                    GradientStop { position: 1.0; color: "transparent" }
+                                }
+                            }
+
+                            // Bottom gradient scrim for metadata pill
+                            Rectangle {
+                                anchors.bottom: parent.bottom
+                                anchors.left: parent.left
+                                anchors.right: parent.right
+                                height: 30
+                                visible: !gridDelegate.isApps && gridDelegate.modelData.imageCompactMeta.length > 0
+                                gradient: Gradient {
+                                    GradientStop { position: 0.0; color: "transparent" }
+                                    GradientStop { position: 1.0; color: Qt.rgba(17 / 255, 17 / 255, 27 / 255, 0.82) }
+                                }
+                            }
+
+                            // Floating Top-Left IMAGE Badge (+ Pin icon)
+                            Rectangle {
+                                anchors.top: parent.top
+                                anchors.left: parent.left
+                                anchors.margins: 6
+                                implicitHeight: 20
+                                implicitWidth: imgBadgeRow.implicitWidth + 10
+                                radius: Theme.radiusPill
+                                color: Qt.rgba(24 / 255, 24 / 255, 37 / 255, 0.82)
+                                border.width: 1
+                                border.color: Qt.rgba(203 / 255, 166 / 255, 247 / 255, 0.55)
+
+                                Row {
+                                    id: imgBadgeRow
+                                    anchors.centerIn: parent
+                                    spacing: 4
+
+                                    Text {
+                                        anchors.verticalCenter: parent.verticalCenter
+                                        text: "󰋩"
+                                        font.family: Theme.fontFamily
+                                        font.pixelSize: Theme.fontSizeXs
+                                        color: Theme.mauve
+                                    }
+
+                                    Text {
+                                        anchors.verticalCenter: parent.verticalCenter
+                                        text: "IMAGE"
+                                        font.family: Theme.fontFamily
+                                        font.pixelSize: 9
+                                        font.weight: Font.Bold
+                                        color: Theme.mauve
+                                    }
+
+                                    Text {
+                                        anchors.verticalCenter: parent.verticalCenter
+                                        visible: !gridDelegate.isApps && gridDelegate.modelData.pinned
+                                        text: "󰐃"
+                                        font.family: Theme.fontFamily
+                                        font.pixelSize: Theme.fontSizeXs
+                                        color: Theme.accent
+                                    }
+                                }
+                            }
+
+                            // Floating Top-Right Delete Button
+                            Rectangle {
+                                visible: gridMouse.containsMouse || imgGridDelMouse.containsMouse || gridDelegate.isSelected
+                                anchors.top: parent.top
+                                anchors.right: parent.right
+                                anchors.margins: 6
+                                implicitWidth: 22
+                                implicitHeight: 22
+                                radius: Theme.radiusPill
+                                color: imgGridDelMouse.containsMouse
+                                       ? Qt.rgba(243 / 255, 139 / 255, 168 / 255, 0.9)
+                                       : Qt.rgba(24 / 255, 24 / 255, 37 / 255, 0.82)
+                                border.width: 1
+                                border.color: imgGridDelMouse.containsMouse ? Theme.red : Theme.surface1
+
+                                Text {
+                                    anchors.centerIn: parent
+                                    text: ""
+                                    font.family: Theme.fontFamily
+                                    font.pixelSize: Theme.fontSizeXs
+                                    color: imgGridDelMouse.containsMouse ? Theme.crust : Theme.text
+                                }
+
+                                MouseArea {
+                                    id: imgGridDelMouse
+                                    anchors.fill: parent
+                                    hoverEnabled: true
+                                    cursorShape: Qt.PointingHandCursor
+                                    onClicked: function(mouse) {
+                                        mouse.accepted = true;
+                                        root.closeContextMenu();
+                                        if (!gridDelegate.isApps)
+                                            root.deleteClipboardItem(gridDelegate.modelData);
+                                    }
+                                }
+                            }
+
+                            // Floating Bottom-Left Dimensions/Size Pill
+                            Rectangle {
+                                visible: !gridDelegate.isApps && gridDelegate.modelData.imageCompactMeta.length > 0
+                                anchors.bottom: parent.bottom
+                                anchors.left: parent.left
+                                anchors.margins: 6
+                                implicitHeight: 18
+                                implicitWidth: imgMetaText.implicitWidth + 10
+                                radius: Theme.radiusPill
+                                color: Qt.rgba(24 / 255, 24 / 255, 37 / 255, 0.82)
+
+                                Text {
+                                    id: imgMetaText
+                                    anchors.centerIn: parent
+                                    text: !gridDelegate.isApps ? gridDelegate.modelData.imageCompactMeta : ""
+                                    font.family: Theme.fontFamily
+                                    font.pixelSize: 9
+                                    color: Theme.subtext1
+                                }
+                            }
+                        }
+
+                        // Clipboard TEXT / URL / CODE Grid Card Content (126 px card)
                         ColumnLayout {
-                            visible: !gridDelegate.isApps
+                            visible: !gridDelegate.isApps && !gridDelegate.modelData.isImage
                             anchors.fill: gridCard
                             anchors.margins: Theme.spaceSm
-                            spacing: Theme.spaceXs
+                            spacing: 6
 
                             RowLayout {
                                 Layout.fillWidth: true
-                                spacing: Theme.spaceXs
+                                spacing: 4
 
                                 Rectangle {
-                                    implicitHeight: 20
-                                    implicitWidth: gridBadgeRow.implicitWidth + 12
+                                    implicitHeight: 18
+                                    implicitWidth: gridBadgeRow.implicitWidth + 10
                                     radius: Theme.radiusPill
                                     color: Theme.surface0
                                     border.width: 1
@@ -2148,7 +2736,7 @@ PanelWindow {
                                     Row {
                                         id: gridBadgeRow
                                         anchors.centerIn: parent
-                                        spacing: 4
+                                        spacing: 3
 
                                         Text {
                                             anchors.verticalCenter: parent.verticalCenter
@@ -2169,14 +2757,22 @@ PanelWindow {
                                     }
                                 }
 
+                                Text {
+                                    visible: !gridDelegate.isApps && gridDelegate.modelData.pinned
+                                    text: "󰐃"
+                                    font.family: Theme.fontFamily
+                                    font.pixelSize: Theme.fontSizeXs
+                                    color: Theme.accent
+                                }
+
                                 Item {
                                     Layout.fillWidth: true
                                 }
 
                                 Rectangle {
                                     visible: gridMouse.containsMouse || gridDelMouse.containsMouse || gridDelegate.isSelected
-                                    implicitWidth: 22
-                                    implicitHeight: 22
+                                    implicitWidth: 20
+                                    implicitHeight: 20
                                     radius: Theme.radiusSm
                                     color: gridDelMouse.containsMouse
                                            ? Qt.rgba(243 / 255, 139 / 255, 168 / 255, 0.22)
@@ -2205,48 +2801,9 @@ PanelWindow {
                                 }
                             }
 
-                            // Image Thumbnail in Grid Card
-                            Rectangle {
-                                id: gridThumbBox
-                                Layout.fillWidth: true
-                                Layout.fillHeight: true
-                                visible: !gridDelegate.isApps && gridDelegate.modelData.isImage
-                                radius: Theme.radiusSm
-                                color: Theme.crust
-                                border.width: 1
-                                border.color: Theme.surface0
-                                clip: true
-
-                                readonly property string thumbSource: (!gridDelegate.isApps && gridDelegate.modelData.isImage)
-                                                                      ? root.previewSourceFor(gridDelegate.modelData.id)
-                                                                      : ""
-
-                                Image {
-                                    id: gridThumb
-                                    anchors.fill: parent
-                                    anchors.margins: 3
-                                    visible: gridThumbBox.thumbSource !== "" && status === Image.Ready
-                                    source: gridThumbBox.thumbSource
-                                    fillMode: Image.PreserveAspectFit
-                                    asynchronous: true
-                                    cache: false
-                                }
-
-                                Text {
-                                    anchors.centerIn: parent
-                                    visible: !gridThumb.visible
-                                    text: "󰋩"
-                                    font.family: Theme.fontFamily
-                                    font.pixelSize: 24
-                                    color: Theme.mauve
-                                }
-                            }
-
-                            // Text/URL/Code Snippet in Grid Card
                             Text {
                                 Layout.fillWidth: true
                                 Layout.fillHeight: true
-                                visible: !gridDelegate.isApps && !gridDelegate.modelData.isImage
                                 verticalAlignment: Text.AlignTop
                                 text: !gridDelegate.isApps ? gridDelegate.modelData.displayTitle : ""
                                 font.family: (!gridDelegate.isApps && (gridDelegate.modelData.kind === "CODE" || gridDelegate.modelData.kind === "URL"))
@@ -2255,7 +2812,7 @@ PanelWindow {
                                 font.pixelSize: Theme.fontSizeSm
                                 color: gridDelegate.isSelected ? Theme.text : Theme.subtext1
                                 elide: Text.ElideRight
-                                maximumLineCount: 3
+                                maximumLineCount: 4
                                 wrapMode: Text.WrapAnywhere
                             }
                         }
@@ -2272,7 +2829,7 @@ PanelWindow {
                         Layout.alignment: Qt.AlignHCenter
                         text: root.activeMode === "apps" ? "󰍉" : "󰅌"
                         font.family: Theme.fontFamily
-                        font.pixelSize: 28
+                        font.pixelSize: 26
                         color: Theme.overlay0
                     }
 
@@ -2282,7 +2839,7 @@ PanelWindow {
                               ? (root.calcMatch ? "Press Enter to copy calculation result" : "No matching applications")
                               : (root.clipboardEntries.length === 0 ? "No clipboard history" : "No matching items")
                         font.family: Theme.fontFamilySans
-                        font.pixelSize: Theme.fontSizeMd
+                        font.pixelSize: Theme.fontSizeSm
                         color: Theme.overlay1
                     }
                 }
@@ -2294,11 +2851,8 @@ PanelWindow {
             Rectangle {
                 id: imagePreviewCard
                 Layout.fillWidth: true
-                Layout.leftMargin: Theme.spaceMd
-                Layout.rightMargin: Theme.spaceMd
-                Layout.bottomMargin: Theme.spaceXs
                 visible: root.viewMode === "list" && root.selectedClipboardItem !== null && root.selectedClipboardItem.isImage
-                implicitHeight: visible ? 86 : 0
+                implicitHeight: visible ? 76 : 0
                 radius: Theme.radiusMd
                 color: Theme.mantle
                 border.width: Theme.borderWidth
@@ -2310,22 +2864,21 @@ PanelWindow {
 
                 RowLayout {
                     anchors.fill: parent
-                    anchors.margins: Theme.spaceSm
-                    spacing: Theme.spaceMd
+                    anchors.margins: 6
+                    spacing: Theme.spaceSm
 
-                    Rectangle {
-                        implicitWidth: 124
+                    ClippingRectangle {
+                        implicitWidth: 112
                         Layout.fillHeight: true
                         radius: Theme.radiusSm
                         color: Theme.crust
                         border.width: 1
                         border.color: Theme.surface0
-                        clip: true
 
                         Image {
                             id: largeThumb
                             anchors.fill: parent
-                            anchors.margins: 3
+                            anchors.margins: 2
                             visible: imagePreviewCard.previewUrl !== "" && status === Image.Ready
                             source: imagePreviewCard.previewUrl
                             fillMode: Image.PreserveAspectFit
@@ -2338,19 +2891,19 @@ PanelWindow {
                             visible: !largeThumb.visible
                             text: "󰋩"
                             font.family: Theme.fontFamily
-                            font.pixelSize: 24
+                            font.pixelSize: 22
                             color: Theme.mauve
                         }
                     }
 
                     ColumnLayout {
                         Layout.fillWidth: true
-                        spacing: 3
+                        spacing: 2
 
                         Text {
                             text: "Clipboard Image Preview"
                             font.family: Theme.fontFamilySans
-                            font.pixelSize: Theme.fontSizeMd
+                            font.pixelSize: Theme.fontSizeSm
                             font.weight: Font.Bold
                             color: Theme.mauve
                         }
@@ -2358,14 +2911,14 @@ PanelWindow {
                         Text {
                             text: root.selectedClipboardItem ? root.selectedClipboardItem.imageMeta : ""
                             font.family: Theme.fontFamily
-                            font.pixelSize: Theme.fontSizeSm
+                            font.pixelSize: Theme.fontSizeXs
                             color: Theme.text
                             elide: Text.ElideRight
                             Layout.fillWidth: true
                         }
 
                         Text {
-                            text: "Press Enter to copy image  •  Del to delete"
+                            text: "Press Enter to paste  •  Del to delete"
                             font.family: Theme.fontFamilySans
                             font.pixelSize: Theme.fontSizeXs
                             color: Theme.subtext0
@@ -2446,7 +2999,7 @@ PanelWindow {
                         required property var modelData
 
                         Layout.fillWidth: true
-                        implicitHeight: 32
+                        implicitHeight: 30
                         radius: Theme.radiusSm
                         color: ctxMouse.containsMouse ? Theme.surface0 : "transparent"
 
