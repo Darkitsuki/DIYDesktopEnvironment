@@ -16,6 +16,10 @@ ShellRoot {
         id: launcherPopup
     }
 
+    SnippingOverlay {
+        id: snippingOverlay
+    }
+
     IpcHandler {
         target: "launcher"
 
@@ -29,6 +33,22 @@ ShellRoot {
 
         function toggle(): void {
             launcherPopup.toggleCurrent();
+        }
+    }
+
+    IpcHandler {
+        target: "snipping"
+
+        function open(): void {
+            snippingOverlay.openOverlay();
+        }
+
+        function close(): void {
+            snippingOverlay.closeOverlay();
+        }
+
+        function toggle(): void {
+            snippingOverlay.toggleOverlay();
         }
     }
 }

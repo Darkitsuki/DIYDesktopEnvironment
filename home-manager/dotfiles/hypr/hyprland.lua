@@ -419,7 +419,7 @@ hl.bind("XF86AudioPrev",  hl.dsp.exec_cmd("playerctl previous"),   { locked = tr
 -- ==========================================
 -- CHỤP MÀN HÌNH (WINDOWS SNIPPING TOOL)
 -- ==========================================
-hl.bind(mainMod .. " + SHIFT + S", hl.dsp.exec_cmd("/home/HoaHung/.local/bin/hypr-screenshot menu"), { description = "Snipping Tool: Screenshot mode menu" })
+hl.bind(mainMod .. " + SHIFT + S", hl.dsp.exec_cmd("quickshell ipc call snipping toggle"), { description = "Snipping Tool: Toggle screenshot bar" })
 
 --------------------------------
 ---- WINDOWS AND WORKSPACES ----
@@ -553,6 +553,15 @@ local screenshotFreezeNoAnim = hl.layer_rule({
   blur = false,
 })
 screenshotFreezeNoAnim:set_enabled(true)
+
+local quickshellSnippingBlur = hl.layer_rule({
+  name = "quickshell-snipping-blur",
+  match = { namespace = "^quickshell-snipping$" },
+  blur = true,
+  ignore_alpha = 0.25,
+  animation = "popin 86%",
+})
+quickshellSnippingBlur:set_enabled(true)
 
 -- Hyprland-run windowrule
 hl.window_rule({
