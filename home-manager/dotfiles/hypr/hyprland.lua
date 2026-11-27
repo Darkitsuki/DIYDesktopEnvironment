@@ -507,7 +507,7 @@ local quickshellBarBlur = hl.layer_rule({
     blur = true,
     ignore_alpha = 0.2,
 })
-quickshellBarBlur:set_enabled(true)
+quickshellBarBlur:set_enabled(false)
 
 -- Hyprland-run windowrule
 hl.window_rule({

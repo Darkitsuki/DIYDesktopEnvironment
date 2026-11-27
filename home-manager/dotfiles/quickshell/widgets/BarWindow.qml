@@ -30,9 +30,9 @@ PanelWindow {
     Rectangle {
         id: barPill
         anchors.fill: parent
-        color: Theme.baseTranslucent
-        border.width: Theme.borderWidth
-        border.color: Theme.borderColor
+        color: "transparent"
+        border.width: 0
+        border.color: "transparent"
         radius: Theme.radiusLg
 
         RowLayout {
