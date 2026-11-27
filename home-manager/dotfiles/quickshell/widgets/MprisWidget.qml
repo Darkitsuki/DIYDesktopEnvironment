@@ -47,6 +47,13 @@ Rectangle {
     border.width: (mediaMouse.containsMouse || isPlaying) ? Theme.borderWidth : 0
     border.color: Theme.accent
 
+    Behavior on implicitWidth {
+        NumberAnimation {
+            duration: 180
+            easing.type: Easing.OutCubic
+        }
+    }
+
     Behavior on color {
         ColorAnimation { duration: 150 }
     }
@@ -66,6 +73,10 @@ Rectangle {
             font.family: Theme.fontFamily
             font.pixelSize: Theme.fontSizeSm
             color: root.isPlaying ? Theme.accent : Theme.subtext0
+
+            Behavior on color {
+                ColorAnimation { duration: 150 }
+            }
         }
 
         Item {
@@ -83,6 +94,10 @@ Rectangle {
                 font.pixelSize: Theme.fontSizeMd
                 font.weight: Font.Medium
                 color: (mediaMouse.containsMouse || root.isPlaying) ? Theme.accent : Theme.text
+
+                Behavior on color {
+                    ColorAnimation { duration: 150 }
+                }
 
                 onTextChanged: {
                     marqueeAnim.stop();

@@ -58,6 +58,13 @@ Rectangle {
     border.width: (clockMouse.containsMouse || pinned) ? Theme.borderWidth : 0
     border.color: Theme.accent
 
+    Behavior on implicitWidth {
+        NumberAnimation {
+            duration: 180
+            easing.type: Easing.OutCubic
+        }
+    }
+
     Behavior on color {
         ColorAnimation { duration: 150 }
     }
@@ -87,10 +94,10 @@ Rectangle {
     PopupWindow {
         id: calendarPopup
 
-        visible: root.popupVisible
+        visible: root.popupVisible || calendarCard.opacity > 0.01
         color: "transparent"
         implicitWidth: calendarCard.implicitWidth
-        implicitHeight: calendarCard.implicitHeight
+        implicitHeight: calendarCard.implicitHeight + 6
 
         anchor.item: root
         anchor.edges: Edges.Bottom
@@ -103,12 +110,32 @@ Rectangle {
 
         Rectangle {
             id: calendarCard
+            y: 4
             implicitWidth: calendarCol.implicitWidth + Theme.spaceLg * 2
             implicitHeight: calendarCol.implicitHeight + Theme.spaceMd * 2
             radius: Theme.radiusLg
             color: Theme.baseTranslucent
             border.width: Theme.borderWidth
             border.color: Theme.borderColor
+            opacity: root.popupVisible ? 1.0 : 0.0
+
+            Behavior on opacity {
+                NumberAnimation {
+                    duration: 160
+                    easing.type: Easing.OutCubic
+                }
+            }
+
+            transform: Translate {
+                y: root.popupVisible ? 0 : -4
+
+                Behavior on y {
+                    NumberAnimation {
+                        duration: 180
+                        easing.type: Easing.OutCubic
+                    }
+                }
+            }
 
             ColumnLayout {
                 id: calendarCol

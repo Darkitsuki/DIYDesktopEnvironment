@@ -195,6 +195,9 @@ hl.config({
         active_opacity   = 1,
         inactive_opacity = 0.90,
 
+        dim_inactive = true,
+        dim_strength = 0.08,
+
         shadow = {
             enabled      = false,
             range        = 4,
@@ -204,8 +207,8 @@ hl.config({
 
         blur = {
             enabled   = true,
-            size      = 3,
-            passes    = 1,
+            size      = 5,
+            passes    = 2,
             vibrancy  = 0.1696,
         },
     },
@@ -215,33 +218,34 @@ hl.config({
     },
 })
 
--- Default curves and animations, see https://wiki.hypr.land/Configuring/Advanced-and-Cool/Animations/
-hl.curve("easeOutQuint",   { type = "bezier", points = { {0.23, 1},    {0.32, 1}    } })
-hl.curve("easeInOutCubic", { type = "bezier", points = { {0.65, 0.05}, {0.36, 1}    } })
-hl.curve("linear",         { type = "bezier", points = { {0, 0},       {1, 1}       } })
-hl.curve("almostLinear",   { type = "bezier", points = { {0.5, 0.5},   {0.75, 1}    } })
-hl.curve("quick",          { type = "bezier", points = { {0.15, 0},    {0.1, 1}     } })
+-- Clean, non-bouncy Bezier curves and lightweight animations
+hl.curve("fluentDecel",    { type = "bezier", points = { {0.05, 0.9},  {0.1, 1.0}    } })
+hl.curve("snappy",         { type = "bezier", points = { {0.2, 0.0},   {0.0, 1.0}    } })
+hl.curve("easeOutQuint",   { type = "bezier", points = { {0.23, 1},    {0.32, 1}     } })
+hl.curve("linear",         { type = "bezier", points = { {0, 0},       {1, 1}        } })
+hl.curve("almostLinear",   { type = "bezier", points = { {0.5, 0.5},   {0.75, 1}     } })
+hl.curve("quick",          { type = "bezier", points = { {0.15, 0},    {0.1, 1}      } })
 
--- Default springs
-hl.curve("easy",           { type = "spring", mass = 0.6, stiffness = 140, dampening = 15.8273644 })
-
-hl.animation({ leaf = "global",        enabled = true,  speed = 10,   bezier = "default" })
-hl.animation({ leaf = "border",        enabled = true,  speed = 5.39, bezier = "easeOutQuint" })
-hl.animation({ leaf = "windows",       enabled = true,  speed = 1, spring = "easy" })
-hl.animation({ leaf = "windowsIn",     enabled = true,  speed = 4.1,  spring = "easy",         style = "popin 87%" })
-hl.animation({ leaf = "windowsOut",    enabled = true,  speed = 1.49, bezier = "linear",       style = "popin 87%" })
-hl.animation({ leaf = "fadeIn",        enabled = true,  speed = 1.73, bezier = "almostLinear" })
-hl.animation({ leaf = "fadeOut",       enabled = true,  speed = 1.46, bezier = "almostLinear" })
-hl.animation({ leaf = "fade",          enabled = true,  speed = 3.03, bezier = "quick" })
-hl.animation({ leaf = "layers",        enabled = true,  speed = 3.81, bezier = "easeOutQuint" })
-hl.animation({ leaf = "layersIn",      enabled = true,  speed = 4,    bezier = "easeOutQuint", style = "fade" })
-hl.animation({ leaf = "layersOut",     enabled = true,  speed = 1.5,  bezier = "linear",       style = "fade" })
-hl.animation({ leaf = "fadeLayersIn",  enabled = true,  speed = 1.79, bezier = "almostLinear" })
-hl.animation({ leaf = "fadeLayersOut", enabled = true,  speed = 1.39, bezier = "almostLinear" })
-hl.animation({ leaf = "workspaces",    enabled = true,  speed = 3, bezier = "almostLinear", style = "slide" })
-hl.animation({ leaf = "workspacesIn",  enabled = true,  speed = 3, bezier = "almostLinear", style = "slide" })
-hl.animation({ leaf = "workspacesOut", enabled = true,  speed = 3, bezier = "almostLinear", style = "slide" })
-hl.animation({ leaf = "zoomFactor",    enabled = true,  speed = 7,    bezier = "quick" })
+hl.animation({ leaf = "global",        enabled = true,  speed = 2.0,  bezier = "fluentDecel" })
+hl.animation({ leaf = "border",        enabled = true,  speed = 3.0,  bezier = "snappy" })
+hl.animation({ leaf = "borderangle",   enabled = false })
+hl.animation({ leaf = "windows",       enabled = true,  speed = 1.9,  bezier = "fluentDecel", style = "popin 88%" })
+hl.animation({ leaf = "windowsIn",     enabled = true,  speed = 1.9,  bezier = "fluentDecel", style = "popin 88%" })
+hl.animation({ leaf = "windowsOut",    enabled = true,  speed = 1.8,  bezier = "snappy",      style = "popin 88%" })
+hl.animation({ leaf = "windowsMove",   enabled = true,  speed = 2.0,  bezier = "fluentDecel" })
+hl.animation({ leaf = "fade",          enabled = true,  speed = 1.6,  bezier = "snappy" })
+hl.animation({ leaf = "fadeIn",        enabled = true,  speed = 1.6,  bezier = "fluentDecel" })
+hl.animation({ leaf = "fadeOut",       enabled = true,  speed = 1.6,  bezier = "snappy" })
+hl.animation({ leaf = "fadeDim",       enabled = true,  speed = 1.6,  bezier = "snappy" })
+hl.animation({ leaf = "layers",        enabled = true,  speed = 1.5,  bezier = "fluentDecel", style = "popin 92%" })
+hl.animation({ leaf = "layersIn",      enabled = true,  speed = 1.5,  bezier = "fluentDecel", style = "popin 92%" })
+hl.animation({ leaf = "layersOut",     enabled = true,  speed = 1.4,  bezier = "snappy",      style = "popin 92%" })
+hl.animation({ leaf = "fadeLayersIn",  enabled = true,  speed = 1.5,  bezier = "fluentDecel" })
+hl.animation({ leaf = "fadeLayersOut", enabled = true,  speed = 1.4,  bezier = "snappy" })
+hl.animation({ leaf = "workspaces",    enabled = true,  speed = 2.2,  bezier = "fluentDecel", style = "slidefade 15%" })
+hl.animation({ leaf = "workspacesIn",  enabled = true,  speed = 2.2,  bezier = "fluentDecel", style = "slidefade 15%" })
+hl.animation({ leaf = "workspacesOut", enabled = true,  speed = 2.2,  bezier = "fluentDecel", style = "slidefade 15%" })
+hl.animation({ leaf = "zoomFactor",    enabled = true,  speed = 3.0,  bezier = "snappy" })
 
 -- See https://wiki.hypr.land/Configuring/Layouts/Dwindle-Layout/ for more
 hl.config({
@@ -459,6 +463,7 @@ local quickSettingsBlur = hl.layer_rule({
     match = { namespace = "^quick-settings$" },
     blur = true,
     ignore_alpha = 0.2,
+    animation = "popin 92%",
 })
 quickSettingsBlur:set_enabled(true)
 
@@ -467,6 +472,7 @@ local audioMenuBlur = hl.layer_rule({
     match = { namespace = "^audio-menu$" },
     blur = true,
     ignore_alpha = 0.2,
+    animation = "popin 92%",
 })
 audioMenuBlur:set_enabled(true)
 
@@ -475,6 +481,7 @@ local powerMenuBlur = hl.layer_rule({
     match = { namespace = "^power-menu$" },
     blur = true,
     ignore_alpha = 0.2,
+    animation = "popin 92%",
 })
 powerMenuBlur:set_enabled(true)
 
@@ -483,6 +490,7 @@ local osdBlur = hl.layer_rule({
     match = { namespace = "^osd$" },
     blur = true,
     ignore_alpha = 0.2,
+    animation = "popin 92%",
 })
 osdBlur:set_enabled(true)
 
@@ -491,6 +499,7 @@ local hyprlauncherBlur = hl.layer_rule({
     match = { namespace = "^hyprlauncher$" },
     blur = true,
     ignore_alpha = 0.25,
+    animation = "popin 92%",
 })
 hyprlauncherBlur:set_enabled(true)
 
@@ -508,6 +517,13 @@ local quickshellBarBlur = hl.layer_rule({
     ignore_alpha = 0.2,
 })
 quickshellBarBlur:set_enabled(false)
+
+local quickshellBarAnim = hl.layer_rule({
+    name = "quickshell-bar-anim",
+    match = { namespace = "^quickshell-bar$" },
+    animation = "fade",
+})
+quickshellBarAnim:set_enabled(true)
 
 -- Hyprland-run windowrule
 hl.window_rule({

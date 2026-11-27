@@ -178,6 +178,12 @@ RowLayout {
         border.width: audioMouse.containsMouse ? Theme.borderWidth : 0
         border.color: Theme.accent
 
+        Behavior on implicitWidth {
+            NumberAnimation {
+                duration: 180
+                easing.type: Easing.OutCubic
+            }
+        }
         Behavior on color { ColorAnimation { duration: 150 } }
         Behavior on border.color { ColorAnimation { duration: 150 } }
 
@@ -188,6 +194,8 @@ RowLayout {
             font.family: Theme.fontFamily
             font.pixelSize: Theme.fontSizeMd
             color: root.audioMuted ? Theme.subtext0 : Theme.text
+
+            Behavior on color { ColorAnimation { duration: 150 } }
         }
 
         MouseArea {
@@ -231,6 +239,12 @@ RowLayout {
         border.width: netMouse.containsMouse ? Theme.borderWidth : 0
         border.color: Theme.accent
 
+        Behavior on implicitWidth {
+            NumberAnimation {
+                duration: 180
+                easing.type: Easing.OutCubic
+            }
+        }
         Behavior on color { ColorAnimation { duration: 150 } }
         Behavior on border.color { ColorAnimation { duration: 150 } }
 
@@ -247,6 +261,8 @@ RowLayout {
             font.family: Theme.fontFamily
             font.pixelSize: Theme.fontSizeMd
             color: root.netType === "none" ? Theme.yellow : Theme.text
+
+            Behavior on color { ColorAnimation { duration: 150 } }
         }
 
         MouseArea {
@@ -279,6 +295,12 @@ RowLayout {
         border.width: gdriveMouse.containsMouse ? Theme.borderWidth : 0
         border.color: Theme.accent
 
+        Behavior on implicitWidth {
+            NumberAnimation {
+                duration: 180
+                easing.type: Easing.OutCubic
+            }
+        }
         Behavior on color { ColorAnimation { duration: 150 } }
         Behavior on border.color { ColorAnimation { duration: 150 } }
 
@@ -300,6 +322,8 @@ RowLayout {
                     return Theme.green;
                 return Theme.text;
             }
+
+            Behavior on color { ColorAnimation { duration: 150 } }
         }
 
         MouseArea {
@@ -332,6 +356,15 @@ RowLayout {
         border.width: (!root.batteryCharging && root.batteryPct <= 15) ? Theme.borderWidth : 0
         border.color: Theme.red
 
+        Behavior on implicitWidth {
+            NumberAnimation {
+                duration: 180
+                easing.type: Easing.OutCubic
+            }
+        }
+        Behavior on color { ColorAnimation { duration: 150 } }
+        Behavior on border.color { ColorAnimation { duration: 150 } }
+
         Text {
             id: batteryLabel
             anchors.centerIn: parent
@@ -339,6 +372,8 @@ RowLayout {
             font.family: Theme.fontFamily
             font.pixelSize: Theme.fontSizeMd
             color: root.batteryColor
+
+            Behavior on color { ColorAnimation { duration: 150 } }
         }
     }
 
@@ -353,6 +388,16 @@ RowLayout {
         radius: Theme.radiusLg
         color: Theme.surfaceTranslucent
         border.width: 0
+        border.color: Theme.borderColor
+
+        Behavior on implicitWidth {
+            NumberAnimation {
+                duration: 180
+                easing.type: Easing.OutCubic
+            }
+        }
+        Behavior on color { ColorAnimation { duration: 150 } }
+        Behavior on border.color { ColorAnimation { duration: 150 } }
 
         RowLayout {
             id: trayRow
@@ -433,8 +478,16 @@ RowLayout {
         radius: Theme.radiusLg
         color: qsMouse.containsMouse ? Theme.accentActive : Theme.surface0
         border.width: 0
+        border.color: Theme.accent
 
+        Behavior on implicitWidth {
+            NumberAnimation {
+                duration: 180
+                easing.type: Easing.OutCubic
+            }
+        }
         Behavior on color { ColorAnimation { duration: 150 } }
+        Behavior on border.color { ColorAnimation { duration: 150 } }
 
         Text {
             anchors.centerIn: parent

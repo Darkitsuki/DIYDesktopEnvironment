@@ -77,6 +77,13 @@ Rectangle {
     color: Theme.surfaceTranslucent
     border.width: 0
 
+    Behavior on implicitWidth {
+        NumberAnimation {
+            duration: 180
+            easing.type: Easing.OutCubic
+        }
+    }
+
     MouseArea {
         anchors.fill: parent
         acceptedButtons: Qt.NoButton
@@ -124,12 +131,18 @@ Rectangle {
 
                 Behavior on implicitWidth {
                     NumberAnimation {
-                        duration: 160
+                        duration: 180
                         easing.type: Easing.OutCubic
                     }
                 }
 
                 Behavior on color {
+                    ColorAnimation {
+                        duration: 150
+                    }
+                }
+
+                Behavior on border.color {
                     ColorAnimation {
                         duration: 150
                     }
@@ -151,6 +164,12 @@ Rectangle {
                         if (wsPill.isPopulated)
                             return Theme.text;
                         return Theme.overlay0;
+                    }
+
+                    Behavior on color {
+                        ColorAnimation {
+                            duration: 150
+                        }
                     }
                 }
 

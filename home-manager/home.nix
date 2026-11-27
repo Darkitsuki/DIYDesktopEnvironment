@@ -67,6 +67,7 @@
     "xsettingsd".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.config/home-manager/dotfiles/xsettingsd";
     "xdg-desktop-portal".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.config/home-manager/dotfiles/xdg-desktop-portal";
     "quickshell".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.config/home-manager/dotfiles/quickshell";
+    "kitty".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.config/home-manager/dotfiles/kitty";
   };
 
   # Let Home Manager install and manage itself.

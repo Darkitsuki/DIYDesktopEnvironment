@@ -111,7 +111,8 @@ window.quick-settings-window,
   min-width: 32px;
   min-height: 32px;
   padding: 4px;
-  transition: all 180ms ease-in-out;
+  transition: background-color 160ms cubic-bezier(0.16, 1, 0.3, 1),
+    border-color 160ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .action-btn:hover {
@@ -119,17 +120,29 @@ window.quick-settings-window,
   border-color: #89b4fa;
 }
 
+.action-btn:active {
+  background-color: #288cff;
+  border-color: #89b4fa;
+}
+
+.action-btn:active .action-btn-icon {
+  color: #11111b;
+}
+
 .action-btn-icon {
   font-size: 15px;
   color: #cdd6f4;
+  transition: color 150ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.power-btn:hover {
+.power-btn:hover,
+.power-btn:active {
   background-color: #f38ba8;
   border-color: #f38ba8;
 }
 
-.power-btn:hover .action-btn-icon {
+.power-btn:hover .action-btn-icon,
+.power-btn:active .action-btn-icon {
   color: #11111b;
 }
 
@@ -146,7 +159,8 @@ window.quick-settings-window,
   border: 1px solid #313244;
   border-radius: 12px;
   padding: 8px 6px;
-  transition: all 180ms ease-in-out;
+  transition: background-color 170ms cubic-bezier(0.16, 1, 0.3, 1),
+    border-color 170ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .stat-card:hover {
@@ -157,12 +171,14 @@ window.quick-settings-window,
 .stat-icon {
   font-size: 14px;
   color: #89b4fa;
+  transition: color 150ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .stat-value {
   font-size: 11px;
   font-weight: 700;
   color: #cdd6f4;
+  transition: color 150ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 /* Suspended state (e.g. GPU D3cold sleep) */
@@ -205,12 +221,18 @@ window.quick-settings-window,
   border: 1px solid rgba(69, 71, 90, 0.6);
   border-radius: 12px;
   padding: 10px 12px;
-  transition: all 180ms ease-in-out;
+  transition: background-color 170ms cubic-bezier(0.16, 1, 0.3, 1),
+    border-color 170ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .toggle-card:hover {
   background-color: #45475a;
   border-color: rgba(137, 180, 250, 0.4);
+}
+
+.toggle-card:active {
+  background-color: #585b70;
+  border-color: #89b4fa;
 }
 
 .toggle-card.active {
@@ -222,10 +244,16 @@ window.quick-settings-window,
   background-color: #74c7ec;
 }
 
+.toggle-card.active:active {
+  background-color: #89b4fa;
+  border-color: #cdd6f4;
+}
+
 .toggle-icon {
   font-size: 20px;
   color: #89b4fa;
   margin-right: 4px;
+  transition: color 160ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .toggle-icon.active {
@@ -236,6 +264,7 @@ window.quick-settings-window,
   font-size: 12px;
   font-weight: 700;
   color: #cdd6f4;
+  transition: color 160ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .toggle-card.active .toggle-title {
@@ -246,6 +275,7 @@ window.quick-settings-window,
   font-size: 10px;
   font-weight: 500;
   color: #a6adc8;
+  transition: color 160ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .toggle-card.active .toggle-subtitle {
@@ -275,16 +305,21 @@ window.quick-settings-window,
   min-height: 28px;
   padding: 2px;
   border-radius: 8px;
-  transition: all 150ms ease;
+  transition: background-color 150ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .slider-icon-btn:hover {
   background-color: rgba(69, 71, 90, 0.5);
 }
 
+.slider-icon-btn:active {
+  background-color: rgba(137, 180, 250, 0.25);
+}
+
 .slider-icon {
   font-size: 18px;
   color: #89b4fa;
+  transition: color 150ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .slider-value-label {
@@ -300,11 +335,21 @@ scale trough {
   border-radius: 8px;
   min-height: 8px;
   min-width: 8px;
+  transition: background-color 150ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+scale:hover trough {
+  background-color: #45475a;
 }
 
 scale highlight {
   background-color: #288cff;
   border-radius: 8px;
+  transition: background-color 150ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+scale:hover highlight {
+  background-color: #89b4fa;
 }
 
 scale slider {
@@ -314,12 +359,26 @@ scale slider {
   min-width: 14px;
   min-height: 14px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+  transition: background-color 150ms cubic-bezier(0.16, 1, 0.3, 1),
+    border-color 150ms cubic-bezier(0.16, 1, 0.3, 1),
+    min-width 150ms cubic-bezier(0.16, 1, 0.3, 1),
+    min-height 150ms cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 150ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 scale slider:hover {
   background-color: #ffffff;
+  border-color: #89b4fa;
   min-width: 16px;
   min-height: 16px;
+}
+
+scale slider:active {
+  background-color: #89b4fa;
+  border-color: #288cff;
+  min-width: 17px;
+  min-height: 17px;
+  box-shadow: 0 0 0 3px rgba(40, 140, 255, 0.25);
 }
 
 /* ========================================= */
@@ -331,6 +390,13 @@ scale slider:hover {
   border-radius: 14px;
   padding: 10px 12px;
   margin-top: 2px;
+  transition: background-color 170ms cubic-bezier(0.16, 1, 0.3, 1),
+    border-color 170ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.media-card:hover {
+  background-color: rgba(30, 30, 46, 0.92);
+  border-color: rgba(137, 180, 250, 0.45);
 }
 
 .media-art-box {
@@ -367,11 +433,17 @@ scale slider:hover {
   min-width: 28px;
   min-height: 28px;
   padding: 2px;
-  transition: all 150ms ease;
+  transition: background-color 150ms cubic-bezier(0.16, 1, 0.3, 1),
+    border-color 150ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .media-btn:hover {
   background-color: #45475a;
+  border-color: #89b4fa;
+}
+
+.media-btn:active {
+  background-color: #585b70;
   border-color: #89b4fa;
 }
 
@@ -384,6 +456,11 @@ scale slider:hover {
 
 .media-play-btn:hover {
   background-color: #74c7ec;
+}
+
+.media-play-btn:active {
+  background-color: #89b4fa;
+  border-color: #cdd6f4;
 }
 
 .media-btn-icon {
@@ -405,7 +482,8 @@ scale slider:hover {
   border-radius: 14px;
   padding: 8px 10px;
   margin-top: 2px;
-  transition: all 180ms ease-in-out;
+  transition: background-color 170ms cubic-bezier(0.16, 1, 0.3, 1),
+    border-color 170ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .sync-strip:hover {
@@ -443,7 +521,8 @@ scale slider:hover {
   border: 1px solid rgba(69, 71, 90, 0.6);
   border-radius: 10px;
   padding: 5px 8px;
-  transition: all 180ms ease-in-out;
+  transition: background-color 160ms cubic-bezier(0.16, 1, 0.3, 1),
+    border-color 160ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .sync-btn:hover {
@@ -451,24 +530,34 @@ scale slider:hover {
   border-color: #89b4fa;
 }
 
+.sync-btn:active {
+  background-color: #585b70;
+  border-color: #89b4fa;
+}
+
 .sync-btn-icon {
   font-size: 12px;
   color: #89b4fa;
+  transition: color 150ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .sync-btn-label {
   font-size: 11px;
   font-weight: 600;
   color: #cdd6f4;
+  transition: color 150ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.sync-backup-btn:hover {
+.sync-backup-btn:hover,
+.sync-backup-btn:active {
   background-color: #288cff;
   border-color: #89b4fa;
 }
 
 .sync-backup-btn:hover .sync-btn-icon,
-.sync-backup-btn:hover .sync-btn-label {
+.sync-backup-btn:hover .sync-btn-label,
+.sync-backup-btn:active .sync-btn-icon,
+.sync-backup-btn:active .sync-btn-label {
   color: #11111b;
 }
 
@@ -488,16 +577,23 @@ window.osd-window,
   padding: 10px 18px;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.48);
   min-width: 280px;
+  transition: background-color 160ms cubic-bezier(0.16, 1, 0.3, 1),
+    border-color 160ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.osd-pill.active {
+  border-color: rgba(137, 180, 250, 0.65);
 }
 
 .osd-pill.muted {
-  border-color: rgba(243, 139, 168, 0.5);
+  border-color: rgba(243, 139, 168, 0.55);
 }
 
 .osd-icon {
   font-size: 18px;
   color: #89b4fa;
   min-width: 20px;
+  transition: color 150ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .osd-pill.muted .osd-icon {
@@ -516,6 +612,7 @@ window.osd-window,
   font-weight: 700;
   color: #89b4fa;
   min-width: 36px;
+  transition: color 150ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .osd-pill.muted .osd-value {
@@ -544,6 +641,8 @@ levelbar.osd-bar block.filled.full {
   border: none;
   border-radius: 999px;
   min-height: 8px;
+  transition: background-color 150ms cubic-bezier(0.16, 1, 0.3, 1),
+    background-image 150ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 levelbar.osd-bar block.empty {
@@ -618,12 +717,19 @@ window.audio-menu-window,
   border-radius: 8px;
   padding: 6px 8px;
   color: #cdd6f4;
-  transition: all 150ms ease;
+  transition: background-color 150ms cubic-bezier(0.16, 1, 0.3, 1),
+    border-color 150ms cubic-bezier(0.16, 1, 0.3, 1),
+    color 150ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .audio-device-item:hover {
   background-color: #313244;
   border-color: rgba(137, 180, 250, 0.35);
+}
+
+.audio-device-item:active {
+  background-color: #45475a;
+  border-color: #89b4fa;
 }
 
 .audio-device-item.unavailable .audio-device-item-label,
@@ -681,7 +787,7 @@ window.audio-menu-window,
   border: 1px solid #313244;
   border-radius: 10px;
   padding: 8px 10px;
-  transition: all 150ms ease;
+  transition: border-color 150ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .app-stream-row:hover {
@@ -710,7 +816,8 @@ window.audio-menu-window,
   min-width: 26px;
   min-height: 26px;
   padding: 2px;
-  transition: all 150ms ease;
+  transition: background-color 150ms cubic-bezier(0.16, 1, 0.3, 1),
+    border-color 150ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .app-stream-mute-btn:hover {
@@ -759,7 +866,8 @@ window.power-menu-window,
   border-radius: 9px;
   padding: 6px 10px;
   color: #cdd6f4;
-  transition: background-color 120ms ease, color 120ms ease;
+  transition: background-color 150ms cubic-bezier(0.16, 1, 0.3, 1),
+    color 150ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .powermenu-item:hover {
