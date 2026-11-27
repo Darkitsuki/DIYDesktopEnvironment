@@ -14,8 +14,10 @@ PanelWindow {
 
     property bool isOpen: false
     property string activeMode: "apps" // "apps" | "clipboard"
+    property string viewMode: "list"   // "list" | "grid"
     property int selectedIndex: 0
 
+    property var pinnedAppIds: ({})
     property var clipboardEntries: []
     property bool clipboardLoading: false
     property var decodedPreviews: ({})
@@ -23,6 +25,15 @@ PanelWindow {
     property var previewQueue: []
     property string activePreviewId: ""
     property string activePreviewOutPath: ""
+
+    property bool contextMenuOpen: false
+    property string contextMenuKind: ""
+    property var contextMenuItem: null
+    property real contextMenuAnchorX: 0
+    property real contextMenuAnchorY: 0
+
+    readonly property string homeDir: Quickshell.env("HOME") || "/home/HoaHung"
+    readonly property string pinsFilePath: homeDir + "/.local/state/quickshell-launcher-pins.json"
 
     readonly property var focusedScreen: {
         const screens = Quickshell.screens;
@@ -36,6 +47,10 @@ PanelWindow {
             }
         }
         return screens[0];
+    }
+
+    Component.onCompleted: {
+        loadPins();
     }
 
     // -------------------------------------------------------------------------
@@ -261,6 +276,43 @@ PanelWindow {
     readonly property bool calcTakesEnter: calcMatch !== null && (calcMatch.explicit || activeItems.length === 0)
 
     // -------------------------------------------------------------------------
+    // Persistent App Pinning
+    // -------------------------------------------------------------------------
+    function loadPins() {
+        if (pinsLoadProc.running)
+            return;
+        pinsLoadProc.command = ["sh", "-c", "[ -r \"$1\" ] && cat \"$1\" || printf '[]'", "_", root.pinsFilePath];
+        pinsLoadProc.running = true;
+    }
+
+    function savePins(pinsMap) {
+        const ids = Object.keys(pinsMap);
+        const payload = JSON.stringify(ids);
+        pinsSaveProc.command = [
+            "sh", "-c",
+            "mkdir -p \"$(dirname \"$1\")\" && printf '%s\\n' \"$2\" > \"$1\"",
+            "_", root.pinsFilePath, payload
+        ];
+        pinsSaveProc.running = true;
+    }
+
+    function isAppPinned(desktopId) {
+        return !!(desktopId && root.pinnedAppIds[desktopId]);
+    }
+
+    function toggleAppPin(appItem) {
+        if (!appItem || !appItem.id)
+            return;
+        const updated = Object.assign({}, root.pinnedAppIds);
+        if (updated[appItem.id])
+            delete updated[appItem.id];
+        else
+            updated[appItem.id] = true;
+        root.pinnedAppIds = updated;
+        savePins(updated);
+    }
+
+    // -------------------------------------------------------------------------
     // Apps & Clipboard Models
     // -------------------------------------------------------------------------
     function pickCategory(categories) {
@@ -281,6 +333,7 @@ PanelWindow {
 
     readonly property var filteredApps: {
         const all = DesktopEntries.applications.values;
+        const pins = root.pinnedAppIds;
         const q = searchInput.text.trim().toLowerCase();
         const matches = [];
 
@@ -319,17 +372,24 @@ PanelWindow {
                     continue;
             }
 
+            const execCmd = entry.execString || (entry.command && entry.command.length > 0 ? entry.command.join(" ") : "");
+
             matches.push({
                 entry: entry,
+                id: id,
                 name: name || id,
                 subtitle: comment || genericName || id,
                 category: root.pickCategory(entry.categories),
                 iconName: entry.icon || "",
+                execCommand: execCmd,
+                pinned: !!(id && pins[id]),
                 rank: rank
             });
         }
 
         matches.sort(function(a, b) {
+            if (a.pinned !== b.pinned)
+                return a.pinned ? -1 : 1;
             if (a.rank !== b.rank)
                 return a.rank - b.rank;
             return a.name.localeCompare(b.name);
@@ -390,7 +450,7 @@ PanelWindow {
                 kind = "IMAGE";
                 isImage = true;
                 imageMeta = meta;
-                displayTitle = "Hình ảnh  •  " + meta;
+                displayTitle = "Image  •  " + meta;
             }
         } else if (/^(https?:\/\/|www\.|ftp:\/\/|file:\/\/)\S+/i.test(trimmed)) {
             kind = "URL";
@@ -497,6 +557,36 @@ PanelWindow {
     // Processes
     // -------------------------------------------------------------------------
     Process {
+        id: pinsLoadProc
+        stdout: StdioCollector {
+            onStreamFinished: {
+                const raw = text.trim();
+                if (!raw) {
+                    root.pinnedAppIds = ({});
+                    return;
+                }
+                try {
+                    const parsed = JSON.parse(raw);
+                    const map = {};
+                    if (Array.isArray(parsed)) {
+                        for (let i = 0; i < parsed.length; i++) {
+                            if (typeof parsed[i] === "string" && parsed[i].length > 0)
+                                map[parsed[i]] = true;
+                        }
+                    }
+                    root.pinnedAppIds = map;
+                } catch (e) {
+                    root.pinnedAppIds = ({});
+                }
+            }
+        }
+    }
+
+    Process {
+        id: pinsSaveProc
+    }
+
+    Process {
         id: clipListProc
         command: ["cliphist", "list"]
         stdout: StdioCollector {
@@ -541,10 +631,162 @@ PanelWindow {
     }
 
     // -------------------------------------------------------------------------
-    // Mode / Open / Close / Actions
+    // Context Menu Actions & Helpers
+    // -------------------------------------------------------------------------
+    readonly property var contextMenuActions: {
+        if (!root.contextMenuItem)
+            return [];
+        if (root.contextMenuKind === "apps") {
+            const app = root.contextMenuItem;
+            return [
+                {
+                    id: "app_open",
+                    label: "Open",
+                    icon: "󰏌",
+                    destructive: false
+                },
+                {
+                    id: "app_pin",
+                    label: app.pinned ? "Unpin" : "Pin to Top",
+                    icon: app.pinned ? "󰐄" : "󰐃",
+                    destructive: false
+                },
+                {
+                    id: "app_copy_cmd",
+                    label: "Copy Command",
+                    icon: "",
+                    destructive: false
+                },
+                {
+                    id: "app_copy_id",
+                    label: "Copy Desktop ID",
+                    icon: "󰌷",
+                    destructive: false
+                }
+            ];
+        }
+        if (root.contextMenuKind === "clipboard") {
+            const clip = root.contextMenuItem;
+            const actions = [
+                {
+                    id: "clip_copy",
+                    label: "Copy to Clipboard",
+                    icon: "󰆏",
+                    destructive: false
+                }
+            ];
+            if (clip.kind === "TEXT" || clip.kind === "URL" || clip.kind === "CODE") {
+                actions.push({
+                    id: "clip_copy_trimmed",
+                    label: "Copy Trimmed Text",
+                    icon: "󰃢",
+                    destructive: false
+                });
+            }
+            if (clip.kind === "URL") {
+                actions.push({
+                    id: "clip_open_url",
+                    label: "Open in Browser",
+                    icon: "󰖟",
+                    destructive: false
+                });
+            }
+            if (clip.isImage) {
+                actions.push({
+                    id: "clip_save_image",
+                    label: "Save Image to Pictures",
+                    icon: "󰋩",
+                    destructive: false
+                });
+            }
+            actions.push({
+                id: "clip_delete",
+                label: "Delete Entry",
+                icon: "",
+                destructive: true
+            });
+            actions.push({
+                id: "clip_wipe",
+                label: "Clear All History",
+                icon: "󰃨",
+                destructive: true
+            });
+            return actions;
+        }
+        return [];
+    }
+
+    function openContextMenu(kind, item, sourceItem, localX, localY) {
+        if (!item || !sourceItem)
+            return;
+        const mapped = sourceItem.mapToItem(paletteCard, localX, localY);
+        root.contextMenuKind = kind;
+        root.contextMenuItem = item;
+        root.contextMenuAnchorX = mapped.x;
+        root.contextMenuAnchorY = mapped.y;
+        root.contextMenuOpen = true;
+        searchInput.forceActiveFocus();
+    }
+
+    function closeContextMenu() {
+        root.contextMenuOpen = false;
+    }
+
+    function runContextAction(actionId) {
+        const item = root.contextMenuItem;
+        closeContextMenu();
+        if (!item)
+            return;
+
+        if (actionId === "app_open") {
+            activateAppItem(item);
+        } else if (actionId === "app_pin") {
+            toggleAppPin(item);
+            searchInput.forceActiveFocus();
+        } else if (actionId === "app_copy_cmd") {
+            copyTextToClipboard(item.execCommand || item.name);
+            close();
+        } else if (actionId === "app_copy_id") {
+            copyTextToClipboard(item.id || item.name);
+            close();
+        } else if (actionId === "clip_copy") {
+            activateClipboardItem(item);
+        } else if (actionId === "clip_copy_trimmed") {
+            Quickshell.execDetached([
+                "sh", "-c",
+                "printf '%s\\n' \"$1\" | cliphist decode | python3 -c 'import sys; sys.stdout.write(sys.stdin.read().strip())' | wl-copy",
+                "_", item.rawLine
+            ]);
+            close();
+        } else if (actionId === "clip_open_url") {
+            Quickshell.execDetached([
+                "sh", "-c",
+                "url=$(printf '%s\\n' \"$1\" | cliphist decode | python3 -c 'import sys; sys.stdout.write(sys.stdin.read().strip())'); [ -n \"$url\" ] && exec xdg-open \"$url\"",
+                "_", item.rawLine
+            ]);
+            close();
+        } else if (actionId === "clip_save_image") {
+            Quickshell.execDetached([
+                "sh", "-c",
+                "mkdir -p \"$HOME/Pictures\" && fname=\"Clipboard-$(date +%Y%m%d-%H%M%S).png\" && out=\"$HOME/Pictures/$fname\" && printf '%s\\n' \"$1\" | cliphist decode > \"$out\" && if command -v notify-send >/dev/null 2>&1; then notify-send -u low -t 3000 \"Clipboard\" \"Image saved to ~/Pictures/$fname\"; fi",
+                "_", item.rawLine
+            ]);
+            close();
+        } else if (actionId === "clip_delete") {
+            deleteClipboardItem(item);
+            searchInput.forceActiveFocus();
+        } else if (actionId === "clip_wipe") {
+            wipeClipboard();
+            searchInput.forceActiveFocus();
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // Mode / View / Open / Close / Actions
     // -------------------------------------------------------------------------
     function openMode(mode) {
         const targetMode = (mode === "clipboard") ? "clipboard" : "apps";
+        closeContextMenu();
         if (root.isOpen) {
             if (root.activeMode === targetMode) {
                 close();
@@ -572,6 +814,7 @@ PanelWindow {
 
     function switchMode(mode) {
         const targetMode = (mode === "clipboard") ? "clipboard" : "apps";
+        closeContextMenu();
         if (root.activeMode === targetMode) {
             searchInput.forceActiveFocus();
             return;
@@ -580,10 +823,36 @@ PanelWindow {
         root.selectedIndex = 0;
         if (targetMode === "clipboard")
             refreshClipboard();
+        syncViewScroll();
         searchInput.forceActiveFocus();
     }
 
+    function setViewMode(mode) {
+        const targetView = (mode === "grid") ? "grid" : "list";
+        closeContextMenu();
+        if (root.viewMode !== targetView) {
+            root.viewMode = targetView;
+            syncViewScroll();
+        }
+        searchInput.forceActiveFocus();
+    }
+
+    function toggleViewMode() {
+        setViewMode(root.viewMode === "list" ? "grid" : "list");
+    }
+
+    function syncViewScroll() {
+        const idx = root.selectedIndex;
+        if (idx < 0 || idx >= root.activeItems.length)
+            return;
+        if (root.viewMode === "list")
+            resultsList.positionViewAtIndex(idx, ListView.Contain);
+        else
+            resultsGrid.positionViewAtIndex(idx, GridView.Contain);
+    }
+
     function close() {
+        closeContextMenu();
         root.isOpen = false;
     }
 
@@ -593,13 +862,19 @@ PanelWindow {
             return;
         const next = Math.max(0, Math.min(total - 1, root.selectedIndex + delta));
         root.selectedIndex = next;
-        resultsList.positionViewAtIndex(next, ListView.Contain);
+        syncViewScroll();
+    }
+
+    function copyTextToClipboard(text) {
+        if (!text)
+            return;
+        Quickshell.execDetached(["sh", "-c", "printf '%s' \"$1\" | wl-copy", "_", text]);
     }
 
     function copyCalcResult() {
         if (!root.calcMatch)
             return;
-        Quickshell.execDetached(["sh", "-c", "printf '%s' \"$1\" | wl-copy", "_", root.calcMatch.result]);
+        copyTextToClipboard(root.calcMatch.result);
         close();
     }
 
@@ -640,7 +915,10 @@ PanelWindow {
             return;
         root.decodedPreviews = ({});
         root.previewQueue = [];
-        clipWipeProc.command = ["sh", "-c", "cliphist wipe && rm -f /tmp/qs-cliphist-preview-*.png"];
+        clipWipeProc.command = [
+            "sh", "-c",
+            "cliphist wipe && rm -f /tmp/qs-cliphist-preview-*.png && if command -v notify-send >/dev/null 2>&1; then notify-send -u low -t 2000 \"Clipboard\" \"History cleared\"; fi"
+        ];
         clipWipeProc.running = true;
     }
 
@@ -660,25 +938,66 @@ PanelWindow {
     }
 
     function handleKeyPress(event) {
+        const ctrl = (event.modifiers & Qt.ControlModifier) !== 0;
+
         if (event.key === Qt.Key_Escape) {
             event.accepted = true;
-            close();
-        } else if (event.key === Qt.Key_Tab || event.key === Qt.Key_Backtab) {
+            if (root.contextMenuOpen)
+                closeContextMenu();
+            else
+                close();
+            return;
+        }
+
+        if (ctrl && event.key === Qt.Key_G) {
+            event.accepted = true;
+            toggleViewMode();
+            return;
+        }
+
+        if (root.contextMenuOpen)
+            closeContextMenu();
+
+        if (event.key === Qt.Key_Tab || event.key === Qt.Key_Backtab) {
             event.accepted = true;
             switchMode(root.activeMode === "apps" ? "clipboard" : "apps");
-        } else if (event.key === Qt.Key_Down || (event.modifiers & Qt.ControlModifier && (event.key === Qt.Key_N || event.key === Qt.Key_J))) {
-            event.accepted = true;
-            moveSelection(1);
-        } else if (event.key === Qt.Key_Up || (event.modifiers & Qt.ControlModifier && (event.key === Qt.Key_P || event.key === Qt.Key_K))) {
-            event.accepted = true;
-            moveSelection(-1);
-        } else if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
-            event.accepted = true;
-            activateCurrent();
-        } else if (event.key === Qt.Key_Delete && root.activeMode === "clipboard") {
-            event.accepted = true;
-            if (root.selectedClipboardItem)
-                deleteClipboardItem(root.selectedClipboardItem);
+        } else if (root.viewMode === "grid") {
+            const cols = root.activeMode === "apps" ? 4 : 2;
+            if (event.key === Qt.Key_Down || (ctrl && (event.key === Qt.Key_N || event.key === Qt.Key_J))) {
+                event.accepted = true;
+                moveSelection(cols);
+            } else if (event.key === Qt.Key_Up || (ctrl && (event.key === Qt.Key_P || event.key === Qt.Key_K))) {
+                event.accepted = true;
+                moveSelection(-cols);
+            } else if (event.key === Qt.Key_Right && (searchInput.text.length === 0 || ctrl || (searchInput.cursorPosition === searchInput.text.length && searchInput.selectedText.length === 0))) {
+                event.accepted = true;
+                moveSelection(1);
+            } else if (event.key === Qt.Key_Left && (searchInput.text.length === 0 || ctrl || (searchInput.cursorPosition === 0 && searchInput.selectedText.length === 0))) {
+                event.accepted = true;
+                moveSelection(-1);
+            } else if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
+                event.accepted = true;
+                activateCurrent();
+            } else if (event.key === Qt.Key_Delete && root.activeMode === "clipboard") {
+                event.accepted = true;
+                if (root.selectedClipboardItem)
+                    deleteClipboardItem(root.selectedClipboardItem);
+            }
+        } else {
+            if (event.key === Qt.Key_Down || (ctrl && (event.key === Qt.Key_N || event.key === Qt.Key_J))) {
+                event.accepted = true;
+                moveSelection(1);
+            } else if (event.key === Qt.Key_Up || (ctrl && (event.key === Qt.Key_P || event.key === Qt.Key_K))) {
+                event.accepted = true;
+                moveSelection(-1);
+            } else if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
+                event.accepted = true;
+                activateCurrent();
+            } else if (event.key === Qt.Key_Delete && root.activeMode === "clipboard") {
+                event.accepted = true;
+                if (root.selectedClipboardItem)
+                    deleteClipboardItem(root.selectedClipboardItem);
+            }
         }
     }
 
@@ -790,15 +1109,18 @@ PanelWindow {
             acceptedButtons: Qt.AllButtons
             onClicked: function(mouse) {
                 mouse.accepted = true;
+                if (root.contextMenuOpen)
+                    root.closeContextMenu();
             }
         }
 
         ColumnLayout {
             anchors.fill: parent
+            anchors.bottomMargin: Theme.spaceSm
             spacing: 0
 
             // -----------------------------------------------------------------
-            // Zone 1: Unified Header Bar (Search + Segmented Mode Switcher)
+            // Zone 1: Unified Header Bar (Search + View Toggle + Mode Switcher)
             // -----------------------------------------------------------------
             Rectangle {
                 Layout.fillWidth: true
@@ -854,8 +1176,8 @@ PanelWindow {
                                     anchors.right: parent.right
                                     visible: searchInput.text.length === 0
                                     text: root.activeMode === "apps"
-                                          ? "Tìm ứng dụng hoặc gõ = để tính..."
-                                          : "Tìm trong lịch sử clipboard..."
+                                          ? "Search apps or type = to calculate..."
+                                          : "Search clipboard history..."
                                     font.family: Theme.fontFamilySans
                                     font.pixelSize: Theme.fontSizeMd
                                     color: Theme.overlay1
@@ -920,10 +1242,89 @@ PanelWindow {
                         }
                     }
 
-                    // Segmented Pill Tab Switcher
+                    // Segmented View Toggle Pill (List / Grid, Ctrl+G)
+                    Rectangle {
+                        id: viewSwitcher
+                        implicitWidth: 70
+                        Layout.fillHeight: true
+                        radius: Theme.radiusPill
+                        color: Theme.surface0
+                        border.width: Theme.borderWidth
+                        border.color: Theme.surface1
+
+                        Rectangle {
+                            id: viewIndicator
+                            y: 3
+                            height: parent.height - 6
+                            width: (parent.width - 6) / 2
+                            x: root.viewMode === "list" ? 3 : 3 + width
+                            radius: Theme.radiusPill
+                            color: Theme.accentActive
+
+                            Behavior on x {
+                                NumberAnimation {
+                                    duration: 240
+                                    easing.type: Easing.OutQuint
+                                }
+                            }
+                        }
+
+                        Row {
+                            anchors.fill: parent
+                            anchors.margins: 3
+
+                            Item {
+                                width: parent.width / 2
+                                height: parent.height
+
+                                Text {
+                                    anchors.centerIn: parent
+                                    text: ""
+                                    font.family: Theme.fontFamily
+                                    font.pixelSize: Theme.fontSizeMd
+                                    color: root.viewMode === "list" ? Theme.crust : Theme.subtext0
+
+                                    Behavior on color {
+                                        ColorAnimation { duration: 180 }
+                                    }
+                                }
+
+                                MouseArea {
+                                    anchors.fill: parent
+                                    cursorShape: Qt.PointingHandCursor
+                                    onClicked: root.setViewMode("list")
+                                }
+                            }
+
+                            Item {
+                                width: parent.width / 2
+                                height: parent.height
+
+                                Text {
+                                    anchors.centerIn: parent
+                                    text: "󰕰"
+                                    font.family: Theme.fontFamily
+                                    font.pixelSize: Theme.fontSizeMd
+                                    color: root.viewMode === "grid" ? Theme.crust : Theme.subtext0
+
+                                    Behavior on color {
+                                        ColorAnimation { duration: 180 }
+                                    }
+                                }
+
+                                MouseArea {
+                                    anchors.fill: parent
+                                    cursorShape: Qt.PointingHandCursor
+                                    onClicked: root.setViewMode("grid")
+                                }
+                            }
+                        }
+                    }
+
+                    // Segmented Pill Mode Switcher (Apps | Clipboard)
                     Rectangle {
                         id: tabSwitcher
-                        implicitWidth: 224
+                        implicitWidth: 244
                         Layout.fillHeight: true
                         radius: Theme.radiusPill
                         color: Theme.surface0
@@ -955,16 +1356,42 @@ PanelWindow {
                                 width: parent.width / 2
                                 height: parent.height
 
-                                Text {
+                                Row {
                                     anchors.centerIn: parent
-                                    text: "󰀻 Ứng dụng"
-                                    font.family: Theme.fontFamily
-                                    font.pixelSize: Theme.fontSizeSm
-                                    font.weight: root.activeMode === "apps" ? Font.Bold : Font.Medium
-                                    color: root.activeMode === "apps" ? Theme.crust : Theme.subtext0
+                                    spacing: 5
 
-                                    Behavior on color {
-                                        ColorAnimation { duration: 180 }
+                                    Text {
+                                        anchors.verticalCenter: parent.verticalCenter
+                                        text: "󰀻 Apps"
+                                        font.family: Theme.fontFamily
+                                        font.pixelSize: Theme.fontSizeSm
+                                        font.weight: root.activeMode === "apps" ? Font.Bold : Font.Medium
+                                        color: root.activeMode === "apps" ? Theme.crust : Theme.subtext0
+
+                                        Behavior on color {
+                                            ColorAnimation { duration: 180 }
+                                        }
+                                    }
+
+                                    Rectangle {
+                                        anchors.verticalCenter: parent.verticalCenter
+                                        visible: root.filteredApps.length > 0
+                                        implicitHeight: 16
+                                        implicitWidth: appsCountText.implicitWidth + 8
+                                        radius: Theme.radiusPill
+                                        color: root.activeMode === "apps"
+                                               ? Qt.rgba(17 / 255, 17 / 255, 27 / 255, 0.22)
+                                               : Theme.surface1
+
+                                        Text {
+                                            id: appsCountText
+                                            anchors.centerIn: parent
+                                            text: root.filteredApps.length.toString()
+                                            font.family: Theme.fontFamily
+                                            font.pixelSize: 9
+                                            font.weight: Font.Bold
+                                            color: root.activeMode === "apps" ? Theme.crust : Theme.subtext0
+                                        }
                                     }
                                 }
 
@@ -979,16 +1406,44 @@ PanelWindow {
                                 width: parent.width / 2
                                 height: parent.height
 
-                                Text {
+                                Row {
                                     anchors.centerIn: parent
-                                    text: "󰅌 Clipboard"
-                                    font.family: Theme.fontFamily
-                                    font.pixelSize: Theme.fontSizeSm
-                                    font.weight: root.activeMode === "clipboard" ? Font.Bold : Font.Medium
-                                    color: root.activeMode === "clipboard" ? Theme.crust : Theme.subtext0
+                                    spacing: 5
 
-                                    Behavior on color {
-                                        ColorAnimation { duration: 180 }
+                                    Text {
+                                        anchors.verticalCenter: parent.verticalCenter
+                                        text: "󰅌 Clipboard"
+                                        font.family: Theme.fontFamily
+                                        font.pixelSize: Theme.fontSizeSm
+                                        font.weight: root.activeMode === "clipboard" ? Font.Bold : Font.Medium
+                                        color: root.activeMode === "clipboard" ? Theme.crust : Theme.subtext0
+
+                                        Behavior on color {
+                                            ColorAnimation { duration: 180 }
+                                        }
+                                    }
+
+                                    Rectangle {
+                                        anchors.verticalCenter: parent.verticalCenter
+                                        visible: root.clipboardEntries.length > 0
+                                        implicitHeight: 16
+                                        implicitWidth: clipCountText.implicitWidth + 8
+                                        radius: Theme.radiusPill
+                                        color: root.activeMode === "clipboard"
+                                               ? Qt.rgba(17 / 255, 17 / 255, 27 / 255, 0.22)
+                                               : Theme.surface1
+
+                                        Text {
+                                            id: clipCountText
+                                            anchors.centerIn: parent
+                                            text: (root.activeMode === "clipboard"
+                                                   ? root.filteredClipboard.length
+                                                   : root.clipboardEntries.length).toString()
+                                            font.family: Theme.fontFamily
+                                            font.pixelSize: 9
+                                            font.weight: Font.Bold
+                                            color: root.activeMode === "clipboard" ? Theme.crust : Theme.subtext0
+                                        }
                                     }
                                 }
 
@@ -1046,12 +1501,20 @@ PanelWindow {
                         }
 
                         Text {
+                            text: "Result"
+                            font.family: Theme.fontFamilySans
+                            font.pixelSize: Theme.fontSizeXs
+                            font.weight: Font.Bold
+                            color: Theme.accent
+                        }
+
+                        Text {
                             text: root.calcMatch ? (root.calcMatch.expr + "  =") : ""
                             font.family: Theme.fontFamily
                             font.pixelSize: Theme.fontSizeMd
                             color: Theme.subtext1
                             elide: Text.ElideLeft
-                            Layout.maximumWidth: 260
+                            Layout.maximumWidth: 220
                         }
 
                         Text {
@@ -1073,7 +1536,7 @@ PanelWindow {
                             Text {
                                 id: calcHintText
                                 anchors.centerIn: parent
-                                text: root.calcTakesEnter ? "Enter để chép" : "Nhấn để chép"
+                                text: root.calcTakesEnter ? "Press Enter to copy" : "Click to copy"
                                 font.family: Theme.fontFamilySans
                                 font.pixelSize: Theme.fontSizeXs
                                 font.weight: Font.Bold
@@ -1093,7 +1556,7 @@ PanelWindow {
             }
 
             // -----------------------------------------------------------------
-            // Clipboard Sub-header (Count + Wipe All Button)
+            // Clipboard Sub-header (Count + Clear All Button)
             // -----------------------------------------------------------------
             Item {
                 Layout.fillWidth: true
@@ -1110,12 +1573,12 @@ PanelWindow {
                     Text {
                         text: {
                             if (root.clipboardLoading)
-                                return "Đang tải lịch sử clipboard...";
+                                return "Loading clipboard history...";
                             const total = root.clipboardEntries.length;
                             const shown = root.filteredClipboard.length;
                             if (searchInput.text.trim().length > 0)
-                                return shown + " / " + total + " mục khớp";
-                            return total + " mục đã lưu";
+                                return shown + " / " + total + " matching";
+                            return total + (total === 1 ? " item" : " items");
                         }
                         font.family: Theme.fontFamilySans
                         font.pixelSize: Theme.fontSizeSm
@@ -1144,7 +1607,7 @@ PanelWindow {
                         Text {
                             id: wipeLabel
                             anchors.centerIn: parent
-                            text: " Xóa tất cả"
+                            text: " Clear All"
                             font.family: Theme.fontFamily
                             font.pixelSize: Theme.fontSizeXs
                             font.weight: Font.DemiBold
@@ -1163,23 +1626,26 @@ PanelWindow {
             }
 
             // -----------------------------------------------------------------
-            // Zone 3: Unified Results ListView
+            // Zone 3: Unified Results Viewport (ListView + GridView)
             // -----------------------------------------------------------------
             Item {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
-                Layout.margins: Theme.spaceSm
+                Layout.topMargin: Theme.spaceSm
                 Layout.leftMargin: Theme.spaceMd
                 Layout.rightMargin: Theme.spaceMd
+                Layout.bottomMargin: Theme.spaceXs
 
+                // List View
                 ListView {
                     id: resultsList
                     anchors.fill: parent
+                    visible: root.viewMode === "list"
                     clip: true
                     spacing: 4
                     boundsBehavior: Flickable.StopAtBounds
                     currentIndex: root.selectedIndex
-                    model: root.activeItems
+                    model: root.viewMode === "list" ? root.activeItems : []
 
                     highlightFollowsCurrentItem: false
                     highlight: Rectangle {
@@ -1244,10 +1710,28 @@ PanelWindow {
                             id: rowMouse
                             anchors.fill: parent
                             hoverEnabled: true
+                            acceptedButtons: Qt.LeftButton | Qt.RightButton
                             cursorShape: Qt.PointingHandCursor
-                            onEntered: root.selectedIndex = rowDelegate.index
-                            onClicked: {
+                            onEntered: {
+                                if (!root.contextMenuOpen)
+                                    root.selectedIndex = rowDelegate.index;
+                            }
+                            onClicked: function(mouse) {
                                 root.selectedIndex = rowDelegate.index;
+                                if (mouse.button === Qt.RightButton) {
+                                    root.openContextMenu(
+                                        rowDelegate.isApps ? "apps" : "clipboard",
+                                        rowDelegate.modelData,
+                                        rowDelegate,
+                                        mouse.x,
+                                        mouse.y
+                                    );
+                                    return;
+                                }
+                                if (root.contextMenuOpen) {
+                                    root.closeContextMenu();
+                                    return;
+                                }
                                 if (rowDelegate.isApps)
                                     root.activateAppItem(rowDelegate.modelData);
                                 else
@@ -1255,7 +1739,7 @@ PanelWindow {
                             }
                         }
 
-                        // Apps Row Content
+                        // Apps List Row Content
                         RowLayout {
                             visible: rowDelegate.isApps
                             anchors.fill: parent
@@ -1313,6 +1797,14 @@ PanelWindow {
                                 }
                             }
 
+                            Text {
+                                visible: rowDelegate.isApps && rowDelegate.modelData.pinned
+                                text: "󰐃"
+                                font.family: Theme.fontFamily
+                                font.pixelSize: Theme.iconSizeSm
+                                color: Theme.accent
+                            }
+
                             Rectangle {
                                 visible: rowDelegate.isApps && rowDelegate.modelData.category.length > 0
                                 implicitHeight: 22
@@ -1335,7 +1827,7 @@ PanelWindow {
                             }
                         }
 
-                        // Clipboard Row Content
+                        // Clipboard List Row Content
                         RowLayout {
                             visible: !rowDelegate.isApps
                             anchors.fill: parent
@@ -1345,6 +1837,7 @@ PanelWindow {
 
                             // Left Type Badge / Thumbnail Preview
                             Rectangle {
+                                id: listThumbBox
                                 implicitWidth: 64
                                 implicitHeight: 36
                                 radius: Theme.radiusSm
@@ -1368,8 +1861,8 @@ PanelWindow {
                                     id: rowThumb
                                     anchors.fill: parent
                                     anchors.margins: 2
-                                    visible: parent.thumbSource !== "" && status === Image.Ready
-                                    source: parent.thumbSource
+                                    visible: listThumbBox.thumbSource !== "" && status === Image.Ready
+                                    source: listThumbBox.thumbSource
                                     fillMode: Image.PreserveAspectCrop
                                     asynchronous: true
                                     cache: false
@@ -1435,7 +1928,9 @@ PanelWindow {
                                     anchors.fill: parent
                                     hoverEnabled: true
                                     cursorShape: Qt.PointingHandCursor
-                                    onClicked: {
+                                    onClicked: function(mouse) {
+                                        mouse.accepted = true;
+                                        root.closeContextMenu();
                                         if (!rowDelegate.isApps)
                                             root.deleteClipboardItem(rowDelegate.modelData);
                                     }
@@ -1445,10 +1940,332 @@ PanelWindow {
                     }
                 }
 
+                // Grid View (4 cols in Apps, 2 cols in Clipboard)
+                GridView {
+                    id: resultsGrid
+                    anchors.fill: parent
+                    visible: root.viewMode === "grid"
+                    clip: true
+                    boundsBehavior: Flickable.StopAtBounds
+                    currentIndex: root.selectedIndex
+                    model: root.viewMode === "grid" ? root.activeItems : []
+
+                    readonly property int columns: root.activeMode === "apps" ? 4 : 2
+                    cellWidth: Math.floor(width / columns)
+                    cellHeight: root.activeMode === "apps" ? 112 : 132
+
+                    highlightFollowsCurrentItem: false
+                    highlight: Rectangle {
+                        x: resultsGrid.currentItem ? resultsGrid.currentItem.x + 4 : 4
+                        y: resultsGrid.currentItem ? resultsGrid.currentItem.y + 4 : 4
+                        width: Math.max(0, resultsGrid.cellWidth - 8)
+                        height: Math.max(0, resultsGrid.cellHeight - 8)
+                        visible: resultsGrid.count > 0 && resultsGrid.currentItem !== null
+                        radius: Theme.radiusMd
+                        color: Qt.rgba(49 / 255, 50 / 255, 68 / 255, 0.92)
+                        border.width: Theme.borderWidth
+                        border.color: Theme.accent
+
+                        Behavior on x {
+                            NumberAnimation {
+                                duration: 200
+                                easing.type: Easing.OutQuint
+                            }
+                        }
+
+                        Behavior on y {
+                            NumberAnimation {
+                                duration: 200
+                                easing.type: Easing.OutQuint
+                            }
+                        }
+                    }
+
+                    delegate: Item {
+                        id: gridDelegate
+                        required property var modelData
+                        required property int index
+
+                        readonly property bool isSelected: index === root.selectedIndex
+                        readonly property bool isApps: root.activeMode === "apps"
+
+                        width: resultsGrid.cellWidth
+                        height: resultsGrid.cellHeight
+
+                        Component.onCompleted: {
+                            if (!isApps && modelData && modelData.isImage)
+                                root.requestImagePreview(modelData);
+                        }
+
+                        onModelDataChanged: {
+                            if (!isApps && modelData && modelData.isImage)
+                                root.requestImagePreview(modelData);
+                        }
+
+                        Rectangle {
+                            id: gridCard
+                            anchors.fill: parent
+                            anchors.margins: 4
+                            radius: Theme.radiusMd
+                            color: gridDelegate.isSelected
+                                   ? "transparent"
+                                   : (gridMouse.containsMouse ? Theme.surface0 : Theme.mantle)
+                            border.width: Theme.borderWidth
+                            border.color: gridDelegate.isSelected
+                                          ? "transparent"
+                                          : (gridMouse.containsMouse ? Theme.accent : Theme.surface0)
+
+                            Behavior on color {
+                                ColorAnimation { duration: 150 }
+                            }
+
+                            Behavior on border.color {
+                                ColorAnimation { duration: 150 }
+                            }
+                        }
+
+                        MouseArea {
+                            id: gridMouse
+                            anchors.fill: gridCard
+                            hoverEnabled: true
+                            acceptedButtons: Qt.LeftButton | Qt.RightButton
+                            cursorShape: Qt.PointingHandCursor
+                            onEntered: {
+                                if (!root.contextMenuOpen)
+                                    root.selectedIndex = gridDelegate.index;
+                            }
+                            onClicked: function(mouse) {
+                                root.selectedIndex = gridDelegate.index;
+                                if (mouse.button === Qt.RightButton) {
+                                    root.openContextMenu(
+                                        gridDelegate.isApps ? "apps" : "clipboard",
+                                        gridDelegate.modelData,
+                                        gridDelegate,
+                                        mouse.x + 4,
+                                        mouse.y + 4
+                                    );
+                                    return;
+                                }
+                                if (root.contextMenuOpen) {
+                                    root.closeContextMenu();
+                                    return;
+                                }
+                                if (gridDelegate.isApps)
+                                    root.activateAppItem(gridDelegate.modelData);
+                                else
+                                    root.activateClipboardItem(gridDelegate.modelData);
+                            }
+                        }
+
+                        // Apps Grid Card Content
+                        Item {
+                            visible: gridDelegate.isApps
+                            anchors.fill: gridCard
+                            anchors.margins: Theme.spaceSm
+
+                            Text {
+                                anchors.top: parent.top
+                                anchors.right: parent.right
+                                visible: gridDelegate.isApps && gridDelegate.modelData.pinned
+                                text: "󰐃"
+                                font.family: Theme.fontFamily
+                                font.pixelSize: Theme.fontSizeSm
+                                color: Theme.accent
+                            }
+
+                            ColumnLayout {
+                                anchors.centerIn: parent
+                                width: parent.width
+                                spacing: Theme.spaceSm
+
+                                Item {
+                                    Layout.alignment: Qt.AlignHCenter
+                                    implicitWidth: 42
+                                    implicitHeight: 42
+
+                                    IconImage {
+                                        id: gridAppIcon
+                                        anchors.fill: parent
+                                        implicitSize: 42
+                                        asynchronous: true
+                                        source: (gridDelegate.isApps && gridDelegate.modelData.iconName)
+                                                ? Quickshell.iconPath(gridDelegate.modelData.iconName, true)
+                                                : ""
+                                        visible: status === Image.Ready
+                                    }
+
+                                    Text {
+                                        anchors.centerIn: parent
+                                        visible: gridAppIcon.status !== Image.Ready
+                                        text: "󰣆"
+                                        font.family: Theme.fontFamily
+                                        font.pixelSize: 28
+                                        color: gridDelegate.isSelected ? Theme.accent : Theme.subtext0
+                                    }
+                                }
+
+                                Text {
+                                    Layout.fillWidth: true
+                                    horizontalAlignment: Text.AlignHCenter
+                                    text: gridDelegate.isApps ? gridDelegate.modelData.name : ""
+                                    font.family: Theme.fontFamilySans
+                                    font.pixelSize: Theme.fontSizeSm
+                                    font.weight: gridDelegate.isSelected ? Font.Bold : Font.Medium
+                                    color: gridDelegate.isSelected ? Theme.text : Theme.subtext1
+                                    elide: Text.ElideRight
+                                    maximumLineCount: 2
+                                    wrapMode: Text.WordWrap
+                                }
+                            }
+                        }
+
+                        // Clipboard Grid Card Content
+                        ColumnLayout {
+                            visible: !gridDelegate.isApps
+                            anchors.fill: gridCard
+                            anchors.margins: Theme.spaceSm
+                            spacing: Theme.spaceXs
+
+                            RowLayout {
+                                Layout.fillWidth: true
+                                spacing: Theme.spaceXs
+
+                                Rectangle {
+                                    implicitHeight: 20
+                                    implicitWidth: gridBadgeRow.implicitWidth + 12
+                                    radius: Theme.radiusPill
+                                    color: Theme.surface0
+                                    border.width: 1
+                                    border.color: !gridDelegate.isApps
+                                                  ? Qt.rgba(
+                                                        root.badgeColorFor(gridDelegate.modelData.kind).r,
+                                                        root.badgeColorFor(gridDelegate.modelData.kind).g,
+                                                        root.badgeColorFor(gridDelegate.modelData.kind).b,
+                                                        0.5
+                                                    )
+                                                  : Theme.surface1
+
+                                    Row {
+                                        id: gridBadgeRow
+                                        anchors.centerIn: parent
+                                        spacing: 4
+
+                                        Text {
+                                            anchors.verticalCenter: parent.verticalCenter
+                                            text: !gridDelegate.isApps ? root.badgeIconFor(gridDelegate.modelData.kind) : ""
+                                            font.family: Theme.fontFamily
+                                            font.pixelSize: Theme.fontSizeXs
+                                            color: !gridDelegate.isApps ? root.badgeColorFor(gridDelegate.modelData.kind) : Theme.subtext0
+                                        }
+
+                                        Text {
+                                            anchors.verticalCenter: parent.verticalCenter
+                                            text: !gridDelegate.isApps ? gridDelegate.modelData.kind : ""
+                                            font.family: Theme.fontFamily
+                                            font.pixelSize: 9
+                                            font.weight: Font.Bold
+                                            color: !gridDelegate.isApps ? root.badgeColorFor(gridDelegate.modelData.kind) : Theme.subtext0
+                                        }
+                                    }
+                                }
+
+                                Item {
+                                    Layout.fillWidth: true
+                                }
+
+                                Rectangle {
+                                    visible: gridMouse.containsMouse || gridDelMouse.containsMouse || gridDelegate.isSelected
+                                    implicitWidth: 22
+                                    implicitHeight: 22
+                                    radius: Theme.radiusSm
+                                    color: gridDelMouse.containsMouse
+                                           ? Qt.rgba(243 / 255, 139 / 255, 168 / 255, 0.22)
+                                           : "transparent"
+
+                                    Text {
+                                        anchors.centerIn: parent
+                                        text: ""
+                                        font.family: Theme.fontFamily
+                                        font.pixelSize: Theme.fontSizeXs
+                                        color: gridDelMouse.containsMouse ? Theme.red : Theme.overlay1
+                                    }
+
+                                    MouseArea {
+                                        id: gridDelMouse
+                                        anchors.fill: parent
+                                        hoverEnabled: true
+                                        cursorShape: Qt.PointingHandCursor
+                                        onClicked: function(mouse) {
+                                            mouse.accepted = true;
+                                            root.closeContextMenu();
+                                            if (!gridDelegate.isApps)
+                                                root.deleteClipboardItem(gridDelegate.modelData);
+                                        }
+                                    }
+                                }
+                            }
+
+                            // Image Thumbnail in Grid Card
+                            Rectangle {
+                                id: gridThumbBox
+                                Layout.fillWidth: true
+                                Layout.fillHeight: true
+                                visible: !gridDelegate.isApps && gridDelegate.modelData.isImage
+                                radius: Theme.radiusSm
+                                color: Theme.crust
+                                border.width: 1
+                                border.color: Theme.surface0
+                                clip: true
+
+                                readonly property string thumbSource: (!gridDelegate.isApps && gridDelegate.modelData.isImage)
+                                                                      ? root.previewSourceFor(gridDelegate.modelData.id)
+                                                                      : ""
+
+                                Image {
+                                    id: gridThumb
+                                    anchors.fill: parent
+                                    anchors.margins: 3
+                                    visible: gridThumbBox.thumbSource !== "" && status === Image.Ready
+                                    source: gridThumbBox.thumbSource
+                                    fillMode: Image.PreserveAspectFit
+                                    asynchronous: true
+                                    cache: false
+                                }
+
+                                Text {
+                                    anchors.centerIn: parent
+                                    visible: !gridThumb.visible
+                                    text: "󰋩"
+                                    font.family: Theme.fontFamily
+                                    font.pixelSize: 24
+                                    color: Theme.mauve
+                                }
+                            }
+
+                            // Text/URL/Code Snippet in Grid Card
+                            Text {
+                                Layout.fillWidth: true
+                                Layout.fillHeight: true
+                                visible: !gridDelegate.isApps && !gridDelegate.modelData.isImage
+                                verticalAlignment: Text.AlignTop
+                                text: !gridDelegate.isApps ? gridDelegate.modelData.displayTitle : ""
+                                font.family: (!gridDelegate.isApps && (gridDelegate.modelData.kind === "CODE" || gridDelegate.modelData.kind === "URL"))
+                                             ? Theme.fontFamily
+                                             : Theme.fontFamilySans
+                                font.pixelSize: Theme.fontSizeSm
+                                color: gridDelegate.isSelected ? Theme.text : Theme.subtext1
+                                elide: Text.ElideRight
+                                maximumLineCount: 3
+                                wrapMode: Text.WrapAnywhere
+                            }
+                        }
+                    }
+                }
+
                 // Empty State
                 ColumnLayout {
                     anchors.centerIn: parent
-                    visible: resultsList.count === 0 && !root.clipboardLoading
+                    visible: root.activeItems.length === 0 && !root.clipboardLoading
                     spacing: Theme.spaceXs
 
                     Text {
@@ -1462,8 +2279,8 @@ PanelWindow {
                     Text {
                         Layout.alignment: Qt.AlignHCenter
                         text: root.activeMode === "apps"
-                              ? (root.calcMatch ? "Nhấn Enter để sao chép kết quả phép tính" : "Không tìm thấy ứng dụng phù hợp")
-                              : (root.clipboardEntries.length === 0 ? "Lịch sử clipboard đang trống" : "Không có mục clipboard nào khớp")
+                              ? (root.calcMatch ? "Press Enter to copy calculation result" : "No matching applications")
+                              : (root.clipboardEntries.length === 0 ? "No clipboard history" : "No matching items")
                         font.family: Theme.fontFamilySans
                         font.pixelSize: Theme.fontSizeMd
                         color: Theme.overlay1
@@ -1472,15 +2289,15 @@ PanelWindow {
             }
 
             // -----------------------------------------------------------------
-            // Inline Image Preview Card (Selected Clipboard Image)
+            // Inline Image Preview Card (Selected Clipboard Image in List View)
             // -----------------------------------------------------------------
             Rectangle {
                 id: imagePreviewCard
                 Layout.fillWidth: true
                 Layout.leftMargin: Theme.spaceMd
                 Layout.rightMargin: Theme.spaceMd
-                Layout.bottomMargin: Theme.spaceSm
-                visible: root.selectedClipboardItem !== null && root.selectedClipboardItem.isImage
+                Layout.bottomMargin: Theme.spaceXs
+                visible: root.viewMode === "list" && root.selectedClipboardItem !== null && root.selectedClipboardItem.isImage
                 implicitHeight: visible ? 86 : 0
                 radius: Theme.radiusMd
                 color: Theme.mantle
@@ -1531,7 +2348,7 @@ PanelWindow {
                         spacing: 3
 
                         Text {
-                            text: "Xem trước hình ảnh clipboard"
+                            text: "Clipboard Image Preview"
                             font.family: Theme.fontFamilySans
                             font.pixelSize: Theme.fontSizeMd
                             font.weight: Font.Bold
@@ -1548,7 +2365,7 @@ PanelWindow {
                         }
 
                         Text {
-                            text: "Enter để chép lại ảnh vào clipboard  •  Del để xóa"
+                            text: "Press Enter to copy image  •  Del to delete"
                             font.family: Theme.fontFamilySans
                             font.pixelSize: Theme.fontSizeXs
                             color: Theme.subtext0
@@ -1558,81 +2375,127 @@ PanelWindow {
                     }
                 }
             }
+        }
 
-            // -----------------------------------------------------------------
-            // Zone 4: Keyboard Hint Footer
-            // -----------------------------------------------------------------
-            Rectangle {
-                Layout.fillWidth: true
-                implicitHeight: 34
-                color: Theme.mantle
+        // ---------------------------------------------------------------------
+        // Internal Floating Right-Click Context Menu Overlay
+        // ---------------------------------------------------------------------
+        MouseArea {
+            anchors.fill: parent
+            visible: root.contextMenuOpen
+            acceptedButtons: Qt.LeftButton | Qt.RightButton | Qt.MiddleButton
+            onClicked: function(mouse) {
+                mouse.accepted = true;
+                root.closeContextMenu();
+                searchInput.forceActiveFocus();
+            }
+        }
 
-                Rectangle {
-                    anchors.top: parent.top
-                    anchors.left: parent.left
-                    anchors.right: parent.right
-                    height: 1
-                    color: Theme.surface0
+        Rectangle {
+            id: contextMenuCard
+            visible: root.contextMenuOpen || opacity > 0.01
+            width: 214
+            implicitHeight: ctxMenuColumn.implicitHeight + Theme.spaceSm
+            x: Math.max(8, Math.min(paletteCard.width - width - 8, root.contextMenuAnchorX))
+            y: Math.max(8, Math.min(paletteCard.height - height - 8, root.contextMenuAnchorY))
+            radius: 12
+            color: Theme.mantle
+            border.width: Theme.borderWidth
+            border.color: Theme.surface1
+            clip: true
+
+            transformOrigin: Item.TopLeft
+            opacity: root.contextMenuOpen ? 1.0 : 0.0
+            scale: root.contextMenuOpen ? 1.0 : 0.92
+
+            Behavior on opacity {
+                NumberAnimation {
+                    duration: 160
+                    easing.type: Easing.OutQuint
                 }
+            }
 
-                RowLayout {
-                    anchors.fill: parent
-                    anchors.leftMargin: Theme.spaceMd
-                    anchors.rightMargin: Theme.spaceMd
-                    spacing: Theme.spaceMd
+            Behavior on scale {
+                NumberAnimation {
+                    duration: 160
+                    easing.type: Easing.OutQuint
+                }
+            }
 
-                    Repeater {
-                        model: [
-                            { key: "Tab", label: "Đổi chế độ" },
-                            { key: "↑↓", label: "Chọn" },
-                            { key: "Enter", label: "Mở/Chép" },
-                            { key: "Del", label: "Xóa" },
-                            { key: "Esc", label: "Đóng" }
-                        ]
+            MouseArea {
+                anchors.fill: parent
+                acceptedButtons: Qt.AllButtons
+                onClicked: function(mouse) {
+                    mouse.accepted = true;
+                }
+            }
 
-                        delegate: RowLayout {
-                            id: hintDelegate
-                            required property var modelData
-                            spacing: 5
+            ColumnLayout {
+                id: ctxMenuColumn
+                anchors.left: parent.left
+                anchors.right: parent.right
+                anchors.top: parent.top
+                anchors.margins: Theme.spaceXs
+                spacing: 2
 
-                            Rectangle {
-                                implicitHeight: 20
-                                implicitWidth: keyCapText.implicitWidth + 10
-                                radius: 4
-                                color: Theme.surface0
-                                border.width: 1
-                                border.color: Theme.surface1
+                Repeater {
+                    model: root.contextMenuActions
 
-                                Text {
-                                    id: keyCapText
-                                    anchors.centerIn: parent
-                                    text: hintDelegate.modelData.key
-                                    font.family: Theme.fontFamily
-                                    font.pixelSize: Theme.fontSizeXs
-                                    font.weight: Font.Bold
-                                    color: Theme.accent
+                    delegate: Rectangle {
+                        id: ctxActionDelegate
+                        required property var modelData
+
+                        Layout.fillWidth: true
+                        implicitHeight: 32
+                        radius: Theme.radiusSm
+                        color: ctxMouse.containsMouse ? Theme.surface0 : "transparent"
+
+                        Behavior on color {
+                            ColorAnimation { duration: 120 }
+                        }
+
+                        RowLayout {
+                            anchors.fill: parent
+                            anchors.leftMargin: Theme.spaceSm
+                            anchors.rightMargin: Theme.spaceSm
+                            spacing: Theme.spaceSm
+
+                            Text {
+                                text: ctxActionDelegate.modelData.icon
+                                font.family: Theme.fontFamily
+                                font.pixelSize: Theme.iconSizeSm
+                                color: {
+                                    if (ctxActionDelegate.modelData.destructive)
+                                        return ctxMouse.containsMouse ? Theme.red : Theme.subtext0;
+                                    return ctxMouse.containsMouse ? Theme.accent : Theme.subtext0;
                                 }
                             }
 
                             Text {
-                                text: hintDelegate.modelData.label
+                                Layout.fillWidth: true
+                                text: ctxActionDelegate.modelData.label
                                 font.family: Theme.fontFamilySans
-                                font.pixelSize: Theme.fontSizeXs
-                                color: Theme.subtext0
+                                font.pixelSize: Theme.fontSizeSm
+                                font.weight: ctxMouse.containsMouse ? Font.DemiBold : Font.Normal
+                                color: {
+                                    if (ctxActionDelegate.modelData.destructive)
+                                        return ctxMouse.containsMouse ? Theme.red : Theme.text;
+                                    return ctxMouse.containsMouse ? Theme.accent : Theme.text;
+                                }
+                                elide: Text.ElideRight
                             }
                         }
-                    }
 
-                    Item {
-                        Layout.fillWidth: true
-                    }
-
-                    Text {
-                        visible: root.activeMode === "apps"
-                        text: "Mẹo: gõ 'cb ' → Clipboard"
-                        font.family: Theme.fontFamilySans
-                        font.pixelSize: Theme.fontSizeXs
-                        color: Theme.overlay1
+                        MouseArea {
+                            id: ctxMouse
+                            anchors.fill: parent
+                            hoverEnabled: true
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: function(mouse) {
+                                mouse.accepted = true;
+                                root.runContextAction(ctxActionDelegate.modelData.id);
+                            }
+                        }
                     }
                 }
             }
