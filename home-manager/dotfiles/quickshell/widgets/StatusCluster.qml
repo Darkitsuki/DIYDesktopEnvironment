@@ -367,13 +367,38 @@ RowLayout {
                     id: trayItem
                     required property SystemTrayItem modelData
 
+                    readonly property bool iconMissing: !trayItem.modelData.icon
+                        || trayIcon.source.toString().length === 0
+                        || trayIcon.status === Image.Error
+                        || (trayIcon.status === Image.Ready && trayIcon.backer.implicitWidth <= 0)
+                    readonly property string trayMeta: (
+                        (trayItem.modelData.id || "") + " " +
+                        (trayItem.modelData.title || "") + " " +
+                        (trayItem.modelData.icon || "")
+                    ).toLowerCase()
+                    readonly property string fallbackGlyph: (trayMeta.indexOf("fcitx") !== -1 || trayMeta.indexOf("keyboard") !== -1)
+                        ? ""
+                        : "󰀻"
+
                     implicitWidth: 22
                     implicitHeight: 22
 
                     IconImage {
+                        id: trayIcon
                         anchors.centerIn: parent
                         source: trayItem.modelData.icon
                         implicitSize: Theme.iconSizeMd
+                        visible: !trayItem.iconMissing
+                    }
+
+                    Text {
+                        id: trayFallback
+                        anchors.centerIn: parent
+                        visible: trayItem.iconMissing
+                        text: trayItem.fallbackGlyph
+                        font.family: Theme.fontFamily
+                        font.pixelSize: Theme.fontSizeMd
+                        color: Theme.text
                     }
 
                     MouseArea {
