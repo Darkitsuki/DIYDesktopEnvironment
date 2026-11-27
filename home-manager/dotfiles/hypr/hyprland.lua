@@ -353,9 +353,9 @@ local closeWindowBind = hl.bind(mainMod .. " + C", hl.dsp.window.close())
 hl.bind(mainMod .. " + M", hl.dsp.exec_cmd("command -v hyprshutdown >/dev/null 2>&1 && hyprshutdown || hyprctl dispatch exit"))
 hl.bind(mainMod .. " + E", hl.dsp.exec_cmd(fileManager))
 hl.bind(mainMod .. " + V", hl.dsp.window.float({ action = "toggle" }))
-hl.bind(mainMod .. " + SHIFT + V", hl.dsp.exec_cmd("/home/HoaHung/.local/bin/hypr-cliphist"), { description = "hypr-cliphist: Clipboard history" })
+hl.bind(mainMod .. " + SHIFT + V", hl.dsp.exec_cmd("quickshell ipc call launcher openClipboard"), { description = "Quickshell: Clipboard history palette" })
 hl.bind(mainMod .. " + F", hl.dsp.window.fullscreen("0"))
-hl.bind(mainMod .. " + R", hl.dsp.exec_cmd(menu))
+hl.bind(mainMod .. " + R", hl.dsp.exec_cmd("quickshell ipc call launcher openApps"), { description = "Quickshell: App & command palette" })
 hl.bind(mainMod .. " + P", hl.dsp.window.pseudo())
 hl.bind(mainMod .. " + J", hl.dsp.layout("togglesplit"))    -- dwindle only
 
@@ -508,6 +508,15 @@ local hyprlauncherBlur = hl.layer_rule({
     animation = "popin 86%",
 })
 hyprlauncherBlur:set_enabled(true)
+
+local quickshellLauncherBlur = hl.layer_rule({
+    name = "quickshell-launcher-blur",
+    match = { namespace = "^quickshell-launcher$" },
+    blur = true,
+    ignore_alpha = 0.25,
+    animation = "popin 86%",
+})
+quickshellLauncherBlur:set_enabled(true)
 
 local wofiNoAnim = hl.layer_rule({
     name = "wofi-no-anim",
