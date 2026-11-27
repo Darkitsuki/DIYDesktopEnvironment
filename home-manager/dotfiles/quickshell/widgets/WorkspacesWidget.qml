@@ -1,3 +1,5 @@
+pragma ComponentBehavior: Bound
+
 import Quickshell
 import Quickshell.Hyprland
 import QtQuick
@@ -62,6 +64,13 @@ Rectangle {
         return result;
     }
 
+    function switchWorkspace(target) {
+        if (typeof target === "number")
+            Hyprland.dispatch("hl.dsp.focus({ workspace = " + target + " })");
+        else
+            Hyprland.dispatch("hl.dsp.focus({ workspace = \"" + target + "\" })");
+    }
+
     implicitHeight: Theme.pillHeight
     implicitWidth: wsRow.implicitWidth + Theme.spaceSm * 2
     radius: Theme.radiusLg
@@ -73,9 +82,9 @@ Rectangle {
         acceptedButtons: Qt.NoButton
         onWheel: function(wheel) {
             if (wheel.angleDelta.y > 0)
-                Hyprland.dispatch("workspace e+1");
+                root.switchWorkspace("e+1");
             else if (wheel.angleDelta.y < 0)
-                Hyprland.dispatch("workspace e-1");
+                root.switchWorkspace("e-1");
         }
     }
 
@@ -150,7 +159,7 @@ Rectangle {
                     anchors.fill: parent
                     hoverEnabled: true
                     cursorShape: Qt.PointingHandCursor
-                    onClicked: Hyprland.dispatch("workspace " + wsPill.modelData.id)
+                    onClicked: root.switchWorkspace(wsPill.modelData.id)
                 }
             }
         }
