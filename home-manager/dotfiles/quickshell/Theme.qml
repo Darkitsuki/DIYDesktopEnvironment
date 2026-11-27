@@ -50,8 +50,9 @@ QtObject {
     readonly property int spaceMd: 12
     readonly property int spaceLg: 16
     readonly property int spaceXl: 24
-    readonly property int barHeight: 36
+    readonly property int barHeight: 38
     readonly property int barMargin: 8
+    readonly property int pillHeight: 28
 
     // Corner radii & borders
     readonly property int radiusSm: 6

@@ -62,12 +62,11 @@ Rectangle {
         return result;
     }
 
-    implicitHeight: 28
+    implicitHeight: Theme.pillHeight
     implicitWidth: wsRow.implicitWidth + Theme.spaceSm * 2
     radius: Theme.radiusLg
     color: Theme.surfaceTranslucent
-    border.width: Theme.borderWidth
-    border.color: Theme.borderColor
+    border.width: 0
 
     MouseArea {
         anchors.fill: parent

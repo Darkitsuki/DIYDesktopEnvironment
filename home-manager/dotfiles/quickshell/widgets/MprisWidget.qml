@@ -40,12 +40,12 @@ Rectangle {
     readonly property bool needsMarquee: hasActiveMedia && trackLabel.implicitWidth > maxTextWidth
 
     visible: hasActiveMedia
-    implicitHeight: 28
+    implicitHeight: Theme.pillHeight
     implicitWidth: hasActiveMedia ? (mediaRow.implicitWidth + Theme.spaceMd * 2) : 0
     radius: Theme.radiusLg
     color: mediaMouse.containsMouse ? Theme.surface0 : Theme.surfaceTranslucent
-    border.width: Theme.borderWidth
-    border.color: (mediaMouse.containsMouse || isPlaying) ? Theme.accent : Theme.borderColor
+    border.width: (mediaMouse.containsMouse || isPlaying) ? Theme.borderWidth : 0
+    border.color: Theme.accent
 
     Behavior on color {
         ColorAnimation { duration: 150 }

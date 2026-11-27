@@ -51,12 +51,12 @@ Rectangle {
         return cells;
     }
 
-    implicitHeight: 28
+    implicitHeight: Theme.pillHeight
     implicitWidth: clockText.implicitWidth + Theme.spaceMd * 2
     radius: Theme.radiusLg
     color: (clockMouse.containsMouse || pinned) ? Theme.surface0 : Theme.surfaceTranslucent
-    border.width: Theme.borderWidth
-    border.color: (clockMouse.containsMouse || pinned) ? Theme.accent : Theme.borderColor
+    border.width: (clockMouse.containsMouse || pinned) ? Theme.borderWidth : 0
+    border.color: Theme.accent
 
     Behavior on color {
         ColorAnimation { duration: 150 }

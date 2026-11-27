@@ -171,12 +171,12 @@ RowLayout {
     // -------------------------------------------------------------------------
     Rectangle {
         id: audioPill
-        implicitHeight: 28
+        implicitHeight: Theme.pillHeight
         implicitWidth: audioLabel.implicitWidth + Theme.spaceMd * 2
         radius: Theme.radiusLg
         color: audioMouse.containsMouse ? Theme.surface0 : Theme.surfaceTranslucent
-        border.width: Theme.borderWidth
-        border.color: audioMouse.containsMouse ? Theme.accent : Theme.borderColor
+        border.width: audioMouse.containsMouse ? Theme.borderWidth : 0
+        border.color: Theme.accent
 
         Behavior on color { ColorAnimation { duration: 150 } }
         Behavior on border.color { ColorAnimation { duration: 150 } }
@@ -187,7 +187,7 @@ RowLayout {
             text: root.audioIcon + " " + root.audioVolumePct + "%"
             font.family: Theme.fontFamily
             font.pixelSize: Theme.fontSizeMd
-            color: root.audioMuted ? Theme.overlay0 : Theme.text
+            color: root.audioMuted ? Theme.subtext0 : Theme.text
         }
 
         MouseArea {
@@ -224,12 +224,12 @@ RowLayout {
     // -------------------------------------------------------------------------
     Rectangle {
         id: netPill
-        implicitHeight: 28
+        implicitHeight: Theme.pillHeight
         implicitWidth: netLabel.implicitWidth + Theme.spaceMd * 2
         radius: Theme.radiusLg
         color: netMouse.containsMouse ? Theme.surface0 : Theme.surfaceTranslucent
-        border.width: Theme.borderWidth
-        border.color: netMouse.containsMouse ? Theme.accent : Theme.borderColor
+        border.width: netMouse.containsMouse ? Theme.borderWidth : 0
+        border.color: Theme.accent
 
         Behavior on color { ColorAnimation { duration: 150 } }
         Behavior on border.color { ColorAnimation { duration: 150 } }
@@ -269,13 +269,15 @@ RowLayout {
     // -------------------------------------------------------------------------
     Rectangle {
         id: gdrivePill
+        readonly property int maxTextWidth: 165
         visible: root.gdriveText.length > 0 && root.gdriveClass !== "disabled"
-        implicitHeight: 28
-        implicitWidth: visible ? (gdriveLabel.implicitWidth + Theme.spaceMd * 2) : 0
+        implicitHeight: Theme.pillHeight
+        implicitWidth: visible ? (Math.min(gdriveLabel.implicitWidth, maxTextWidth) + Theme.spaceMd * 2) : 0
+        Layout.maximumWidth: visible ? (maxTextWidth + Theme.spaceMd * 2) : 0
         radius: Theme.radiusLg
         color: gdriveMouse.containsMouse ? Theme.surface0 : Theme.surfaceTranslucent
-        border.width: Theme.borderWidth
-        border.color: gdriveMouse.containsMouse ? Theme.accent : Theme.borderColor
+        border.width: gdriveMouse.containsMouse ? Theme.borderWidth : 0
+        border.color: Theme.accent
 
         Behavior on color { ColorAnimation { duration: 150 } }
         Behavior on border.color { ColorAnimation { duration: 150 } }
@@ -283,6 +285,9 @@ RowLayout {
         Text {
             id: gdriveLabel
             anchors.centerIn: parent
+            width: Math.min(implicitWidth, gdrivePill.maxTextWidth)
+            elide: Text.ElideMiddle
+            horizontalAlignment: Text.AlignHCenter
             text: root.gdriveText
             font.family: Theme.fontFamily
             font.pixelSize: Theme.fontSizeMd
@@ -320,12 +325,12 @@ RowLayout {
     Rectangle {
         id: batteryPill
         visible: root.hasBattery
-        implicitHeight: 28
+        implicitHeight: Theme.pillHeight
         implicitWidth: visible ? (batteryLabel.implicitWidth + Theme.spaceMd * 2) : 0
         radius: Theme.radiusLg
         color: Theme.surfaceTranslucent
-        border.width: Theme.borderWidth
-        border.color: (!root.batteryCharging && root.batteryPct <= 15) ? Theme.red : Theme.borderColor
+        border.width: (!root.batteryCharging && root.batteryPct <= 15) ? Theme.borderWidth : 0
+        border.color: Theme.red
 
         Text {
             id: batteryLabel
@@ -343,12 +348,11 @@ RowLayout {
     Rectangle {
         id: trayPill
         visible: trayRepeater.count > 0
-        implicitHeight: 28
+        implicitHeight: Theme.pillHeight
         implicitWidth: visible ? (trayRow.implicitWidth + Theme.spaceSm * 2) : 0
         radius: Theme.radiusLg
         color: Theme.surfaceTranslucent
-        border.width: Theme.borderWidth
-        border.color: Theme.borderColor
+        border.width: 0
 
         RowLayout {
             id: trayRow
@@ -399,22 +403,22 @@ RowLayout {
     // -------------------------------------------------------------------------
     Rectangle {
         id: quickSettingsPill
-        implicitHeight: 28
+        implicitHeight: Theme.pillHeight
         implicitWidth: 34
         radius: Theme.radiusLg
-        color: qsMouse.containsMouse ? Theme.surface0 : Theme.surfaceTranslucent
-        border.width: Theme.borderWidth
-        border.color: qsMouse.containsMouse ? Theme.accentActive : Theme.accent
+        color: qsMouse.containsMouse ? Theme.accentActive : Theme.surface0
+        border.width: 0
 
         Behavior on color { ColorAnimation { duration: 150 } }
-        Behavior on border.color { ColorAnimation { duration: 150 } }
 
         Text {
             anchors.centerIn: parent
             text: ""
             font.family: Theme.fontFamily
             font.pixelSize: Theme.fontSizeLg
-            color: Theme.accent
+            color: qsMouse.containsMouse ? Theme.crust : Theme.accent
+
+            Behavior on color { ColorAnimation { duration: 150 } }
         }
 
         MouseArea {
