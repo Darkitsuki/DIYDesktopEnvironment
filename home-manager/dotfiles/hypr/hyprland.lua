@@ -500,6 +500,14 @@ local osdBlur = hl.layer_rule({
 })
 osdBlur:set_enabled(true)
 
+local perfOverlayRule = hl.layer_rule({
+    name = "perf-overlay-no-anim",
+    match = { namespace = "^perf-overlay$" },
+    blur = false,
+    no_anim = true,
+})
+perfOverlayRule:set_enabled(true)
+
 local hyprlauncherBlur = hl.layer_rule({
     name = "hyprlauncher-blur",
     match = { namespace = "^hyprlauncher$" },
@@ -662,6 +670,9 @@ hl.bind(
   hl.dsp.exec_cmd('sh -c \'cmd="${DIY_SCRIPTS_DIR:-$HOME/.local/bin}/hypr-gamemode"; if [ -x "$cmd" ]; then exec "$cmd"; elif command -v notify-send >/dev/null 2>&1; then notify-send -u low "Game Mode" "Optional script not installed: $cmd"; fi\''),
   { description = "hypr-gamemode" }
 )
+
+-- Toggle NVIDIA-style click-through performance overlay (AGS)
+hl.bind("ALT + R", hl.dsp.exec_cmd("ags toggle perf-overlay"), { description = "AGS: Toggle performance overlay" })
 
 -- Optional local per-machine Lua overrides (gitignored)
 pcall(require, "machine-local")

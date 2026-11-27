@@ -6,6 +6,7 @@ import AudioMenu from "./widget/AudioMenu"
 import PowerMenu from "./widget/PowerMenu"
 import Backdrop from "./widget/Backdrop"
 import OSD from "./widget/OSD"
+import PerfOverlay from "./widget/PerfOverlay"
 import { refreshAllAudio } from "./services/audio"
 
 app.start({
@@ -36,6 +37,7 @@ app.start({
     quickSettings.layer = Astal.Layer.OVERLAY
     audioMenu.layer = Astal.Layer.OVERLAY
     OSD()
+    PerfOverlay()
 
     // Alias window to support "quicksettings" without hyphen
     const alias = new Astal.Window({

@@ -905,3 +905,63 @@ window.power-menu-window,
 .powermenu-item:focus-visible .powermenu-item-icon {
   color: #ffffff;
 }
+
+/* ========================================= */
+/* Performance HUD Overlay (perf-overlay)    */
+/* ========================================= */
+window.perf-overlay-window,
+.perf-overlay-window {
+  background: transparent;
+  background-color: transparent;
+}
+
+.perf-overlay-pill {
+  background-color: rgba(24, 24, 37, 0.85);
+  border: 1px solid #313244;
+  border-radius: 999px;
+  padding: 6px 14px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
+}
+
+.perf-item {
+  padding: 1px 2px;
+}
+
+.perf-icon {
+  font-size: 13px;
+  color: #89b4fa;
+}
+
+.perf-value {
+  font-size: 11px;
+  font-weight: 700;
+  color: #cdd6f4;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+}
+
+.perf-sep {
+  font-size: 11px;
+  color: #45475a;
+}
+
+.perf-item.warning .perf-icon,
+.perf-item.warning .perf-value,
+.warning .perf-icon,
+.warning .perf-value {
+  color: #fab387;
+}
+
+.perf-item.critical .perf-icon,
+.perf-item.critical .perf-value,
+.critical .perf-icon,
+.critical .perf-value {
+  color: #f38ba8;
+}
+
+.perf-item.suspended .perf-icon,
+.perf-item.suspended .perf-value,
+.suspended .perf-icon,
+.suspended .perf-value {
+  color: #6c7086;
+}
