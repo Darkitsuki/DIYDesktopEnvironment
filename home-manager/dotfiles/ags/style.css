@@ -940,6 +940,10 @@ window.perf-overlay-window,
   font-feature-settings: "tnum" 1;
 }
 
+.perf-fps-value {
+  min-width: 50px;
+}
+
 .perf-sep {
   font-size: 11px;
   color: #45475a;

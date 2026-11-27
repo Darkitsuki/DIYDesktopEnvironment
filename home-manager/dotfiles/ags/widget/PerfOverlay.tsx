@@ -10,6 +10,10 @@ interface MetricState {
   cssClass: "normal" | "warning" | "critical" | "suspended"
 }
 
+interface FpsState extends MetricState {
+  tooltip: string
+}
+
 const GPU_RUNTIME_STATUS_PATH = "/sys/bus/pci/devices/0000:01:00.0/power/runtime_status"
 
 // ----------------------------------------------------
@@ -200,9 +204,9 @@ async function readGpuMetric(): Promise<MetricState> {
 }
 
 // ----------------------------------------------------
-// Monitor Refresh Rate: Hyprland active focused monitor
+// Monitor Nominal Refresh Rate: Hyprland active monitor
 // ----------------------------------------------------
-async function readMonitorMetric(): Promise<MetricState> {
+async function readMonitorTargetHz(): Promise<number | null> {
   try {
     const out = await execAsync(["hyprctl", "monitors", "-j"])
     const monitors = JSON.parse(out)
@@ -210,20 +214,23 @@ async function readMonitorMetric(): Promise<MetricState> {
       const active =
         monitors.find((m) => m && m.focused && !m.disabled) ??
         monitors.find((m) => m && !m.disabled)
-      if (active && typeof active.refreshRate === "number") {
-        const hz = Math.round(active.refreshRate)
-        return { text: `${hz}Hz`, cssClass: "normal" }
+      if (active && typeof active.refreshRate === "number" && active.refreshRate > 0) {
+        return Math.round(active.refreshRate)
       }
     }
   } catch {}
-  return { text: "--Hz", cssClass: "suspended" }
+  return null
 }
 
 export default function PerfOverlay() {
   const [cpu, setCpu] = createState<MetricState>({ text: "CPU --% · --°C", cssClass: "normal" })
   const [gpu, setGpu] = createState<MetricState>({ text: "GPU D3cold", cssClass: "suspended" })
   const [ram, setRam] = createState<MetricState>({ text: "--/-- GiB", cssClass: "normal" })
-  const [monitorHz, setMonitorHz] = createState<MetricState>({ text: "--Hz", cssClass: "normal" })
+  const [fps, setFps] = createState<FpsState>({
+    text: "-- FPS",
+    tooltip: "Measuring FPS...",
+    cssClass: "normal",
+  })
 
   let prevIdle = 0
   let prevTotal = 0
@@ -232,6 +239,39 @@ export default function PerfOverlay() {
   let seedTimer: ReturnType<typeof setTimeout> | null = null
   let gpuInFlight = false
   let monitorInFlight = false
+
+  let targetHz: number | null = null
+  let tickId: number | null = null
+  let frameStartUs = 0
+  let frameCount = 0
+  let lastMeasuredFps: number | null = null
+  let lastFrameTimeMs: string | null = null
+
+  const updateFpsDisplay = () => {
+    if (lastMeasuredFps === null) {
+      setFps({
+        text: "-- FPS",
+        tooltip: targetHz !== null ? `Measuring FPS (Target: ${targetHz}Hz)` : "Measuring FPS...",
+        cssClass: "normal",
+      })
+      return
+    }
+
+    const thresholdHz = targetHz ?? 60
+    const cssClass: FpsState["cssClass"] =
+      lastMeasuredFps < thresholdHz * 0.6
+        ? "critical"
+        : lastMeasuredFps < thresholdHz * 0.85
+        ? "warning"
+        : "normal"
+
+    const targetStr = targetHz !== null ? `${targetHz}Hz` : "--Hz"
+    setFps({
+      text: `${lastMeasuredFps} FPS`,
+      tooltip: `${lastMeasuredFps} FPS (Target: ${targetStr} · ${lastFrameTimeMs ?? "--"} ms)`,
+      cssClass,
+    })
+  }
 
   const updateCpuMetric = () => {
     const stat = readCpuStat()
@@ -282,14 +322,59 @@ export default function PerfOverlay() {
 
     if (!monitorInFlight) {
       monitorInFlight = true
-      readMonitorMetric()
-        .then((next) => {
-          if (win.visible) setMonitorHz(next)
+      readMonitorTargetHz()
+        .then((hz) => {
+          if (win.visible && hz !== null && hz !== targetHz) {
+            targetHz = hz
+            updateFpsDisplay()
+          }
         })
         .finally(() => {
           monitorInFlight = false
         })
     }
+  }
+
+  const stopFpsTicker = () => {
+    if (tickId !== null) {
+      win.remove_tick_callback(tickId)
+      tickId = null
+    }
+    frameStartUs = 0
+    frameCount = 0
+    lastMeasuredFps = null
+    lastFrameTimeMs = null
+    updateFpsDisplay()
+  }
+
+  const startFpsTicker = () => {
+    stopFpsTicker()
+    tickId = win.add_tick_callback((_self, frameClock) => {
+      if (!win.visible) {
+        tickId = null
+        return GLib.SOURCE_REMOVE
+      }
+
+      const nowUs = frameClock.get_frame_time()
+      if (frameStartUs === 0) {
+        frameStartUs = nowUs
+        frameCount = 0
+        return GLib.SOURCE_CONTINUE
+      }
+
+      frameCount += 1
+      const elapsed = nowUs - frameStartUs
+      if (elapsed >= 1_000_000) {
+        const measured = Math.round((frameCount * 1_000_000) / elapsed)
+        lastMeasuredFps = measured
+        lastFrameTimeMs = measured > 0 ? (elapsed / frameCount / 1000).toFixed(1) : "--"
+        frameStartUs = nowUs
+        frameCount = 0
+        updateFpsDisplay()
+      }
+
+      return GLib.SOURCE_CONTINUE
+    })
   }
 
   const stopPolling = () => {
@@ -367,9 +452,15 @@ export default function PerfOverlay() {
 
         <label label="│" canTarget={false} cssClasses={["perf-sep"]} />
 
-        <box spacing={5} valign={Gtk.Align.CENTER} canTarget={false} cssClasses={monitorHz.as((m) => ["perf-item", m.cssClass])}>
+        <box
+          spacing={5}
+          valign={Gtk.Align.CENTER}
+          canTarget={false}
+          tooltipText={fps.as((f) => f.tooltip)}
+          cssClasses={fps.as((f) => ["perf-item", f.cssClass])}
+        >
           <label label="󰍹" canTarget={false} cssClasses={["perf-icon"]} />
-          <label label={monitorHz.as((m) => m.text)} canTarget={false} cssClasses={["perf-value"]} />
+          <label label={fps.as((f) => f.text)} canTarget={false} cssClasses={["perf-value", "perf-fps-value"]} />
         </box>
       </box>
     </window>
@@ -390,12 +481,18 @@ export default function PerfOverlay() {
 
   win.connect("realize", applyClickThrough)
   win.connect("map", applyClickThrough)
+  win.connect("destroy", () => {
+    stopPolling()
+    stopFpsTicker()
+  })
   win.connect("notify::visible", () => {
     if (win.visible) {
       applyClickThrough()
       startPolling()
+      startFpsTicker()
     } else {
       stopPolling()
+      stopFpsTicker()
     }
   })
 
