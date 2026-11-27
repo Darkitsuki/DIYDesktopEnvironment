@@ -6,10 +6,11 @@ if [ -f "${XDG_CONFIG_HOME:-$HOME/.config}/machine-config.env" ]; then
   set +a
 fi
 
-# Hybrid-GPU DRM priority: honor explicit AQ_DRM_DEVICES, or auto-enable when
-# both udev symlinks (/dev/dri/dgpu and /dev/dri/igpu) exist on the host.
-if [ -z "${AQ_DRM_DEVICES:-}" ] && [ -e /dev/dri/dgpu ] && [ -e /dev/dri/igpu ]; then
-  export AQ_DRM_DEVICES="/dev/dri/dgpu:/dev/dri/igpu"
+# Hybrid-GPU DRM priority: honor explicit AQ_DRM_DEVICES, or default to Intel iGPU
+# primary for zero-copy eDP-1 scanout/hardware cursors and D3cold dGPU sleep
+# when both udev symlinks (/dev/dri/igpu and /dev/dri/dgpu) exist on the host.
+if [ -z "${AQ_DRM_DEVICES:-}" ] && [ -e /dev/dri/igpu ] && [ -e /dev/dri/dgpu ]; then
+  export AQ_DRM_DEVICES="/dev/dri/igpu:/dev/dri/dgpu"
 fi
 
 export XDG_DATA_DIRS="$HOME/.nix-profile/share:${XDG_DATA_DIRS:-/usr/local/share:/usr/share}"

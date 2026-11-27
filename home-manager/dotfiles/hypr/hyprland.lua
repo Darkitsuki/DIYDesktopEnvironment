@@ -37,14 +37,13 @@ hl.env("XDG_SESSION_TYPE", "wayland")
 hl.env("XDG_CURRENT_DESKTOP", "Hyprland")
 hl.env("XDG_SESSION_DESKTOP", "Hyprland")
 
--- Enable NVIDIA VA-API/GLX overrides only when configured or an NVIDIA GPU is present.
-local gpu_vendor = env_nonempty("DIY_GPU_VENDOR", "auto")
-local use_nvidia = (gpu_vendor == "nvidia")
-  or (gpu_vendor == "auto" and (file_exists("/dev/nvidia0") or file_exists("/proc/driver/nvidia/version")))
-if use_nvidia then
-  hl.env("LIBVA_DRIVER_NAME", "nvidia")
-  hl.env("__GLX_VENDOR_LIBRARY_NAME", "nvidia")
-end
+-- Desktop apps default to Intel Iris Xe (Mesa EGL / iHD VA-API) for zero-copy
+-- Wayland compositing and D3cold dGPU sleep; games use prime-run / offload vars.
+-- local gpu_vendor = env_nonempty("DIY_GPU_VENDOR", "auto")
+-- if gpu_vendor == "nvidia" then
+--   hl.env("LIBVA_DRIVER_NAME", "nvidia")
+--   hl.env("__GLX_VENDOR_LIBRARY_NAME", "nvidia")
+-- end
 
 hl.env("ELECTRON_OZONE_PLATFORM_HINT", "auto")
 
@@ -187,7 +186,7 @@ hl.config({
     },
 
     render = {
-        direct_scanout = 0,
+        direct_scanout = 2,
         cm_auto_hdr    = 0,
     },
 
@@ -212,7 +211,7 @@ hl.config({
         blur = {
             enabled   = true,
             size      = 5,
-            passes    = 2,
+            passes    = 1,
             vibrancy  = 0.1696,
         },
     },
