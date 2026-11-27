@@ -49,17 +49,17 @@ Rectangle {
 
     Behavior on implicitWidth {
         NumberAnimation {
-            duration: 180
-            easing.type: Easing.OutCubic
+            duration: 260
+            easing.type: Easing.OutQuint
         }
     }
 
     Behavior on color {
-        ColorAnimation { duration: 150 }
+        ColorAnimation { duration: 220 }
     }
 
     Behavior on border.color {
-        ColorAnimation { duration: 150 }
+        ColorAnimation { duration: 220 }
     }
 
     RowLayout {
@@ -75,7 +75,7 @@ Rectangle {
             color: root.isPlaying ? Theme.accent : Theme.subtext0
 
             Behavior on color {
-                ColorAnimation { duration: 150 }
+                ColorAnimation { duration: 220 }
             }
         }
 
@@ -96,7 +96,7 @@ Rectangle {
                 color: (mediaMouse.containsMouse || root.isPlaying) ? Theme.accent : Theme.text
 
                 Behavior on color {
-                    ColorAnimation { duration: 150 }
+                    ColorAnimation { duration: 220 }
                 }
 
                 onTextChanged: {

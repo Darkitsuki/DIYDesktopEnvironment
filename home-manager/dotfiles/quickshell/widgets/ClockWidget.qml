@@ -60,17 +60,17 @@ Rectangle {
 
     Behavior on implicitWidth {
         NumberAnimation {
-            duration: 180
-            easing.type: Easing.OutCubic
+            duration: 260
+            easing.type: Easing.OutQuint
         }
     }
 
     Behavior on color {
-        ColorAnimation { duration: 150 }
+        ColorAnimation { duration: 220 }
     }
 
     Behavior on border.color {
-        ColorAnimation { duration: 150 }
+        ColorAnimation { duration: 220 }
     }
 
     Text {
@@ -97,12 +97,12 @@ Rectangle {
         visible: root.popupVisible || calendarCard.opacity > 0.01
         color: "transparent"
         implicitWidth: calendarCard.implicitWidth
-        implicitHeight: calendarCard.implicitHeight + 6
+        implicitHeight: calendarCard.implicitHeight + 12
 
         anchor.item: root
         anchor.edges: Edges.Bottom
         anchor.gravity: Edges.Bottom
-        anchor.margins.top: Theme.spaceSm
+        anchor.margins.top: 0
 
         HoverHandler {
             id: popupHover
@@ -110,7 +110,7 @@ Rectangle {
 
         Rectangle {
             id: calendarCard
-            y: 4
+            y: 10
             implicitWidth: calendarCol.implicitWidth + Theme.spaceLg * 2
             implicitHeight: calendarCol.implicitHeight + Theme.spaceMd * 2
             radius: Theme.radiusLg
@@ -121,18 +121,18 @@ Rectangle {
 
             Behavior on opacity {
                 NumberAnimation {
-                    duration: 160
-                    easing.type: Easing.OutCubic
+                    duration: 240
+                    easing.type: Easing.OutQuint
                 }
             }
 
             transform: Translate {
-                y: root.popupVisible ? 0 : -4
+                y: root.popupVisible ? 0 : -10
 
                 Behavior on y {
                     NumberAnimation {
-                        duration: 180
-                        easing.type: Easing.OutCubic
+                        duration: 280
+                        easing.type: Easing.OutQuint
                     }
                 }
             }

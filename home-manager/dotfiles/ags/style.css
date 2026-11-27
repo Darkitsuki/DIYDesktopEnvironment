@@ -111,8 +111,8 @@ window.quick-settings-window,
   min-width: 32px;
   min-height: 32px;
   padding: 4px;
-  transition: background-color 160ms cubic-bezier(0.16, 1, 0.3, 1),
-    border-color 160ms cubic-bezier(0.16, 1, 0.3, 1);
+  transition: background-color 250ms cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 250ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .action-btn:hover {
@@ -132,7 +132,7 @@ window.quick-settings-window,
 .action-btn-icon {
   font-size: 15px;
   color: #cdd6f4;
-  transition: color 150ms cubic-bezier(0.16, 1, 0.3, 1);
+  transition: color 240ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .power-btn:hover,
@@ -159,8 +159,8 @@ window.quick-settings-window,
   border: 1px solid #313244;
   border-radius: 12px;
   padding: 8px 6px;
-  transition: background-color 170ms cubic-bezier(0.16, 1, 0.3, 1),
-    border-color 170ms cubic-bezier(0.16, 1, 0.3, 1);
+  transition: background-color 260ms cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 260ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .stat-card:hover {
@@ -171,14 +171,14 @@ window.quick-settings-window,
 .stat-icon {
   font-size: 14px;
   color: #89b4fa;
-  transition: color 150ms cubic-bezier(0.16, 1, 0.3, 1);
+  transition: color 240ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .stat-value {
   font-size: 11px;
   font-weight: 700;
   color: #cdd6f4;
-  transition: color 150ms cubic-bezier(0.16, 1, 0.3, 1);
+  transition: color 240ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 /* Suspended state (e.g. GPU D3cold sleep) */
@@ -221,8 +221,8 @@ window.quick-settings-window,
   border: 1px solid rgba(69, 71, 90, 0.6);
   border-radius: 12px;
   padding: 10px 12px;
-  transition: background-color 170ms cubic-bezier(0.16, 1, 0.3, 1),
-    border-color 170ms cubic-bezier(0.16, 1, 0.3, 1);
+  transition: background-color 270ms cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 270ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .toggle-card:hover {
@@ -253,7 +253,7 @@ window.quick-settings-window,
   font-size: 20px;
   color: #89b4fa;
   margin-right: 4px;
-  transition: color 160ms cubic-bezier(0.16, 1, 0.3, 1);
+  transition: color 250ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .toggle-icon.active {
@@ -264,7 +264,7 @@ window.quick-settings-window,
   font-size: 12px;
   font-weight: 700;
   color: #cdd6f4;
-  transition: color 160ms cubic-bezier(0.16, 1, 0.3, 1);
+  transition: color 250ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .toggle-card.active .toggle-title {
@@ -275,7 +275,7 @@ window.quick-settings-window,
   font-size: 10px;
   font-weight: 500;
   color: #a6adc8;
-  transition: color 160ms cubic-bezier(0.16, 1, 0.3, 1);
+  transition: color 250ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .toggle-card.active .toggle-subtitle {
@@ -305,7 +305,7 @@ window.quick-settings-window,
   min-height: 28px;
   padding: 2px;
   border-radius: 8px;
-  transition: background-color 150ms cubic-bezier(0.16, 1, 0.3, 1);
+  transition: background-color 240ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .slider-icon-btn:hover {
@@ -319,7 +319,7 @@ window.quick-settings-window,
 .slider-icon {
   font-size: 18px;
   color: #89b4fa;
-  transition: color 150ms cubic-bezier(0.16, 1, 0.3, 1);
+  transition: color 220ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .slider-value-label {
@@ -335,7 +335,7 @@ scale trough {
   border-radius: 8px;
   min-height: 8px;
   min-width: 8px;
-  transition: background-color 150ms cubic-bezier(0.16, 1, 0.3, 1);
+  transition: background-color 220ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 scale:hover trough {
@@ -345,7 +345,7 @@ scale:hover trough {
 scale highlight {
   background-color: #288cff;
   border-radius: 8px;
-  transition: background-color 150ms cubic-bezier(0.16, 1, 0.3, 1);
+  transition: background-color 220ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 scale:hover highlight {
@@ -359,11 +359,11 @@ scale slider {
   min-width: 14px;
   min-height: 14px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
-  transition: background-color 150ms cubic-bezier(0.16, 1, 0.3, 1),
-    border-color 150ms cubic-bezier(0.16, 1, 0.3, 1),
-    min-width 150ms cubic-bezier(0.16, 1, 0.3, 1),
-    min-height 150ms cubic-bezier(0.16, 1, 0.3, 1),
-    box-shadow 150ms cubic-bezier(0.16, 1, 0.3, 1);
+  transition: background-color 240ms cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 240ms cubic-bezier(0.22, 1, 0.36, 1),
+    min-width 240ms cubic-bezier(0.22, 1, 0.36, 1),
+    min-height 240ms cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 240ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 scale slider:hover {
@@ -390,8 +390,8 @@ scale slider:active {
   border-radius: 14px;
   padding: 10px 12px;
   margin-top: 2px;
-  transition: background-color 170ms cubic-bezier(0.16, 1, 0.3, 1),
-    border-color 170ms cubic-bezier(0.16, 1, 0.3, 1);
+  transition: background-color 280ms cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 280ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .media-card:hover {
@@ -433,8 +433,8 @@ scale slider:active {
   min-width: 28px;
   min-height: 28px;
   padding: 2px;
-  transition: background-color 150ms cubic-bezier(0.16, 1, 0.3, 1),
-    border-color 150ms cubic-bezier(0.16, 1, 0.3, 1);
+  transition: background-color 240ms cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 240ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .media-btn:hover {
@@ -482,8 +482,8 @@ scale slider:active {
   border-radius: 14px;
   padding: 8px 10px;
   margin-top: 2px;
-  transition: background-color 170ms cubic-bezier(0.16, 1, 0.3, 1),
-    border-color 170ms cubic-bezier(0.16, 1, 0.3, 1);
+  transition: background-color 270ms cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 270ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .sync-strip:hover {
@@ -521,8 +521,8 @@ scale slider:active {
   border: 1px solid rgba(69, 71, 90, 0.6);
   border-radius: 10px;
   padding: 5px 8px;
-  transition: background-color 160ms cubic-bezier(0.16, 1, 0.3, 1),
-    border-color 160ms cubic-bezier(0.16, 1, 0.3, 1);
+  transition: background-color 250ms cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 250ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .sync-btn:hover {
@@ -538,14 +538,14 @@ scale slider:active {
 .sync-btn-icon {
   font-size: 12px;
   color: #89b4fa;
-  transition: color 150ms cubic-bezier(0.16, 1, 0.3, 1);
+  transition: color 240ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .sync-btn-label {
   font-size: 11px;
   font-weight: 600;
   color: #cdd6f4;
-  transition: color 150ms cubic-bezier(0.16, 1, 0.3, 1);
+  transition: color 240ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .sync-backup-btn:hover,
@@ -577,8 +577,8 @@ window.osd-window,
   padding: 10px 18px;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.48);
   min-width: 280px;
-  transition: background-color 160ms cubic-bezier(0.16, 1, 0.3, 1),
-    border-color 160ms cubic-bezier(0.16, 1, 0.3, 1);
+  transition: background-color 260ms cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 260ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .osd-pill.active {
@@ -593,7 +593,7 @@ window.osd-window,
   font-size: 18px;
   color: #89b4fa;
   min-width: 20px;
-  transition: color 150ms cubic-bezier(0.16, 1, 0.3, 1);
+  transition: color 220ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .osd-pill.muted .osd-icon {
@@ -612,7 +612,7 @@ window.osd-window,
   font-weight: 700;
   color: #89b4fa;
   min-width: 36px;
-  transition: color 150ms cubic-bezier(0.16, 1, 0.3, 1);
+  transition: color 220ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .osd-pill.muted .osd-value {
@@ -641,8 +641,8 @@ levelbar.osd-bar block.filled.full {
   border: none;
   border-radius: 999px;
   min-height: 8px;
-  transition: background-color 150ms cubic-bezier(0.16, 1, 0.3, 1),
-    background-image 150ms cubic-bezier(0.16, 1, 0.3, 1);
+  transition: background-color 220ms cubic-bezier(0.22, 1, 0.36, 1),
+    background-image 220ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 levelbar.osd-bar block.empty {
@@ -717,9 +717,9 @@ window.audio-menu-window,
   border-radius: 8px;
   padding: 6px 8px;
   color: #cdd6f4;
-  transition: background-color 150ms cubic-bezier(0.16, 1, 0.3, 1),
-    border-color 150ms cubic-bezier(0.16, 1, 0.3, 1),
-    color 150ms cubic-bezier(0.16, 1, 0.3, 1);
+  transition: background-color 240ms cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 240ms cubic-bezier(0.22, 1, 0.36, 1),
+    color 240ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .audio-device-item:hover {
@@ -787,7 +787,7 @@ window.audio-menu-window,
   border: 1px solid #313244;
   border-radius: 10px;
   padding: 8px 10px;
-  transition: border-color 150ms cubic-bezier(0.16, 1, 0.3, 1);
+  transition: border-color 240ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .app-stream-row:hover {
@@ -816,8 +816,8 @@ window.audio-menu-window,
   min-width: 26px;
   min-height: 26px;
   padding: 2px;
-  transition: background-color 150ms cubic-bezier(0.16, 1, 0.3, 1),
-    border-color 150ms cubic-bezier(0.16, 1, 0.3, 1);
+  transition: background-color 240ms cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 240ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .app-stream-mute-btn:hover {
@@ -866,8 +866,8 @@ window.power-menu-window,
   border-radius: 9px;
   padding: 6px 10px;
   color: #cdd6f4;
-  transition: background-color 150ms cubic-bezier(0.16, 1, 0.3, 1),
-    color 150ms cubic-bezier(0.16, 1, 0.3, 1);
+  transition: background-color 240ms cubic-bezier(0.22, 1, 0.36, 1),
+    color 240ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .powermenu-item:hover {

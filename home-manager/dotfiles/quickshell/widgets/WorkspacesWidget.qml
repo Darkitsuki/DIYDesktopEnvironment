@@ -79,8 +79,8 @@ Rectangle {
 
     Behavior on implicitWidth {
         NumberAnimation {
-            duration: 180
-            easing.type: Easing.OutCubic
+            duration: 280
+            easing.type: Easing.OutQuint
         }
     }
 
@@ -131,20 +131,20 @@ Rectangle {
 
                 Behavior on implicitWidth {
                     NumberAnimation {
-                        duration: 180
-                        easing.type: Easing.OutCubic
+                        duration: 280
+                        easing.type: Easing.OutQuint
                     }
                 }
 
                 Behavior on color {
                     ColorAnimation {
-                        duration: 150
+                        duration: 220
                     }
                 }
 
                 Behavior on border.color {
                     ColorAnimation {
-                        duration: 150
+                        duration: 220
                     }
                 }
 
@@ -168,7 +168,7 @@ Rectangle {
 
                     Behavior on color {
                         ColorAnimation {
-                            duration: 150
+                            duration: 220
                         }
                     }
                 }

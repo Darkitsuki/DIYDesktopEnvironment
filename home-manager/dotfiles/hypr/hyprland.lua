@@ -218,7 +218,8 @@ hl.config({
     },
 })
 
--- Clean, non-bouncy Bezier curves and lightweight animations
+-- Clean, non-bouncy Bezier curves and One UI exponential deceleration
+hl.curve("oneUiGlide",     { type = "bezier", points = { {0.22, 1.0},  {0.36, 1.0}   } })
 hl.curve("fluentDecel",    { type = "bezier", points = { {0.05, 0.9},  {0.1, 1.0}    } })
 hl.curve("snappy",         { type = "bezier", points = { {0.2, 0.0},   {0.0, 1.0}    } })
 hl.curve("easeOutQuint",   { type = "bezier", points = { {0.23, 1},    {0.32, 1}     } })
@@ -226,26 +227,26 @@ hl.curve("linear",         { type = "bezier", points = { {0, 0},       {1, 1}   
 hl.curve("almostLinear",   { type = "bezier", points = { {0.5, 0.5},   {0.75, 1}     } })
 hl.curve("quick",          { type = "bezier", points = { {0.15, 0},    {0.1, 1}      } })
 
-hl.animation({ leaf = "global",        enabled = true,  speed = 2.0,  bezier = "fluentDecel" })
-hl.animation({ leaf = "border",        enabled = true,  speed = 3.0,  bezier = "snappy" })
+hl.animation({ leaf = "global",        enabled = true,  speed = 2.6,  bezier = "oneUiGlide" })
+hl.animation({ leaf = "border",        enabled = true,  speed = 2.6,  bezier = "oneUiGlide" })
 hl.animation({ leaf = "borderangle",   enabled = false })
-hl.animation({ leaf = "windows",       enabled = true,  speed = 1.9,  bezier = "fluentDecel", style = "popin 88%" })
-hl.animation({ leaf = "windowsIn",     enabled = true,  speed = 1.9,  bezier = "fluentDecel", style = "popin 88%" })
-hl.animation({ leaf = "windowsOut",    enabled = true,  speed = 1.8,  bezier = "snappy",      style = "popin 88%" })
-hl.animation({ leaf = "windowsMove",   enabled = true,  speed = 2.0,  bezier = "fluentDecel" })
-hl.animation({ leaf = "fade",          enabled = true,  speed = 1.6,  bezier = "snappy" })
-hl.animation({ leaf = "fadeIn",        enabled = true,  speed = 1.6,  bezier = "fluentDecel" })
-hl.animation({ leaf = "fadeOut",       enabled = true,  speed = 1.6,  bezier = "snappy" })
-hl.animation({ leaf = "fadeDim",       enabled = true,  speed = 1.6,  bezier = "snappy" })
-hl.animation({ leaf = "layers",        enabled = true,  speed = 1.5,  bezier = "fluentDecel", style = "popin 92%" })
-hl.animation({ leaf = "layersIn",      enabled = true,  speed = 1.5,  bezier = "fluentDecel", style = "popin 92%" })
-hl.animation({ leaf = "layersOut",     enabled = true,  speed = 1.4,  bezier = "snappy",      style = "popin 92%" })
-hl.animation({ leaf = "fadeLayersIn",  enabled = true,  speed = 1.5,  bezier = "fluentDecel" })
-hl.animation({ leaf = "fadeLayersOut", enabled = true,  speed = 1.4,  bezier = "snappy" })
-hl.animation({ leaf = "workspaces",    enabled = true,  speed = 2.2,  bezier = "fluentDecel", style = "slidefade 15%" })
-hl.animation({ leaf = "workspacesIn",  enabled = true,  speed = 2.2,  bezier = "fluentDecel", style = "slidefade 15%" })
-hl.animation({ leaf = "workspacesOut", enabled = true,  speed = 2.2,  bezier = "fluentDecel", style = "slidefade 15%" })
-hl.animation({ leaf = "zoomFactor",    enabled = true,  speed = 3.0,  bezier = "snappy" })
+hl.animation({ leaf = "windows",       enabled = true,  speed = 2.8,  bezier = "oneUiGlide", style = "popin 82%" })
+hl.animation({ leaf = "windowsIn",     enabled = true,  speed = 2.8,  bezier = "oneUiGlide", style = "popin 82%" })
+hl.animation({ leaf = "windowsOut",    enabled = true,  speed = 2.4,  bezier = "oneUiGlide", style = "popin 84%" })
+hl.animation({ leaf = "windowsMove",   enabled = true,  speed = 3.0,  bezier = "oneUiGlide" })
+hl.animation({ leaf = "fade",          enabled = true,  speed = 2.4,  bezier = "oneUiGlide" })
+hl.animation({ leaf = "fadeIn",        enabled = true,  speed = 2.4,  bezier = "oneUiGlide" })
+hl.animation({ leaf = "fadeOut",       enabled = true,  speed = 2.4,  bezier = "oneUiGlide" })
+hl.animation({ leaf = "fadeDim",       enabled = true,  speed = 2.4,  bezier = "oneUiGlide" })
+hl.animation({ leaf = "layers",        enabled = true,  speed = 2.5,  bezier = "oneUiGlide", style = "popin 86%" })
+hl.animation({ leaf = "layersIn",      enabled = true,  speed = 2.5,  bezier = "oneUiGlide", style = "popin 86%" })
+hl.animation({ leaf = "layersOut",     enabled = true,  speed = 2.2,  bezier = "oneUiGlide", style = "popin 88%" })
+hl.animation({ leaf = "fadeLayersIn",  enabled = true,  speed = 2.4,  bezier = "oneUiGlide" })
+hl.animation({ leaf = "fadeLayersOut", enabled = true,  speed = 2.2,  bezier = "oneUiGlide" })
+hl.animation({ leaf = "workspaces",    enabled = true,  speed = 3.0,  bezier = "oneUiGlide", style = "slide" })
+hl.animation({ leaf = "workspacesIn",  enabled = true,  speed = 3.0,  bezier = "oneUiGlide", style = "slide" })
+hl.animation({ leaf = "workspacesOut", enabled = true,  speed = 3.0,  bezier = "oneUiGlide", style = "slide" })
+hl.animation({ leaf = "zoomFactor",    enabled = true,  speed = 2.6,  bezier = "oneUiGlide" })
 
 -- See https://wiki.hypr.land/Configuring/Layouts/Dwindle-Layout/ for more
 hl.config({
@@ -463,7 +464,7 @@ local quickSettingsBlur = hl.layer_rule({
     match = { namespace = "^quick-settings$" },
     blur = true,
     ignore_alpha = 0.2,
-    animation = "popin 92%",
+    animation = "slide top",
 })
 quickSettingsBlur:set_enabled(true)
 
@@ -472,7 +473,7 @@ local audioMenuBlur = hl.layer_rule({
     match = { namespace = "^audio-menu$" },
     blur = true,
     ignore_alpha = 0.2,
-    animation = "popin 92%",
+    animation = "slide top",
 })
 audioMenuBlur:set_enabled(true)
 
@@ -481,7 +482,7 @@ local powerMenuBlur = hl.layer_rule({
     match = { namespace = "^power-menu$" },
     blur = true,
     ignore_alpha = 0.2,
-    animation = "popin 92%",
+    animation = "slide top",
 })
 powerMenuBlur:set_enabled(true)
 
@@ -490,7 +491,7 @@ local osdBlur = hl.layer_rule({
     match = { namespace = "^osd$" },
     blur = true,
     ignore_alpha = 0.2,
-    animation = "popin 92%",
+    animation = "slide bottom",
 })
 osdBlur:set_enabled(true)
 
@@ -499,7 +500,7 @@ local hyprlauncherBlur = hl.layer_rule({
     match = { namespace = "^hyprlauncher$" },
     blur = true,
     ignore_alpha = 0.25,
-    animation = "popin 92%",
+    animation = "popin 86%",
 })
 hyprlauncherBlur:set_enabled(true)
 

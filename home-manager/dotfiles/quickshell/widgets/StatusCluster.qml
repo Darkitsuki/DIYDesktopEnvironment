@@ -180,12 +180,12 @@ RowLayout {
 
         Behavior on implicitWidth {
             NumberAnimation {
-                duration: 180
-                easing.type: Easing.OutCubic
+                duration: 260
+                easing.type: Easing.OutQuint
             }
         }
-        Behavior on color { ColorAnimation { duration: 150 } }
-        Behavior on border.color { ColorAnimation { duration: 150 } }
+        Behavior on color { ColorAnimation { duration: 220 } }
+        Behavior on border.color { ColorAnimation { duration: 220 } }
 
         Text {
             id: audioLabel
@@ -195,7 +195,7 @@ RowLayout {
             font.pixelSize: Theme.fontSizeMd
             color: root.audioMuted ? Theme.subtext0 : Theme.text
 
-            Behavior on color { ColorAnimation { duration: 150 } }
+            Behavior on color { ColorAnimation { duration: 220 } }
         }
 
         MouseArea {
@@ -241,12 +241,12 @@ RowLayout {
 
         Behavior on implicitWidth {
             NumberAnimation {
-                duration: 180
-                easing.type: Easing.OutCubic
+                duration: 260
+                easing.type: Easing.OutQuint
             }
         }
-        Behavior on color { ColorAnimation { duration: 150 } }
-        Behavior on border.color { ColorAnimation { duration: 150 } }
+        Behavior on color { ColorAnimation { duration: 220 } }
+        Behavior on border.color { ColorAnimation { duration: 220 } }
 
         Text {
             id: netLabel
@@ -262,7 +262,7 @@ RowLayout {
             font.pixelSize: Theme.fontSizeMd
             color: root.netType === "none" ? Theme.yellow : Theme.text
 
-            Behavior on color { ColorAnimation { duration: 150 } }
+            Behavior on color { ColorAnimation { duration: 220 } }
         }
 
         MouseArea {
@@ -297,12 +297,12 @@ RowLayout {
 
         Behavior on implicitWidth {
             NumberAnimation {
-                duration: 180
-                easing.type: Easing.OutCubic
+                duration: 260
+                easing.type: Easing.OutQuint
             }
         }
-        Behavior on color { ColorAnimation { duration: 150 } }
-        Behavior on border.color { ColorAnimation { duration: 150 } }
+        Behavior on color { ColorAnimation { duration: 220 } }
+        Behavior on border.color { ColorAnimation { duration: 220 } }
 
         Text {
             id: gdriveLabel
@@ -323,7 +323,7 @@ RowLayout {
                 return Theme.text;
             }
 
-            Behavior on color { ColorAnimation { duration: 150 } }
+            Behavior on color { ColorAnimation { duration: 220 } }
         }
 
         MouseArea {
@@ -358,12 +358,12 @@ RowLayout {
 
         Behavior on implicitWidth {
             NumberAnimation {
-                duration: 180
-                easing.type: Easing.OutCubic
+                duration: 260
+                easing.type: Easing.OutQuint
             }
         }
-        Behavior on color { ColorAnimation { duration: 150 } }
-        Behavior on border.color { ColorAnimation { duration: 150 } }
+        Behavior on color { ColorAnimation { duration: 220 } }
+        Behavior on border.color { ColorAnimation { duration: 220 } }
 
         Text {
             id: batteryLabel
@@ -373,7 +373,7 @@ RowLayout {
             font.pixelSize: Theme.fontSizeMd
             color: root.batteryColor
 
-            Behavior on color { ColorAnimation { duration: 150 } }
+            Behavior on color { ColorAnimation { duration: 220 } }
         }
     }
 
@@ -392,12 +392,12 @@ RowLayout {
 
         Behavior on implicitWidth {
             NumberAnimation {
-                duration: 180
-                easing.type: Easing.OutCubic
+                duration: 260
+                easing.type: Easing.OutQuint
             }
         }
-        Behavior on color { ColorAnimation { duration: 150 } }
-        Behavior on border.color { ColorAnimation { duration: 150 } }
+        Behavior on color { ColorAnimation { duration: 220 } }
+        Behavior on border.color { ColorAnimation { duration: 220 } }
 
         RowLayout {
             id: trayRow
@@ -482,12 +482,12 @@ RowLayout {
 
         Behavior on implicitWidth {
             NumberAnimation {
-                duration: 180
-                easing.type: Easing.OutCubic
+                duration: 260
+                easing.type: Easing.OutQuint
             }
         }
-        Behavior on color { ColorAnimation { duration: 150 } }
-        Behavior on border.color { ColorAnimation { duration: 150 } }
+        Behavior on color { ColorAnimation { duration: 220 } }
+        Behavior on border.color { ColorAnimation { duration: 220 } }
 
         Text {
             anchors.centerIn: parent
@@ -496,7 +496,7 @@ RowLayout {
             font.pixelSize: Theme.fontSizeLg
             color: qsMouse.containsMouse ? Theme.crust : Theme.accent
 
-            Behavior on color { ColorAnimation { duration: 150 } }
+            Behavior on color { ColorAnimation { duration: 220 } }
         }
 
         MouseArea {
