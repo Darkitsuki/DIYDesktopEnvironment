@@ -6,11 +6,14 @@ if [ -f "${XDG_CONFIG_HOME:-$HOME/.config}/machine-config.env" ]; then
   set +a
 fi
 
-# Hybrid-GPU DRM priority: honor explicit AQ_DRM_DEVICES; otherwise include dGPU
-# only when a dGPU external connector (e.g. HDMI-A-2) is connected at launch,
-# keeping laptop-only sessions iGPU-only so RTX 3050 Ti can enter D3cold.
+# Hybrid-GPU DRM priority: honor explicit AQ_DRM_DEVICES; otherwise expose
+# /dev/dri/igpu:/dev/dri/dgpu (iGPU first) so Hyprland and desktop apps run on
+# Intel Iris Xe while XWayland PRIME retains zero-copy DMA-BUF + Explicit Sync
+# access to RTX 3050 Ti. When no dGPU external connector is connected, isolate
+# desktop processes to Mesa EGL/Vulkan/GLX.
 if [ -z "${AQ_DRM_DEVICES:-}" ] && [ -e /dev/dri/igpu ]; then
   if [ -e /dev/dri/dgpu ]; then
+    export AQ_DRM_DEVICES="/dev/dri/igpu:/dev/dri/dgpu"
     _dgpu_card=$(basename "$(readlink -f /dev/dri/dgpu)")
     _dgpu_connected=0
     for _drm_status in /sys/class/drm/"$_dgpu_card"-*/status; do
@@ -19,10 +22,7 @@ if [ -z "${AQ_DRM_DEVICES:-}" ] && [ -e /dev/dri/igpu ]; then
         break
       fi
     done
-    if [ "$_dgpu_connected" -eq 1 ]; then
-      export AQ_DRM_DEVICES="/dev/dri/igpu:/dev/dri/dgpu"
-    else
-      export AQ_DRM_DEVICES="/dev/dri/igpu"
+    if [ "$_dgpu_connected" -eq 0 ]; then
       if [ -f /usr/share/glvnd/egl_vendor.d/50_mesa.json ]; then
         export __EGL_VENDOR_LIBRARY_FILENAMES="/usr/share/glvnd/egl_vendor.d/50_mesa.json"
       fi
