@@ -23,6 +23,11 @@ if [ -z "${AQ_DRM_DEVICES:-}" ] && [ -e /dev/dri/igpu ]; then
       export AQ_DRM_DEVICES="/dev/dri/igpu:/dev/dri/dgpu"
     else
       export AQ_DRM_DEVICES="/dev/dri/igpu"
+      if [ -f /usr/share/glvnd/egl_vendor.d/50_mesa.json ]; then
+        export __EGL_VENDOR_LIBRARY_FILENAMES="/usr/share/glvnd/egl_vendor.d/50_mesa.json"
+      fi
+      export MESA_VK_DEVICE_SELECT="8086:46a6!"
+      export __GLX_VENDOR_LIBRARY_NAME="mesa"
     fi
     unset _dgpu_card _dgpu_connected _drm_status _conn_state
   else
