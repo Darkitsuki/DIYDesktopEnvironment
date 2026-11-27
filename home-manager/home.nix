@@ -69,6 +69,7 @@
     "quickshell".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.config/home-manager/dotfiles/quickshell";
     "kitty".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.config/home-manager/dotfiles/kitty";
     "mangohud/MangoHud.conf".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.config/home-manager/dotfiles/mangohud/MangoHud.conf";
+    "satty".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.config/home-manager/dotfiles/satty";
   };
 
   # Let Home Manager install and manage itself.
