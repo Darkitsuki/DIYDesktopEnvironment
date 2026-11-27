@@ -126,6 +126,10 @@ hl.on("hyprland.start", function ()
   hl.exec_cmd("xsettingsd")
 
   hl.exec_cmd("fcitx5 -d")
+
+  -- Idempotent clipboard history watchers (text and image)
+  hl.exec_cmd('sh -c \'pgrep -fx "wl-paste --type text --watch cliphist store" >/dev/null || exec wl-paste --type text --watch cliphist store\'')
+  hl.exec_cmd('sh -c \'pgrep -fx "wl-paste --type image --watch cliphist store" >/dev/null || exec wl-paste --type image --watch cliphist store\'')
 end)
 
 -------------------------------
@@ -349,6 +353,7 @@ local closeWindowBind = hl.bind(mainMod .. " + C", hl.dsp.window.close())
 hl.bind(mainMod .. " + M", hl.dsp.exec_cmd("command -v hyprshutdown >/dev/null 2>&1 && hyprshutdown || hyprctl dispatch exit"))
 hl.bind(mainMod .. " + E", hl.dsp.exec_cmd(fileManager))
 hl.bind(mainMod .. " + V", hl.dsp.window.float({ action = "toggle" }))
+hl.bind(mainMod .. " + SHIFT + V", hl.dsp.exec_cmd("/home/HoaHung/.local/bin/hypr-cliphist"), { description = "hypr-cliphist: Clipboard history" })
 hl.bind(mainMod .. " + F", hl.dsp.window.fullscreen("0"))
 hl.bind(mainMod .. " + R", hl.dsp.exec_cmd(menu))
 hl.bind(mainMod .. " + P", hl.dsp.window.pseudo())
