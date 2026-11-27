@@ -360,7 +360,7 @@ hl.bind(mainMod .. " + P", hl.dsp.window.pseudo())
 hl.bind(mainMod .. " + J", hl.dsp.layout("togglesplit"))    -- dwindle only
 
 -- Lock screen with hyprlock
-hl.bind(mainMod .. " + L", hl.dsp.exec_cmd('pidof hyprlock || (hyprlock && hyprctl notify -1 2500 "rgb(a6e3a1)" "fontsize:14   Welcome back, $USER")'), { description = "Lock screen" })
+hl.bind(mainMod .. " + L", hl.dsp.exec_cmd("pidof hyprlock || hyprlock"), { description = "Lock screen" })
 
 -- Move focus with mainMod + arrow keys
 hl.bind(mainMod .. " + left",  hl.dsp.focus({ direction = "left" }))
