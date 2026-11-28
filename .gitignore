@@ -85,6 +85,11 @@ home-manager/dotfiles/gtk-3.0/bookmarks
 /xdg-desktop-portal
 /quickshell
 /environment.d/10-home-manager.conf
+/MangoHud/
+/brave-flags.conf
+/kitty
+/mangohud/
+rncbc.org/Qtractor.conf
 
 # === Runtime State, Binary Databases & Temp Files ===
 fcitx/dbus/

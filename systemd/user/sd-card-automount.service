@@ -1,7 +1,7 @@
 [Unit]
 Description=Auto-mount configured SD Card via udisks2 (optional)
 ConditionPathExists=%h/.config/machine-config.env
-Before=graphical-session.target
+After=graphical-session.target hyprpolkitagent.service
 
 [Service]
 Type=oneshot

@@ -96,10 +96,3 @@ checkMonitors().then((connected) => {
 setInterval(() => {
   updateInternalBrightness()
 }, 3000)
-
-// Check external monitors periodically (every 10s)
-setInterval(() => {
-  checkMonitors().then((connected) => {
-    if (connected) updateExternalBrightness()
-  })
-}, 10000)
