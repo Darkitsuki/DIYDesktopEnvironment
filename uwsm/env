@@ -6,14 +6,12 @@ if [ -f "${XDG_CONFIG_HOME:-$HOME/.config}/machine-config.env" ]; then
   set +a
 fi
 
-# Hybrid-GPU DRM priority: honor explicit AQ_DRM_DEVICES; otherwise expose
-# /dev/dri/igpu:/dev/dri/dgpu (iGPU first) so Hyprland and desktop apps run on
-# Intel Iris Xe while XWayland PRIME retains zero-copy DMA-BUF + Explicit Sync
-# access to RTX 3050 Ti. When no dGPU external connector is connected, isolate
-# desktop processes to Mesa EGL/Vulkan/GLX.
+# Hybrid-GPU DRM priority: honor explicit AQ_DRM_DEVICES; otherwise route
+# /dev/dri/dgpu:/dev/dri/igpu (dGPU primary) when an external display is
+# connected to RTX 3050 Ti to avoid cross-GPU PCIe blit stutter, and fall back
+# to /dev/dri/igpu:/dev/dri/dgpu with Mesa EGL/Vulkan/GLX isolation when undocked.
 if [ -z "${AQ_DRM_DEVICES:-}" ] && [ -e /dev/dri/igpu ]; then
   if [ -e /dev/dri/dgpu ]; then
-    export AQ_DRM_DEVICES="/dev/dri/igpu:/dev/dri/dgpu"
     _dgpu_card=$(basename "$(readlink -f /dev/dri/dgpu)")
     _dgpu_connected=0
     for _drm_status in /sys/class/drm/"$_dgpu_card"-*/status; do
@@ -22,7 +20,10 @@ if [ -z "${AQ_DRM_DEVICES:-}" ] && [ -e /dev/dri/igpu ]; then
         break
       fi
     done
-    if [ "$_dgpu_connected" -eq 0 ]; then
+    if [ "$_dgpu_connected" -eq 1 ]; then
+      export AQ_DRM_DEVICES="/dev/dri/dgpu:/dev/dri/igpu"
+    else
+      export AQ_DRM_DEVICES="/dev/dri/igpu:/dev/dri/dgpu"
       if [ -f /usr/share/glvnd/egl_vendor.d/50_mesa.json ]; then
         export __EGL_VENDOR_LIBRARY_FILENAMES="/usr/share/glvnd/egl_vendor.d/50_mesa.json"
       fi
