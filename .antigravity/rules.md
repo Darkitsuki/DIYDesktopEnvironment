@@ -22,19 +22,16 @@ Load domain rules from `$HOME/.config/.antigravity/rules/` only when editing tha
 
 ## Non-Negotiable Hardware & Compositor Invariants
 
-- **Dual-GPU Affinity & NVIDIA `D3cold`:** `quickshell.service` and `ags.service` MUST stay pinned to Intel Iris Xe:
-  - `MESA_VK_DEVICE_SELECT=8086:46a6!`
-  - `__EGL_VENDOR_LIBRARY_FILENAMES=/usr/share/glvnd/egl_vendor.d/50_mesa.json`
-  - Verify **0 handles** on `/dev/nvidia*` and `/dev/dri/renderD129` via `lsof` so the RTX 3050 Ti enters `D3cold`.
+- **Dual-GPU Affinity & NVIDIA `D3cold`:**
+  - `MESA_VK_DEVICE_SELECT="8086:46a6!"`, `__EGL_VENDOR_LIBRARY_FILENAMES="/usr/share/glvnd/egl_vendor.d/50_mesa.json"`, and `__GLX_VENDOR_LIBRARY_NAME="mesa"` are dynamically exported via `$HOME/.config/uwsm/env` (lines 23–32) on the undocked branch (`AQ_DRM_DEVICES="/dev/dri/igpu:/dev/dri/dgpu"`), while docked external-dGPU mode routes `AQ_DRM_DEVICES="/dev/dri/dgpu:/dev/dri/igpu"`.
+  - In undocked/battery mode, `quickshell.service` and `ags.service` MUST keep **0 handles** on `/dev/nvidia*` and `/dev/dri/renderD129` (verify via `lsof`) so the RTX 3050 Ti enters `D3cold`.
   - Never route desktop shell units onto the dGPU; only explicit offload wrappers (e.g., `curseforge-nvidia`, `prime-run`) unset Mesa isolation.
-- **External Monitor `HDMI-A-2`:** Preserve `1920x1080@180`, `bitdepth = 8`, `cm = "srgb"`, `misc.vrr = 0`, `render.direct_scanout = 0`, `render.cm_auto_hdr = 0` (avoid cross-GPU flicker/HDR instability; HDR toggling is explicit via `$HOME/.local/bin/hypr-hdr-toggle`).
+- **External Monitor `HDMI-A-2`:** Preserve `1920x1080@180`, `bitdepth = 8`, `cm = "srgb"`, `misc.vrr = 0`, `render.direct_scanout = 2` (`home-manager/dotfiles/hypr/hyprland.lua:189`), and `render.cm_auto_hdr = 0` (explicit HDR toggling lives in `$HOME/.local/bin/hypr-hdr-toggle`).
 
-## Visual & UX Tokens
+## Visual & UX Identity
 
-- **Palette (Catppuccin Mocha + Electric Blue):** Base `#1e1e2e`, Surface0 `#313244`, Surface1 `#45475a`, Text `#cdd6f4`, Accent `#89b4fa`, Active Electric Blue `#288cff`.
-- **Geometry:** `28px` pills inside a `30px` outer bar (`Theme.qml`); `14px–16px` corner radius (`14` in Hyprland, `16px` on panels/pills).
-- **Icons & Qt/GTK Integration:** `Colloid-Catppuccin-Dark` icon theme across GTK3/GTK4/xsettingsd and `QT_QPA_PLATFORMTHEME=gtk3` in `quickshell.service`.
-- **Motion & Blur:** One UI glide (`220–280ms`, `cubic-bezier(0.22, 1.0, 0.36, 1.0)` / `oneUiGlide`). Keep Hyprland blur capped at `size = 5`, `passes <= 2` (`passes = 1` currently set).
+- **Design Language:** **Catppuccin Mocha + Electric Blue** palette, `Colloid-Catppuccin-Dark` icons across GTK3/GTK4/xsettingsd with `QT_QPA_PLATFORMTHEME=gtk3` in `quickshell.service`, and **One UI glide** deceleration (`oneUiGlide`).
+- **Authoritative Styling Sources:** Do not guess or hardcode spacing, pill/bar heights, corner radii, animation durations, or blur parameters; inspect the authoritative source (`quickshell/Theme.qml`, `hypr/hyprland.lua`, or `ags/style.css`) before modifying UI styling.
 
 ## Token-Saving Execution Rules
 
@@ -45,6 +42,7 @@ Load domain rules from `$HOME/.config/.antigravity/rules/` only when editing tha
   - Quickshell / QML / launcher / snipping -> `.antigravity/rules/quickshell-qml.md`
   - AGS v3 / Astal GTK4 / TypeScript -> `.antigravity/rules/ags-gtk4.md`
   - Home Manager / systemd / rclone GitOps -> `.antigravity/rules/nix-systemd-gitops.md`
+- **Rule Drift Prevention:** Whenever a task intentionally changes repository layout, core keybinds, service topology, or any invariant documented in `AGENTS.md` / `.antigravity/rules/*.md`, update the affected rule file(s) in the same scoped Git commit so rules never drift from disk.
 - **Secret Boundary:** NEVER read or embed `rclone/rclone.conf`, `gh/`, `machine-config.env`, `antigravity/plugin-secrets.json`, `antigravity/credential-user-scope`, `*.pem`, or `*.key`.
 
 ## Mandatory Post-Task Git & Cloud Sync Contract
