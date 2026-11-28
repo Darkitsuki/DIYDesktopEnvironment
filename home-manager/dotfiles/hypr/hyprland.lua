@@ -691,10 +691,11 @@ hl.bind("ALT + R", hl.dsp.exec_cmd("ags toggle perf-overlay"), { description = "
 -- Optional local per-machine Lua overrides (gitignored)
 pcall(require, "machine-local")
 
--- Enable hardware cursor planes on eDP-1 even when an NVIDIA dGPU is present
+-- Enable auto hardware cursor fallback + CPU-mapped buffer for cross-GPU outputs (HDMI-A-2)
 hl.config({
   cursor = {
-    no_hardware_cursors = 0,
+    no_hardware_cursors = 2,
+    use_cpu_buffer = 1,
   },
 })
 
