@@ -11,7 +11,6 @@ import {
   powerProfile,
   cyclePowerProfile,
 } from "../services/network"
-import { gameMode, toggleGameMode } from "../services/gamemode"
 import { hdr, toggleHdr } from "../services/hdr"
 import {
   dnd,
@@ -104,7 +103,7 @@ export default function QuickToggles() {
         />
       </box>
 
-      {/* Row 2: Power Profile & Game Mode */}
+      {/* Row 2: Power Profile */}
       <box spacing={8} hexpand>
         <ToggleCard
           icon={powerProfile.as((p) =>
@@ -120,13 +119,6 @@ export default function QuickToggles() {
           subtitle="Power Profile"
           active={powerProfile.as((p) => p === "performance" || p === "balanced")}
           onPrimaryClick={cyclePowerProfile}
-        />
-        <ToggleCard
-          icon="󰊴"
-          title="Game Mode"
-          subtitle={gameMode.as((g) => (g ? "Active" : "Disabled"))}
-          active={gameMode}
-          onPrimaryClick={toggleGameMode}
         />
       </box>
 

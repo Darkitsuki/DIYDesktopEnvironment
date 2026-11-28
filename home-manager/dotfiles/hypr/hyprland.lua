@@ -678,13 +678,6 @@ hl.window_rule({
   center = true,
 })
 
--- Game Mode performance toggle (optional script under $DIY_SCRIPTS_DIR or ~/.local/bin)
-hl.bind(
-  mainMod .. " + F1",
-  hl.dsp.exec_cmd('sh -c \'cmd="${DIY_SCRIPTS_DIR:-$HOME/.local/bin}/hypr-gamemode"; if [ -x "$cmd" ]; then exec "$cmd"; elif command -v notify-send >/dev/null 2>&1; then notify-send -u low "Game Mode" "Optional script not installed: $cmd"; fi\''),
-  { description = "hypr-gamemode" }
-)
-
 -- Toggle NVIDIA-style click-through performance overlay (AGS)
 hl.bind("ALT + R", hl.dsp.exec_cmd("ags toggle perf-overlay"), { description = "AGS: Toggle performance overlay" })
 
